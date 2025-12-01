@@ -1,0 +1,17 @@
+{
+  "compilerOptions": {
+    /* Cấu hình Target và Modules */
+    "target": "es2020",                                /* Phiên bản JS đầu ra */
+    "module": "commonjs",                              /* Hệ thống module (Node.js) */
+    "rootDir": "./src",                                /* Thư mục gốc chứa file TS */
+    "outDir": "./dist",                                /* Thư mục chứa file JS sau khi biên dịch */
+    "esModuleInterop": true,                           /* Cho phép import module CommonJS theo kiểu ES6 */
+    "forceConsistentCasingInFileNames": true,          /* BẮT BUỘC: Khắc phục lỗi phân biệt chữ hoa/thường */
+    "strict": true,                                    /* Bật tất cả các kiểm tra kiểu nghiêm ngặt */
+    "skipLibCheck": true,                              /* Bỏ qua kiểm tra kiểu trong file thư viện */
+    "moduleResolution": "node",
+    
+  },
+  "include": ["src/**/*"],                             /* Bao gồm tất cả các file trong thư mục src */
+  "exclude": ["node_modules"]                          /* Loại trừ các thư mục không cần biên dịch */
+}

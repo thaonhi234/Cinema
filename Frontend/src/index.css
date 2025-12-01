@@ -1,4 +1,11 @@
-:root {
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+body {
+  background-color: #000;
+  font-family: 'Inter', sans-serif;
+}
+/* :root {
   font-family: system-ui, Avenir, Helvetica, Arial, sans-serif;
   line-height: 1.5;
   font-weight: 400;
@@ -66,3 +73,4 @@ button:focus-visible {
     background-color: #f9f9f9;
   }
 }
+*/
