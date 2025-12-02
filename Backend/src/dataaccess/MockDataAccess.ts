@@ -19,5 +19,24 @@ export class MockDataAccess implements IDataAccess {
         }
         return Promise.resolve(null);
     }
+    async getDashboardSummary() {
+    // ===== FAKE DATA (tạm thời) =====
+    return {
+      totalMovies: 156,
+      activeRooms: 8,
+      showtimesToday: 42,
+      ticketsSold: 1248,
+      weeklyRevenue: 26900,
+      weeklyRevenueGrowth: 18.2,
+      performance: {
+        occupancyRate: 78,
+        revenueTarget: 92,
+        customerSatisfaction: 95
+      },
+      quickStats: {
+        totalViews: 45200
+      }
+    };
+  }
     // ... Triển khai các hàm Mock CRUD khác
 }
