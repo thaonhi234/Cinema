@@ -6,8 +6,28 @@
     padding: 30px 20px;
 }
 
-.login-container h1 {
+.login-container .login-titile {
+    display: flex;
+    justify-content: space-between;
+    padding: 30px 50px;
+}
+
+.login-container .login-titile .logo-icon {
+    font-size: 44px;
+    display: flex;
+    text-align: center;
+    padding: 5px 10px 50px 10px;
+    background: linear-gradient(to right, #ff0101, #8d04a8);
+    color: white;
+}
+
+.login-container .login-titile h1 {
     font-size: 46px;
+    text-align: center;
+    padding: 5px;
+}
+
+.login-container .login-description {
     text-align: center;
 }
 
@@ -60,7 +80,7 @@
 }
 
 .remember-forgot a {
-    color: #fff;
+    color: #ff07d6;
     text-decoration: none;
 }
 
@@ -85,6 +105,10 @@
     text-align: center;
     margin: 20px 0;
     font-size: 14px;
+}
+
+.login-container .register-link a{
+    color: #ff07d6;
 }
 
 .login-container .continue-with {
@@ -113,6 +137,6 @@
 }
 
 .login-container .login-button {
-    background: linear-gradient(to right, #fa3504, #8d04a8);
+    background: linear-gradient(to right, #ff0101, #8d04a8);
     color: white;
 }
