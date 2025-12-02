@@ -1,5 +1,5 @@
-import InputField from "../components/InputField";
-import SocialButton from "../components/SocialButton";
+import InputField from "../components/InputField.tsx";
+import SocialButton from "../components/SocialButton.tsx";
 import { FcGoogle } from "react-icons/fc";
 import { FaFacebook } from "react-icons/fa";
 

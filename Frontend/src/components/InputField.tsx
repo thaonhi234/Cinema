@@ -1,6 +1,12 @@
+import React from "react";
 import { FiMail, FiLock } from "react-icons/fi";
 
-export default function InputField({ type, placeholder }) {
+interface InputFieldProps {
+  type: "email" | "password";
+  placeholder: string;
+}
+
+const InputField: React.FC<InputFieldProps> = ({ type, placeholder }) => {
   const Icon = type === "email" ? FiMail : FiLock;
 
   return (
@@ -13,4 +19,6 @@ export default function InputField({ type, placeholder }) {
       />
     </div>
   );
-}
+};
+
+export default InputField;
