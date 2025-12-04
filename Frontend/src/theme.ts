@@ -14,6 +14,9 @@ const theme = createTheme({
         error: {
             main: red.A400,
         },
+        // icons: {
+        //     main: '#ff0099',
+        // },
     },
 });
 
