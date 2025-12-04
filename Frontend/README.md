@@ -71,3 +71,9 @@ export default defineConfig([
   },
 ])
 ```
+
+## Install modules for Material UI
+```
+  cd frontend
+  npm install @mui/icons-material @mui/material @emotion/styled @emotion/react
+```
