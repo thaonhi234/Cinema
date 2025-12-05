@@ -7,6 +7,8 @@ const authApi = {
         email: email, // Key phải là 'email'
         password: password 
     }),
+  logout: () => 
+    axiosClient.post('/auth/logout', {})
 };
 
 export default authApi;

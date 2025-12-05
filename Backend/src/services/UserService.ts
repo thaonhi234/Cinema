@@ -1,9 +1,9 @@
 // UserService.ts
 
-import { IDataAccess} from '../dataaccess/IDataAccess';
+//import { IDataAccess} from '../dataaccess/IDataAccess';
 // import { MockDataAccess } from '../dataaccess/MockDataAccess'; // Xoá hoặc comment
-import { SQLDataAccess } from '../dataaccess/SQLDataAccess'; // <--- IMPORT MỚI
-import { User } from '../models/user';
+import { SQLDataAccess } from '../dataaccess/SqlDataAccess'; // <--- IMPORT MỚI
+import { User, IDataAccess } from '../models/user';
 
 // Sử dụng SQLDataAccess
 const dataAccess: IDataAccess = new SQLDataAccess(); // <--- DÙNG SQL DATA ACCESS

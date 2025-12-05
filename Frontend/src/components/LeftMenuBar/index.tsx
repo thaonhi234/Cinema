@@ -15,7 +15,9 @@ import MovieOutlinedIcon from "@mui/icons-material/MovieOutlined";
 import MeetingRoomOutlinedIcon from "@mui/icons-material/MeetingRoomOutlined";
 import EventOutlinedIcon from "@mui/icons-material/EventOutlined";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
-
+import LogoutIcon from '@mui/icons-material/Logout';
+import { useNavigate } from "react-router-dom"; // <-- Import navigate
+import authApi from "../../api/authApi"; // <-- Import authApi
 
 export const drawerWidth = 260;
 
@@ -28,6 +30,26 @@ const activeMenuItemSx = {
 };
 
 function LeftMenuBar() {
+  const navigate = useNavigate();
+
+    // HÀM XỬ LÝ LOGOUT
+    const handleLogout = async () => {
+        try {
+            // 1. Gọi API Backend (đã được tạo ở bước trước)
+            await authApi.logout(); 
+
+            // 2. Vô hiệu hóa quyền truy cập bằng cách XÓA TOKEN
+            localStorage.removeItem("token");
+            
+            // 3. Điều hướng về trang Login
+            navigate("/"); 
+        } catch (error) {
+            // Log lỗi, nhưng vẫn xóa token và redirect
+            console.error("Lỗi khi đăng xuất:", error);
+            localStorage.removeItem("token");
+            navigate("/");
+        }
+    };
     return (
         <Box
         sx={{
@@ -122,7 +144,24 @@ function LeftMenuBar() {
             </ListItemButton>
           </List>
         </Box>
-
+        <Box sx={{ px: 2, mt: 1 }}>
+            <ListItemButton 
+                onClick={handleLogout} // <-- Gắn hàm Logout
+                sx={{ 
+                    borderRadius: 4, 
+                    color: 'error.main', // Màu đỏ cho nút Logout
+                    '&:hover': { bgcolor: 'error.light', color: '#fff' },
+                    '& .MuiListItemIcon-root': { color: 'error.main' },
+                    '&:hover .MuiListItemIcon-root': { color: '#fff' },
+                }}
+            >
+              <ListItemIcon>
+                <LogoutIcon />
+              </ListItemIcon>
+              <ListItemText primary="Logout" />
+            </ListItemButton>
+        </Box>
+        {/* === KẾT THÚC NÚT LOGOUT === */}
         {/* Bottom user card */}
         <Box sx={{ mt: "auto", p: 2 }}>
           <Paper

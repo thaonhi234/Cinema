@@ -17,12 +17,79 @@ import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 import TrendingUpIcon from '@mui/icons-material/TrendingUp';
 import LeftMenuBar from "../../components/LeftMenuBar";
 import { drawerWidth } from "../../components/LeftMenuBar";
-import QuickStatRow from "./QuickStatRow"
+//import QuickStatRow from "./QuickStatRow"
 import StatCard from "./StatCard"
 import PerfRow from "./PerformanceRow";
+import TopMovieCard from "./TopMovieCard"; // <--- Import component mới
+// -----------------------
+import { useState, useEffect } from "react";
+import dashboardApi from "../../api/dashboardApi";
 
+type StatData = {
+    totalMovies: number;
+    activeRooms: number;
+    showtimesToday: number;
+    ticketsSold: number;
+};
 
+type RevenueData = {
+    summary: { // <--- THÊM ĐỐI TƯỢNG 'summary' TẠI ĐÂY
+        TotalRevenue: number;
+        PreviousWeekRevenue: number;
+        GrowthRate: number;
+    };
+    dailyRevenue: { 
+        DayName: string, 
+        Revenue: number 
+    }[];
+};
+const mockTopMovies = [
+    { rank: 1, title: 'The Last Symphony', rating: 9.1, runtime: 132, status: 'Now' as 'Now' | 'Soon' },
+    { rank: 2, title: 'Echoes of Tomorrow', rating: 8.8, runtime: 142, status: 'Soon' as 'Now' | 'Soon' },
+    { rank: 3, title: 'Stellar Odyssey', rating: 8.5, runtime: 148, status: 'Now' as 'Now' | 'Soon' },
+    { rank: 4, title: 'Midnight Garden', rating: 8.2, runtime: 118, status: 'Now' as 'Now' | 'Soon' },
+    { rank: 5, title: 'Quantum Leap', rating: 8.0, runtime: 105, status: 'Soon' as 'Now' | 'Soon' },
+];
 export default function DashBoard() {
+    // 1. STATE ĐỂ LƯU TRỮ DỮ LIỆU
+    const [stats, setStats] = useState<StatData | null>(null);
+    const [revenue, setRevenue] = useState<RevenueData | null>(null);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    // 2. HÀM GỌI API
+    useEffect(() => {
+        const fetchDashboardData = async () => {
+            try {
+                // Sử dụng Promise.all để gọi 2 API song song
+                const [statsRes, revenueRes] = await Promise.all([
+                    dashboardApi.getStats(),
+                    dashboardApi.getWeeklyRevenue(),
+                ]);
+
+                setStats(statsRes.data);
+                setRevenue(revenueRes.data);
+                
+            } catch (err: any) {
+                // Xử lý lỗi (ví dụ: token hết hạn, lỗi server)
+                console.error("Lỗi khi lấy dữ liệu Dashboard:", err);
+                setError(err.response?.data?.message || "Không thể tải dữ liệu.");
+            } finally {
+                setLoading(false);
+            }
+        };
+
+        fetchDashboardData();
+    }, []);
+    // 3. HIỂN THỊ TRẠNG THÁI LOADING/ERROR
+    if (loading) return <Typography sx={{ p: 4 }}>Đang tải Dashboard...</Typography>;
+    if (error) return <Typography color="error" sx={{ p: 4 }}>Lỗi: {error}</Typography>;
+    if (!stats || !revenue) return <Typography sx={{ p: 4 }}>Không có dữ liệu.</Typography>; // Fallback
+
+    // Hàm format tiền tệ (vd: 1234 -> 1,234)
+    const formatValue = (num: number) => num.toLocaleString();
+    const formatCurrency = (num: number) => `$${num.toLocaleString()}`;
+    const formatPercentage = (num: number) => `${num > 0 ? '+' : ''}${num.toFixed(1)}%`;
+
     return (
         <Box
             sx={{
@@ -85,7 +152,7 @@ export default function DashBoard() {
                         <StatCard
                             color="#A855F7"
                             icon={<MovieFilterOutlinedIcon />}
-                            value="156"
+                            value={formatValue(stats.totalMovies)} // Dùng dữ liệu thật
                             label="Total Movies"
                             change="+12%"
                         />
@@ -94,7 +161,7 @@ export default function DashBoard() {
                         <StatCard
                             color="#2563EB"
                             icon={<MeetingRoomOutlinedIcon />}
-                            value="8"
+                            value={formatValue(stats.activeRooms)}
                             label="Active Rooms"
                             change="+2"
                         />
@@ -103,7 +170,7 @@ export default function DashBoard() {
                         <StatCard
                             color="#EA9713"
                             icon={<EventOutlinedIcon />}
-                            value="42"
+                            value={formatValue(stats.showtimesToday)}
                             label="Showtimes Today"
                             change="+8%"
                         />
@@ -112,7 +179,7 @@ export default function DashBoard() {
                         <StatCard
                             color="#16A34A"
                             icon={<LocalActivityIcon />}
-                            value="1,248"
+                            value={formatValue(stats.ticketsSold)}
                             label="Tickets Sold"
                             change="+23%"
                         />
@@ -144,7 +211,7 @@ export default function DashBoard() {
                                 </Box>
                                 <Box sx={{ textAlign: "right", }}>
                                     <Typography variant="h6" sx={{ fontWeight: 700 }}>
-                                        $26,900
+                                        {formatCurrency(revenue.summary.TotalRevenue)}
                                     </Typography>
                                     <Box sx={{
                                         display: "flex",
@@ -157,7 +224,7 @@ export default function DashBoard() {
                                             variant="body2"
                                             sx={{ color: "#16A34A", fontWeight: 500 }}
                                         >
-                                            +18.2%
+                                            {formatPercentage(revenue.summary.GrowthRate)}
                                         </Typography>
                                     </Box>
                                 </Box>
@@ -190,73 +257,64 @@ export default function DashBoard() {
                                     fontSize: 12,
                                 }}
                             >
-                                {["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map((d) => (
-                                    <span key={d}>{d}</span>
+                                {revenue.dailyRevenue.map((d) => ( // Dùng dailyRevenue
+                                    <span key={d.DayName}>{d.DayName}</span>
                                 ))}
                             </Box>
                         </Paper>
                     </Grid>
 
-                    {/* Right column: Today performance + quick stats */}
-                    <Grid size={{ xs: 12, md: 4 }} sx={{ display: "flex", flexDirection: "column", gap: 3 }}>
-                        {/* Today's performance */}
-                        <Paper
-                            elevation={0}
-                            sx={{
-                                p: 3,
-                                borderRadius: 4,
-                                bgcolor: "#ffffff",
-                                border: "1px solid #f0f0f0",
-                            }}
-                        >
-                            <Typography variant="h6" sx={{ mb: 2 }}>
-                                Today&apos;s Performance
+                    {/* Right column: TOP 5 MOVIES */}
+                <Grid size={{ xs: 12, md: 4 }}>
+                    <Paper
+                        elevation={0}
+                        sx={{
+                            p: 3,
+                            borderRadius: 4,
+                            bgcolor: "#ffffff",
+                            border: "1px solid #f0f0f0",
+                            // Đặt chiều cao tương đương với Weekly Revenue Card (280 + 32)
+                            height: 450, 
+                            display: "flex",
+                            flexDirection: "column",
+                        }}
+                    >
+                        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: 'center' }}>
+                            <Typography variant="h6">
+                                Top 5 Movies by Rating
                             </Typography>
-
-                            <PerfRow label="Occupancy Rate" value={78} color="#C084FC" />
-                            <PerfRow label="Revenue Target" value={92} color="#22C55E" />
-                            <PerfRow label="Customer Satisfaction" value={95} color="#F97316" />
-                        </Paper>
-
-                        {/* Quick stats */}
-                        <Paper
-                            elevation={0}
-                            sx={{
-                                p: 3,
-                                borderRadius: 4,
-                                bgcolor: "#ffffff",
-                                border: "1px solid #f0f0f0",
-                            }}
-                        >
-                            <Typography variant="h6" sx={{ mb: 2 }}>
-                                Quick Stats
+                            <Typography 
+                                variant="body2" 
+                                color="primary" 
+                                sx={{ 
+                                    fontWeight: 600, 
+                                    cursor: 'pointer',
+                                    whiteSpace: 'nowrap'
+                                }}
+                            >
+                                View All
                             </Typography>
-                            <QuickStatRow
-                                icon={<RemoveRedEyeIcon />}
-                                label="Total Views"
-                                value="45.2K"
-                            />
-                            <Divider sx={{ my: 1.5 }} />
-                            <QuickStatRow
-                                icon={<StarBorderOutlinedIcon />}
-                                label="Avg Rating"
-                                value="4.7"
-                            />
-                            <Divider sx={{ my: 1.5 }} />
-                            <QuickStatRow
-                                icon={<LocalActivityIcon />}
-                                label="Today Revenue"
-                                value="$4,820"
-                            />
-                            <Divider sx={{ my: 1.5 }} />
-                            <QuickStatRow
-                                icon={<PeopleAltIcon />}
-                                label="Active Users"
-                                value="892"
-                            />
-                        </Paper>
-                    </Grid>
+                        </Box>
+                        
+                        {/* HIỂN THỊ DANH SÁCH TOP 5 MOVIES (Hardcode) */}
+                        <Box sx={{ flexGrow: 1, mt: 1 }}>
+                            {mockTopMovies.map((movie) => (
+                                <TopMovieCard
+                                    key={movie.rank}
+                                    rank={movie.rank}
+                                    title={movie.title}
+                                    rating={movie.rating}
+                                    runtime={movie.runtime}
+                                    status={movie.status}
+                                />
+                            ))}
+                        </Box>
+                        
+                    </Paper>
                 </Grid>
+                {/* KẾT THÚC TOP 5 MOVIES */}
+            </Grid>
+                
             </Box>
         </Box>
     );

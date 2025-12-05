@@ -1,5 +1,6 @@
 import { Request, Response } from 'express';
 import { UserService } from '../services/UserService';
+import { signToken } from '../utils/JwtUtils';
 
 const userService = new UserService();
 
@@ -13,13 +14,10 @@ export class AuthController {
 
         try {
             const user = await userService.login(email, password);
+            if (!user) return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng.' });
 
-            if (!user) {
-                // Trả về lỗi chung để tăng tính bảo mật
-                return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng.' });
-            }
+            const token = signToken({ MaNguoiDung: user.MaNguoiDung, VaiTro: user.VaiTro });
 
-            // Đăng nhập thành công
             return res.status(200).json({
                 message: 'Đăng nhập thành công!',
                 user: {
@@ -27,12 +25,16 @@ export class AuthController {
                     HoTen: user.HoTen,
                     VaiTro: user.VaiTro
                 },
-                // token: 'FAKE_JWT_TOKEN_FOR_FRONTEND' 
+                token
             });
-
         } catch (error) {
             console.error(error);
             return res.status(500).json({ message: 'Lỗi server.' });
         }
+    }
+    logout(req: Request, res: Response) {
+        // Trả về tín hiệu thành công.
+        // Frontend sẽ nhận tín hiệu này và xóa token.
+        return res.status(200).json({ message: 'Đăng xuất thành công!' });
     }
 }

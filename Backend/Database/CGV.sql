@@ -555,54 +555,138 @@ RETURN (
 GO
 
 --Procedure 1. INSERT(Thêm phim mới)
-CREATE OR ALTER PROCEDURE newMovie(
-	@id	AS INT,
-	@name AS VARCHAR(30),
-	@descript AS NVARCHAR(MAX),
-	@runtime AS TINYINT,
-	@dub AS BIT,
-	@sub AS BIT,
-	@release AS DATE,
-	@closing AS DATE,
-	@agerating VARCHAR(30)
-)
+IF OBJECT_ID('Movie.sp_InsertNewMovie', 'P') IS NOT NULL
+    DROP PROCEDURE Movie.sp_InsertNewMovie;
+GO
+
+CREATE PROCEDURE Movie.sp_InsertNewMovie
+    @id INT,
+    @name VARCHAR(255),
+    @descript NVARCHAR(MAX),
+    @runtime TINYINT,
+    @dub BIT,
+    @sub BIT,
+    @release DATE,
+    @closing DATE,
+    @agerating VARCHAR(30),
+    @Genres NVARCHAR(MAX) -- danh sách genres
 AS
 BEGIN
-	IF (@release >= @closing)
-	BEGIN
-		THROW 50001, 'Release date must be earlier than closing date.', 1;
-	END
+    SET NOCOUNT ON;
 
-	IF (@release < CAST(GETDATE() AS DATE))
-	BEGIN
-		THROW 50002, 'Release date cannot be in the past.', 1;
-	END
+    IF @release >= @closing
+        THROW 50001, 'Release date must be earlier than closing date.', 1;
 
-	INSERT INTO Movie.MOVIE (MovieID, MName, Descript, RunTime, isDub, isSub, releaseDate, closingDate, AgeRating)
-						VALUES (  @id,  @name, @descript, @runtime, @dub, @sub, @release, @closing, @agerating);
+    IF @release < CAST(GETDATE() AS DATE)
+        THROW 50002, 'Release date cannot be in the past.', 1;
+
+    INSERT INTO Movie.MOVIE (MovieID, MName, Descript, RunTime, isDub, isSub, releaseDate, closingDate, AgeRating)
+    VALUES (@id, @name, @descript, @runtime, @dub, @sub, @release, @closing, @agerating);
+
+    DECLARE @NewMovieID INT = @id;
+
+    -- Chèn genres vào MovieGenre
+    DECLARE @Genre NVARCHAR(255);
+    DECLARE @Pos INT = 1;
+    DECLARE @NextPos INT;
+    DECLARE @Len INT = LEN(@Genres);
+
+    WHILE @Pos <= @Len
+    BEGIN
+        SET @NextPos = CHARINDEX(',', @Genres, @Pos);
+        IF @NextPos = 0 SET @NextPos = @Len + 1;
+        SET @Genre = LTRIM(RTRIM(SUBSTRING(@Genres, @Pos, @NextPos - @Pos)));
+
+        IF LEN(@Genre) > 0
+            INSERT INTO Movie.MovieGenre (MovieID, Genre) VALUES (@NewMovieID, @Genre);
+
+        SET @Pos = @NextPos + 1;
+    END
 END;
 GO
 
-EXEC newMovie 16, 'Superman', 'DC Superhero', 130, 1, 1, '2026-07-11', '2026-08-01', '16+';
-EXEC newMovie 17, 'Doraemon', 'Animation', 100, 0, 0, '2025-08-01', '2025-07-11', '15+';
-EXEC newMovie 17, 'Doraemon', 'Animation', 100, 0, 0, '2025-07-11', '2025-08-01', '15+';
 
+EXEC Movie.sp_InsertNewMovie 
+    @id = 17, 
+    @name = 'Doraemon', 
+    @descript = 'Animation', 
+    @runtime = 100, 
+    @dub = 0, 
+    @sub = 0, 
+    @release = '2025-12-10', 
+    @closing = '2026-01-10', 
+    @agerating = '15+', 
+    @Genres = 'Action, Drama';
+GO
 --Procedure 2. UPDATE (Kéo dài thời gian công chiếu)
-CREATE OR ALTER PROCEDURE extendMovie(
-	@id	AS INT,
-	@extendtime AS TINYINT
-)
+-- Kiểm tra nếu SP đã tồn tại thì xóa
+IF OBJECT_ID('Movie.sp_UpdateMovie', 'P') IS NOT NULL
+    DROP PROCEDURE Movie.sp_UpdateMovie;
+GO
+
+-- Tạo SP mới
+CREATE PROCEDURE Movie.sp_UpdateMovie
+    @id INT,
+    @name VARCHAR(255),
+    @descript NVARCHAR(MAX),
+    @runtime TINYINT,
+    @dub BIT,
+    @sub BIT,
+    @release DATE,
+    @closing DATE,
+    @agerating VARCHAR(30),
+    @Genres NVARCHAR(MAX) -- Danh sách genres, phân tách bằng dấu phẩy
 AS
 BEGIN
-	UPDATE Movie.MOVIE
-	SET
-		closingDate = DATEADD(DAY, @extendtime, closingDate)
-	WHERE MovieID = @id;
+    SET NOCOUNT ON;
+
+    -- Kiểm tra tồn tại movie
+    IF NOT EXISTS (SELECT 1 FROM Movie.MOVIE WHERE MovieID = @id)
+    BEGIN
+        THROW 50001, 'Movie does not exist.', 1;
+    END
+
+    -- Update thông tin cơ bản
+    UPDATE Movie.MOVIE
+    SET 
+        MName = @name,
+        Descript = @descript,
+        RunTime = @runtime,
+        isDub = @dub,
+        isSub = @sub,
+        releaseDate = @release,
+        closingDate = @closing,
+        AgeRating = @agerating
+    WHERE MovieID = @id;
+
+    -- Xóa các genres cũ
+    DELETE FROM Movie.MOVIEGENRE WHERE MovieID = @id;
+
+    -- Thêm genres mới (nếu có)
+    IF @Genres IS NOT NULL AND LTRIM(RTRIM(@Genres)) <> ''
+    BEGIN
+        DECLARE @xml XML = CAST('<i>' + REPLACE(@Genres, ',', '</i><i>') + '</i>' AS XML);
+
+        INSERT INTO Movie.MOVIEGENRE (MovieID, Genre)
+        SELECT @id, x.value('.', 'NVARCHAR(30)')
+        FROM @xml.nodes('/i') AS T(x)
+        WHERE EXISTS (SELECT 1 FROM Movie.GENRE WHERE Genre = x.value('.', 'NVARCHAR(30)'));
+    END
 END;
 GO
 
-EXEC extendMovie 16, 7;
-
+EXEC Movie.sp_UpdateMovie
+    @id = 17,
+    @name = 'Doraemon Updated',
+    @descript = 'Animation movie updated description',
+    @runtime = 105,
+    @dub = 1,
+    @sub = 0,
+    @release = '2025-12-10',
+    @closing = '2026-01-15',
+    @agerating = '15+',
+    @Genres = 'Action, Drama';
+GO
 --Procedure 3. DELETE
 --Có thể xóa phim nếu đã qua thời gian công chiếu
 --Không thể xóa phim nếu đang nằm trong thời gian công chiếu
@@ -625,8 +709,12 @@ BEGIN
 		THROW 50002, 'Movie that are currently showing cannot be deleted.', 1;
 	END
 
-	DELETE FROM Movie.MOVIE
-	WHERE MovieID = @id;
+    DELETE FROM Movie.MOVIEGENRE WHERE MovieID = @id;
+    DELETE FROM Movie.FEATURES  WHERE MovieID = @id;
+    DELETE FROM Movie.REVIEW    WHERE MovieID = @id;
+
+    -- Xóa movie
+    DELETE FROM Movie.MOVIE WHERE MovieID = @id;
 END;
 GO
 
@@ -690,6 +778,240 @@ END;
 GO
 
 EXEC movieList 1, 8;
+-- Procedure 6: Thêm Nhân viên mới (Dùng cho API Create Employee)
+-- (Sử dụng số thứ tự tiếp theo sau Procedure 5: movieList)
+GO
+CREATE OR ALTER PROCEDURE Staff.sp_InsertEmployee
+    @EName AS VARCHAR(30),
+    @Sex AS CHAR,
+    @PhoneNumber AS VARCHAR(15),
+    @Email AS VARCHAR(30),
+    @EPassword AS VARCHAR(20),
+    @Salary AS DECIMAL(10, 2),
+    @UserType AS NVARCHAR(15), -- 'manager' hoặc 'staff'
+    @ManageID AS VARCHAR(20) = NULL,
+    @BranchID AS INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Kiểm tra chi nhánh tồn tại
+    IF NOT EXISTS (SELECT 1 FROM Cinema.BRANCH WHERE BranchID = @BranchID)
+    BEGIN
+        RAISERROR('Branch does not exist.', 16, 1);
+        RETURN;
+    END
+    
+    -- Kiểm tra Email duy nhất (Nếu email đã tồn tại)
+    IF EXISTS (SELECT 1 FROM Staff.EMPLOYEE WHERE Email = @Email)
+    BEGIN
+        RAISERROR('Employee with this email already exists.', 16, 1);
+        RETURN;
+    END
+
+    -- Sử dụng DEFAULT để tự sinh EUserID
+    INSERT INTO Staff.EMPLOYEE (EName, Sex, PhoneNumber, Email, EPassword, Salary, UserType, ManageID, BranchID)
+    VALUES (@EName, @Sex, @PhoneNumber, @Email, @EPassword, @Salary, @UserType, @ManageID, @BranchID);
+    
+    -- Trả về ID đã tự sinh (Tùy chọn)
+    SELECT EUserID FROM Staff.EMPLOYEE WHERE Email = @Email;
+
+END
+GO
+-- Procedure 7: Cập nhật thông tin Nhân viên (Dùng cho API Update Employee)
+CREATE OR ALTER PROCEDURE Staff.sp_UpdateEmployee
+    @EUserID AS VARCHAR(20),
+    @EName AS VARCHAR(30),
+    @PhoneNumber AS VARCHAR(15),
+    @Salary AS DECIMAL(10, 2),
+    @UserType AS NVARCHAR(15),
+    @BranchID AS INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Kiểm tra nhân viên tồn tại
+    IF NOT EXISTS (SELECT 1 FROM Staff.EMPLOYEE WHERE EUserID = @EUserID)
+    BEGIN
+        RAISERROR('Employee ID does not exist.', 16, 1);
+        RETURN;
+    END
+
+    -- Thực hiện Update
+    UPDATE Staff.EMPLOYEE
+    SET
+        EName = @EName,
+        PhoneNumber = @PhoneNumber,
+        Salary = @Salary,
+        UserType = @UserType,
+        BranchID = @BranchID
+    WHERE EUserID = @EUserID;
+
+END
+GO
+-- Procedure 8: Xóa Nhân viên (Dùng cho API Delete Employee)
+CREATE OR ALTER PROCEDURE Staff.sp_DeleteEmployee
+    @EUserID AS VARCHAR(20)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Kiểm tra nhân viên tồn tại
+    IF NOT EXISTS (SELECT 1 FROM Staff.EMPLOYEE WHERE EUserID = @EUserID)
+    BEGIN
+        RAISERROR('Employee ID does not exist.', 16, 1);
+        RETURN;
+    END
+
+    -- Kiểm tra nếu nhân viên đang quản lý người khác (ManageID)
+    IF EXISTS (SELECT 1 FROM Staff.EMPLOYEE WHERE ManageID = @EUserID)
+    BEGIN
+        RAISERROR('Cannot delete employee who currently manages other employees.', 16, 1);
+        RETURN;
+    END
+    
+    -- Xóa các bản ghi liên quan (WorkShift)
+    DELETE FROM Staff.WORK WHERE EUserID = @EUserID;
+    
+    -- Cập nhật ORDERS sang NULL (Nếu cần, tùy thuộc vào khóa ngoại)
+    UPDATE Booking.ORDERS SET EUserID = NULL WHERE EUserID = @EUserID;
+
+    -- Xóa nhân viên chính
+    DELETE FROM Staff.EMPLOYEE WHERE EUserID = @EUserID;
+
+END
+GO
+-- Thêm SP này vào file SQL của bạn (hoặc chạy riêng nếu DB đã tạo)
+CREATE OR ALTER PROCEDURE sp_GetWeeklyRevenueAndGrowth
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Định nghĩa ngày bắt đầu và kết thúc của TUẦN HIỆN TẠI (T2 -> CN)
+    DECLARE @StartOfWeek DATE = DATEADD(wk, DATEDIFF(wk, 0, GETDATE()), 0); 
+    DECLARE @EndOfWeek DATE = DATEADD(wk, DATEDIFF(wk, 0, GETDATE()), 6);
+    
+    -- Định nghĩa ngày bắt đầu và kết thúc của TUẦN TRƯỚC
+    DECLARE @PrevStartOfWeek DATE = DATEADD(wk, -1, @StartOfWeek);
+    DECLARE @PrevEndOfWeek DATE = DATEADD(wk, -1, @EndOfWeek);
+
+    -- Bảng tạm chứa doanh thu tuần hiện tại
+    DECLARE @CurrentWeekRevenue DECIMAL(10, 2);
+    
+    -- SỬA LỖI: Dùng DaySold từ TICKETS để lọc ngày, sau đó SUM Total từ ORDERS
+    SELECT @CurrentWeekRevenue = ISNULL(SUM(O.Total), 0)
+    FROM Booking.ORDERS O
+    INNER JOIN Screening.TICKETS T ON O.OrderID = T.OrderID
+    WHERE T.DaySold BETWEEN @StartOfWeek AND @EndOfWeek; -- Lọc theo DaySold (DATE)
+
+    -- Bảng tạm chứa doanh thu tuần trước
+    DECLARE @PreviousWeekRevenue DECIMAL(10, 2);
+    
+    -- SỬA LỖI: Tương tự cho tuần trước
+    SELECT @PreviousWeekRevenue = ISNULL(SUM(O.Total), 0)
+    FROM Booking.ORDERS O
+    INNER JOIN Screening.TICKETS T ON O.OrderID = T.OrderID
+    WHERE T.DaySold BETWEEN @PrevStartOfWeek AND @PrevEndOfWeek;
+
+    -- 1. Trả về tổng quan Doanh thu và Tăng trưởng (Giữ nguyên)
+    SELECT 
+        @CurrentWeekRevenue AS TotalRevenue,
+        @PreviousWeekRevenue AS PreviousWeekRevenue,
+        CASE
+            WHEN @PreviousWeekRevenue = 0 THEN 0 -- Tránh chia cho 0
+            ELSE CAST(((@CurrentWeekRevenue - @PreviousWeekRevenue) / @PreviousWeekRevenue) * 100 AS DECIMAL(5, 2))
+        END AS GrowthRate; -- Thêm dấu chấm phẩy
+
+    
+    -- 2. Trả về Doanh thu chi tiết theo ngày (cho biểu đồ: Mon, Tue,...)
+    SELECT
+        DATENAME(dw, T.DaySold) AS DayName,
+        DATEPART(dw, T.DaySold) AS DayOrder, -- Dùng để sắp xếp
+        ISNULL(SUM(O.Total), 0) AS DailyRevenue
+    FROM Booking.ORDERS O
+    INNER JOIN Screening.TICKETS T ON O.OrderID = T.OrderID
+    WHERE T.DaySold BETWEEN @StartOfWeek AND @EndOfWeek
+    GROUP BY DATENAME(dw, T.DaySold), DATEPART(dw, T.DaySold)
+    ORDER BY DayOrder;
+
+END
+GO
+-- Procedure 10: Lấy toàn bộ danh sách Phim, bao gồm Rating, Genres và Status (Dùng cho API GET /api/movies)
+CREATE OR ALTER PROCEDURE Movie.sp_GetAllMovies
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @Today DATE = CAST(GETDATE() AS DATE);
+
+    SELECT
+        M.MovieID,
+        M.MName,
+        M.Descript,
+        M.RunTime,
+        M.isDub,
+        M.isSub,
+        M.releaseDate,
+        M.closingDate,
+        M.AgeRating,
+        -- 1. Tính Rating trung bình
+        ISNULL(AVG(CAST(R.Rating AS DECIMAL(3, 1))), 0.0) AS AvgRating,
+        -- 2. Gom nhóm thể loại thành một chuỗi (sử dụng STRING_AGG)
+        (
+            SELECT STRING_AGG(MG.Genre, ', ') 
+            FROM Movie.MOVIEGENRE MG 
+            WHERE MG.MovieID = M.MovieID
+        ) AS GenresList,
+        -- 3. Tính toán Status
+        CASE
+            WHEN @Today < M.releaseDate THEN 'Coming Soon'
+            WHEN @Today >= M.releaseDate AND @Today <= M.closingDate THEN 'Now Showing'
+            ELSE 'Ended'
+        END AS Status
+    FROM 
+        Movie.MOVIE M
+    LEFT JOIN 
+        Movie.REVIEW R ON M.MovieID = R.MovieID
+    GROUP BY 
+        M.MovieID, M.MName, M.Descript, M.RunTime, M.isDub, M.isSub, M.releaseDate, M.closingDate, M.AgeRating
+    ORDER BY 
+        M.releaseDate DESC;
+END
+GO
+-- Kiểm tra trước nếu SP đã tồn tại, nếu có thì xóa đi
+IF OBJECT_ID('Movie.sp_GetMovieById', 'P') IS NOT NULL
+    DROP PROCEDURE Movie.sp_GetMovieById;
+GO
+
+-- Tạo SP mới
+CREATE PROCEDURE Movie.sp_GetMovieById
+    @MovieID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @Today DATE = CAST(GETDATE() AS DATE);
+    SELECT 
+        M.MovieID,
+        M.MName,
+        M.Descript,
+        M.RunTime,
+        M.isDub,
+        M.isSub,
+        M.releaseDate,
+        M.closingDate,
+        M.AgeRating,
+    ISNULL(AVG(CAST(R.Rating AS DECIMAL(3,1))), 0.0) AS AvgRating,
+        (SELECT STRING_AGG(MG.Genre, ',') FROM Movie.MOVIEGENRE MG WHERE MG.MovieID = M.MovieID) AS GenresList,
+        CASE
+            WHEN @Today < M.releaseDate THEN 'Coming Soon'
+            WHEN @Today >= M.releaseDate AND @Today <= M.closingDate THEN 'Now Showing'
+            ELSE 'Ended'
+        END AS Status
+    FROM Movie.MOVIE M
+    LEFT JOIN Movie.REVIEW R ON M.MovieID = R.MovieID
+    WHERE M.MovieID = @MovieID
+    GROUP BY M.MovieID, M.MName, M.Descript, M.RunTime, M.isDub, M.isSub, M.releaseDate, M.closingDate, M.AgeRating;
+END;
+GO
 
 -- Trigger 1: Cộng điểm Membership khi Order
 CREATE OR ALTER TRIGGER trg_UpdateMemberPoint
