@@ -1,6 +1,0 @@
-USE master;
-GO
-ALTER LOGIN sa WITH PASSWORD = 'MatKhauMoiCuaBan123';
-GO
-ALTER LOGIN sa ENABLE;
-GO
