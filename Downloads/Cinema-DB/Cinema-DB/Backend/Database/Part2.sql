@@ -46,61 +46,162 @@ GO
 -- II. STORED PROCEDURES (2.0 Points)
 -----------------------------------------------------------
 
--- 1. Thêm phim mới
-IF OBJECT_ID('Movie.sp_AddNewMovie', 'P') IS NOT NULL
-    DROP PROCEDURE Movie.sp_AddNewMovie;
-GO
-
-CREATE PROCEDURE Movie.sp_AddNewMovie
-    @MovieID INT,
-    @MName VARCHAR(255),
-    @RunTime TINYINT,
-    @ReleaseDate DATE,
-    @ClosingDate DATE,
-    @AgeRating VARCHAR(30)
+--1. INSERT(Thêm phim mới)
+CREATE OR ALTER PROCEDURE newMovie(
+	@id	AS INT,
+	@name AS VARCHAR(30),
+	@descript AS NVARCHAR(MAX),
+	@runtime AS TINYINT,
+	@dub AS BIT,
+	@sub AS BIT,
+	@release AS DATE,
+	@closing AS DATE,
+	@agerating VARCHAR(30)
+)
 AS
 BEGIN
-    IF @ClosingDate <= @ReleaseDate
-    BEGIN
-        PRINT 'Error: Closing Date must be after Release Date';
-        RETURN;
-    END
+	IF (@release >= @closing)
+	BEGIN
+		THROW 50001, 'Release date must be earlier than closing date.', 1;
+	END
 
-    INSERT INTO Movie.MOVIE
-        (MovieID, MName, Descript, RunTime, isDub, isSub, releaseDate, closingDate, AgeRating)
-    VALUES
-        (@MovieID, @MName, N'No description', @RunTime, 1, 1, @ReleaseDate, @ClosingDate, @AgeRating);
+	IF (@release < CAST(GETDATE() AS DATE))
+	BEGIN
+		THROW 50002, 'Release date cannot be in the past.', 1;
+	END
 
-    PRINT 'Movie added successfully!';
-END
-GO
+	INSERT INTO Movie.MOVIE (MovieID, MName, Descript, RunTime, isDub, isSub, releaseDate, closingDate, AgeRating)
+						VALUES (  @id,  @name, @descript, @runtime, @dub, @sub, @release, @closing, @agerating);
+END;
 
--- 2. Báo cáo doanh thu
-IF OBJECT_ID('Booking.sp_GetMonthlyRevenue', 'P') IS NOT NULL
-    DROP PROCEDURE Booking.sp_GetMonthlyRevenue;
-GO
+EXEC newMovie 16, 'Superman', 'DC Superhero', 130, 1, 1, '2026-07-11', '2026-08-01', '16+';
+EXEC newMovie 17, 'Doraemon', 'Animation', 100, 0, 0, '2025-08-01', '2025-07-11', '15+';
+EXEC newMovie 17, 'Doraemon', 'Animation', 100, 0, 0, '2025-07-11', '2025-08-01', '15+';
 
-CREATE PROCEDURE Booking.sp_GetMonthlyRevenue
-    @BranchID INT,
-    @Month INT,
-    @Year INT
+--2. UPDATE (Kéo dài thời gian công chiếu)
+CREATE OR ALTER PROCEDURE extendMovie(
+	@id	AS INT,
+	@extendtime AS TINYINT
+)
 AS
 BEGIN
-    SELECT
-        b.BName,
-        @Month AS [Month],
-        @Year AS [Year],
-        SUM(o.Total) AS TotalRevenue
-    FROM Booking.ORDERS o
-        JOIN Screening.TICKETS t ON o.OrderID = t.OrderID
-        JOIN Cinema.BRANCH b ON t.BranchID = b.BranchID
-    WHERE b.BranchID = @BranchID
-        AND MONTH(t.DaySold) = @Month
-        AND YEAR(t.DaySold) = @Year
-    GROUP BY b.BName;
-END
+	UPDATE Movie.MOVIE
+	SET
+		closingDate = DATEADD(DAY, @extendtime, closingDate)
+	WHERE MovieID = @id;
+END;
+
+EXEC extendMovie 16, 7;
+
+--3. DELETE
+--Có thể xóa phim nếu đã qua thời gian công chiếu
+--Không thể xóa phim nếu đang nằm trong thời gian công chiếu
+CREATE OR ALTER PROCEDURE deleteMovie(
+	@id AS INT
+)
+AS
+BEGIN
+	IF NOT EXISTS (SELECT 1 FROM Movie.MOVIE WHERE MovieID = @id)
+	BEGIN
+		THROW 50001, 'Movie does not exist.', 1;
+	END
+
+	IF EXISTS (
+		SELECT 1
+		FROM Movie.MOVIE
+		WHERE MovieID = @id AND closingDate >= CAST(GETDATE() AS DATE)
+	)
+	BEGIN
+		THROW 50002, 'Movie that are currently showing cannot be deleted.', 1;
+	END
+
+	DELETE FROM Movie.MOVIE
+	WHERE MovieID = @id;
+END;
+
+--3.1. Cố định ngày hiện tại để làm ví dụ minh hoạ
+CREATE OR ALTER PROCEDURE deleteMovie(
+	@id AS INT
+)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	IF NOT EXISTS (SELECT 1 FROM Movie.MOVIE WHERE MovieID = @id)
+	BEGIN
+		THROW 50001, 'Movie does not exist.', 1;
+	END
+
+	IF EXISTS (
+		SELECT 1
+		FROM Movie.MOVIE
+		WHERE MovieID = @id AND closingDate >= CAST('2026-08-30' AS DATE)
+	)
+	BEGIN
+		THROW 50002, 'Movie that are currently showing cannot be deleted.', 1;
+	END
+
+	DELETE FROM Movie.MOVIE
+	WHERE MovieID = @id;
+END;
+
+EXEC deleteMovie 16;
+
+--4. Danh sách và số lượng nhân viên trong 1 chi nhánh
+IF OBJECT_ID('empList', 'P') IS NOT NULL
+    DROP PROCEDURE empList;
 GO
 
+CREATE OR ALTER PROCEDURE empList(
+    @id AS INT
+)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT e.EUserID, e.EName, e.Sex, e.Salary, e.UserType, b.BName
+    FROM Staff.EMPLOYEE AS e
+    JOIN Cinema.BRANCH AS b
+        ON e.BranchID = b.BranchID
+    WHERE e.BranchID = @id
+    ORDER BY e.EName;
+
+	SELECT COUNT(*) AS TotalEmployees
+	FROM Staff.EMPLOYEE
+	WHERE BranchID = @id;
+END;
+
+EXEC empList 1;
+--5. Danh sách phim lọc theo rating và lượng review
+IF OBJECT_ID('movieList', 'P') IS NOT NULL
+    DROP PROCEDURE movieList;
+GO
+
+CREATE OR ALTER PROCEDURE movieList(
+	@minReview AS INT = 0,
+	@minRating AS DECIMAL(4, 2) = 0
+)
+AS
+BEGIN
+	SET NOCOUNT ON;
+
+	SELECT 
+        m.MovieID,
+        m.MName,
+        COUNT(r.CUserID) AS ReviewCount,
+        AVG(CAST(r.Rating AS DECIMAL(4,2))) AS AvgRating
+    FROM Movie.MOVIE AS m
+    LEFT JOIN Movie.REVIEW AS r
+        ON m.MovieID = r.MovieID
+    WHERE m.releaseDate <= GETDATE()
+    GROUP BY m.MovieID, m.MName
+    HAVING 
+        COUNT(r.CUserID) >= @minReview
+        AND AVG(CAST(r.Rating AS DECIMAL(4,2))) >= @minRating
+    ORDER BY AvgRating DESC, ReviewCount DESC;
+END;
+
+EXEC movieList 1, 8;
 -----------------------------------------------------------
 -- III. TRIGGERS (1.0 Point)
 -----------------------------------------------------------
