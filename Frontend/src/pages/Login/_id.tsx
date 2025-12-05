@@ -14,7 +14,7 @@ import {
 } from "@mui/material";
 import { useState } from "react";
 import authApi from "../../api/authApi";
-
+import { useNavigate } from "react-router-dom";
 // Icons
 import TheatersIcon from '@mui/icons-material/Theaters';
 import GoogleIcon from '@mui/icons-material/Google';
@@ -23,15 +23,15 @@ import MailOutlineIcon from '@mui/icons-material/MailOutline';
 import LockIcon from '@mui/icons-material/Lock';
 
 function Login() {
-    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState("");
-
+    const navigate = useNavigate();
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault(); // Ngăn reload trang
 
         try {
-            const res = await authApi.login(username, password);
+            const res = await authApi.login(email, password);
 
             // Lưu token
             localStorage.setItem("token", res.data.token);
@@ -40,7 +40,7 @@ function Login() {
             console.log("Login success:", res.data);
 
             // TODO: điều hướng sang dashboard
-            // navigate("/dashboard");
+            navigate("/dashboard");
 
         } catch (err: any) {
             setMessage(err.response?.data?.message || "Đăng nhập thất bại!");
@@ -104,6 +104,8 @@ function Login() {
                                 size="medium"
                                 color="secondary"
                                 focused
+                                value={email}
+    onChange={(e) =>            setEmail(e.target.value)}
                                 slotProps={{
                                     input: {
                                         endAdornment: (
@@ -122,6 +124,8 @@ function Login() {
                                 size="medium"
                                 color="secondary"
                                 focused 
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                                 slotProps={{
                                     input: {
                                         endAdornment: (
@@ -153,6 +157,7 @@ function Login() {
                         <Button
                             fullWidth
                             variant="contained"
+                            onClick={handleSubmit}  
                             sx={{
                                 py: 1.5,
                                 borderRadius: 999,

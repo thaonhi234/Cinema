@@ -6,12 +6,14 @@ import { FaFacebook } from "react-icons/fa";
 import { FiFilm } from "react-icons/fi";
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom"; // <-- Thêm import
 import authApi from "../../api/authApi";
 
 export default function LoginForm() {
     const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState("");
+    const navigate = useNavigate(); // <-- Khởi tạo navigate
 
     const handleSubmit = async (e: React.FormEvent) => {
         e.preventDefault(); // Ngăn reload trang
@@ -25,11 +27,9 @@ export default function LoginForm() {
             setMessage("Đăng nhập thành công!");
             console.log("Login success:", res.data);
 
-            // TODO: điều hướng sang dashboard
-            // navigate("/dashboard");
-
+            // Điều hướng sang dashboard
+            navigate("/dashboard"); // <-- Redirect
         } catch (err: any) {
-            
             setMessage(err.response?.data?.message || "Đăng nhập thất bại!");
             console.error(err);
         }
@@ -65,7 +65,7 @@ export default function LoginForm() {
                     <TbLockFilled className="icon"/>
                     <input 
                       type="password" 
-                      placeholder="password" 
+                      placeholder="Password" 
                       required 
                       value={password}
                       onChange={(e) => setPassword(e.target.value)}

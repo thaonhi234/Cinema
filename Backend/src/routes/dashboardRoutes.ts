@@ -1,8 +1,8 @@
-import { Router } from "express";
-import { getDashboardSummary } from "../controllers/DashboardController";
+// import { Router } from "express";
+// import { getDashboardSummary } from "../controllers/DashboardController";
 
-const router = Router();
+// const router = Router();
 
-router.get("/summary", getDashboardSummary);
+// router.get("/summary", getDashboardSummary);
 
-export default router;
+// export default router;
