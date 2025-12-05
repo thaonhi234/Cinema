@@ -12,6 +12,6 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/dashboard", dashboardRoutes);
 
-app.listen(3000, () => {
-    console.log("Backend chạy tại http://localhost:3000");
+app.listen(3001, () => {
+    console.log("Backend chạy tại http://localhost:3001");
 });

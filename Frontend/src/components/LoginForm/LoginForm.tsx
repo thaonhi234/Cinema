@@ -9,7 +9,7 @@ import { useState } from "react";
 import authApi from "../../api/authApi";
 
 export default function LoginForm() {
-    const [username, setUsername] = useState("");
+    const [email, setEmail] = useState("");
     const [password, setPassword] = useState("");
     const [message, setMessage] = useState("");
 
@@ -17,7 +17,7 @@ export default function LoginForm() {
         e.preventDefault(); // Ngăn reload trang
 
         try {
-            const res = await authApi.login(username, password);
+            const res = await authApi.login(email, password);
 
             // Lưu token
             localStorage.setItem("token", res.data.token);
@@ -29,6 +29,7 @@ export default function LoginForm() {
             // navigate("/dashboard");
 
         } catch (err: any) {
+            
             setMessage(err.response?.data?.message || "Đăng nhập thất bại!");
             console.error(err);
         }
@@ -53,10 +54,10 @@ export default function LoginForm() {
                     <MdOutlineEmail className="icon"/>
                     <input 
                       type="text"
-                      placeholder="username"
+                      placeholder="Email"
                       required 
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
                     />
                 </div>
 

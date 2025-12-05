@@ -2,7 +2,7 @@ import axios from 'axios';
 
 const axiosClient = axios.create({
   // Sửa cổng từ 5000 sang 3000
-  baseURL: 'http://localhost:3000/api', // Địa chỉ Backend chính xác
+  baseURL: 'http://localhost:3001/api', // Địa chỉ Backend chính xác
   headers: {
     'Content-Type': 'application/json',
   },
