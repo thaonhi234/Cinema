@@ -4,8 +4,8 @@ import ProtectedRoute from "./routers/ProtectedRoute";
 import DashBoard from "./pages/DashBoard/_id";
 import Movies from "./pages/Movies/_id"
 import Rooms from "./pages/Rooms/_id"
-// import Showtimes from "./pages/Showtimes/_id"
-// import Employees from "./pages/Employees/_id"
+import Showtimes from "./pages/Showtimes/_id"
+import Employees from "./pages/Employees/_id"
 
 export default function App() {
   return (
@@ -15,16 +15,14 @@ export default function App() {
         <Route path="/login" element={<Login/>} />
 
           {/* Protected route  */} 
-          <Route
-            path="/dashboard" 
+          <Route path="/dashboard" 
             element={ 
               <ProtectedRoute> 
                 <DashBoard /> 
               </ProtectedRoute> }
           />
           
-          <Route
-            path="/movies"
+          <Route path="/movies"
             element={
               <ProtectedRoute>
                 <Movies />
@@ -32,8 +30,7 @@ export default function App() {
             }
           />
           
-          <Route
-            path="/rooms"
+          <Route path="/rooms"
             element={
               <ProtectedRoute>
                 <Rooms />
@@ -41,8 +38,7 @@ export default function App() {
             }
           />
           
-          {/* <Route
-            path="/showtimes"
+          <Route path="/showtimes"
             element={
               <ProtectedRoute>
                 <Showtimes />
@@ -51,14 +47,13 @@ export default function App() {
           />
           
           
-          <Route
-            path="/employees"
+          <Route path="/employees"
             element={
               <ProtectedRoute>
                 <Employees />
               </ProtectedRoute>
             }
-          /> */}
+          />
 
           {/* Default route */}
           <Route 
