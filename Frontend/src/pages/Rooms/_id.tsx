@@ -17,26 +17,77 @@ import LeftMenuBar from "../../components/LeftMenuBar";
 import SeatingMap from "./SeatingMap";
 import RoomListItem from "./RoomListItem"
 import SummaryItem from "./SummaryItem";
-import type { Room } from "./types/room";
+
 import { getTotalSeats } from "../utils/roomUtils";
-
-
+import roomsApi from "../../api/roomsApi"; // Import API service
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
+interface Room {
+    BranchID: number;
+    RoomID: number; // Dùng làm ID chính
+    BranchName: string; // Tên chi nhánh
+    RType: string; // Loại phòng (IMAX, 2D, 3D,...)
+    TotalCapacity: number;
+    TotalRows: number; // Số hàng
+    MaxColumns: number; // Số ghế mỗi hàng
+}
 /* ================== TYPES & MOCK DATA ================== */
-const rooms: Room[] = [
-  { id: 1, name: "Royal Hall A", rows: 10, seatsPerRow: 12 },
-  { id: 2, name: "Gold Screen B", rows: 8, seatsPerRow: 10 },
-  { id: 3, name: "Premium C", rows: 12, seatsPerRow: 14 },
-  { id: 4, name: "IMAX Theater", rows: 15, seatsPerRow: 16 },
-];
 
 /* ================== MAIN PAGE ================== */
 
 export default function RoomsPage() {
-  const [selectedRoomId, setSelectedRoomId] = React.useState<number>(1);
-
+  const [rooms, setRooms] = useState<Room[]>([]);
+  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
+  const [loading, setLoading] = useState<boolean>(true);
+  const [error, setError] = useState<string | null>(null);
+  const navigate = useNavigate();
+ // Tìm phòng đang được chọn
   const selectedRoom =
-    rooms.find((room) => room.id === selectedRoomId) ?? rooms[0];
+    rooms.find((room) => room.RoomID === selectedRoomId) ?? rooms[0];
+  
+  // Lấy BranchID từ phòng đang chọn
+  const branchId = rooms[0]?.BranchID; // Lấy BranchID của phòng đầu tiên (hoặc của user nếu cần)
 
+  // 1. Fetch Rooms Data
+  useEffect(() => {
+    const fetchRooms = async () => {
+        try {
+            // Lấy BranchID từ token (Giả định Manager đang login)
+            const token = localStorage.getItem('token');
+            if (!token) {
+                navigate("/"); // Nếu không có token, chuyển về Login
+                return;
+            }
+            
+            // Hàm roomsApi.getAllRooms() đã được bảo vệ và sẽ tự động lọc theo BranchID
+            const res = await roomsApi.getAllRooms();
+            const fetchedRooms: Room[] = res.data;
+            
+            setRooms(fetchedRooms);
+            
+            // Chọn phòng đầu tiên làm mặc định nếu có dữ liệu
+            if (fetchedRooms.length > 0 && selectedRoomId === null) {
+                setSelectedRoomId(fetchedRooms[0].RoomID);
+            }
+            
+        } catch (err: any) {
+            console.error("Lỗi khi tải Rooms:", err);
+            setError(err.response?.data?.message || "Không thể tải danh sách phòng.");
+        } finally {
+            setLoading(false);
+        }
+    };
+    fetchRooms();
+  }, [navigate, selectedRoomId]);
+
+  // Handle Loading/Error States
+  if (loading) return <Typography sx={{ p: 4 }}>Đang tải danh sách phòng...</Typography>;
+  if (error) return <Typography color="error" sx={{ p: 4 }}>Lỗi: {error}</Typography>;
+  if (rooms.length === 0) return <Typography sx={{ p: 4 }}>Không có phòng chiếu nào trong chi nhánh này.</Typography>;
+
+
+  // Dùng tên phòng kết hợp loại phòng cho Title (ví dụ: Royal Hall A - 2D)
+  const roomTitle = `${selectedRoom.RType} ${selectedRoom.RoomID} (${selectedRoom.BranchName})`;
   return (
     <Box
       sx={{
@@ -117,10 +168,18 @@ export default function RoomsPage() {
               <Stack spacing={2}>
                 {rooms.map((room) => (
                   <RoomListItem
-                    key={room.id}
-                    room={room}
-                    isActive={room.id === selectedRoomId}
-                    onClick={() => setSelectedRoomId(room.id)}
+                    key={room.RoomID}
+                    // Truyền các prop theo tên mới
+                    room={{
+                        id: room.RoomID,
+                        name: `${room.RType} ${room.RoomID}`,
+                        BranchName: room.BranchName,
+                        rows: room.TotalRows,
+                        seatsPerRow: room.MaxColumns,
+                        BranchID: room.BranchID, // Truyền BranchID để dùng cho các Actions
+                    }}
+                    isActive={room.RoomID === selectedRoomId}
+                    onClick={() => setSelectedRoomId(room.RoomID)}
                   />
                 ))}
               </Stack>
@@ -152,19 +211,17 @@ export default function RoomsPage() {
               >
                 <Box>
                   <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                    {selectedRoom.name}
+                    {roomTitle}
                   </Typography>
                   <Typography
                     variant="body2"
                     color="text.secondary"
-                  >{`Seating capacity: ${getTotalSeats(
-                    selectedRoom
-                  )} seats`}</Typography>
+                  >{`Seating capacity: ${selectedRoom.TotalCapacity} seats`}</Typography>
                 </Box>
 
                 <Chip
                   icon={<AppsIcon />}
-                  label={`${selectedRoom.rows}x${selectedRoom.seatsPerRow}`}
+                  label={`${selectedRoom.TotalRows}x${selectedRoom.MaxColumns}`}
                   sx={{
                     borderRadius: 999,
                     bgcolor: "#f3f4ff",
@@ -175,8 +232,8 @@ export default function RoomsPage() {
 
               {/* SEATING MAP */}
               <SeatingMap
-                rows={selectedRoom.rows}
-                seatsPerRow={selectedRoom.seatsPerRow}
+                rows={selectedRoom.TotalRows} // Dùng TotalRows
+                seatsPerRow={selectedRoom.MaxColumns}
               />
 
               {/* SUMMARY NUMBERS */}
@@ -189,14 +246,14 @@ export default function RoomsPage() {
                   borderTop: "1px solid #f3f4f6",
                 }}
               >
-                <SummaryItem label="Rows" value={selectedRoom.rows} />
+                <SummaryItem label="Rows" value={selectedRoom.TotalRows} />
                 <SummaryItem
                   label="Seats per Row"
-                  value={selectedRoom.seatsPerRow}
+                  value={selectedRoom.MaxColumns}
                 />
                 <SummaryItem
                   label="Total Seats"
-                  value={getTotalSeats(selectedRoom)}
+                  value={selectedRoom.TotalCapacity}
                 />
               </Box>
             </Paper>

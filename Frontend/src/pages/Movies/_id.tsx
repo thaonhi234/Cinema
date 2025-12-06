@@ -13,6 +13,7 @@ import {
   TableRow,
   TableCell,
   TableBody,
+  CircularProgress,
 } from "@mui/material";
 
 import AddIcon from "@mui/icons-material/Add";
@@ -20,102 +21,100 @@ import StarRateRoundedIcon from "@mui/icons-material/StarRateRounded";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
-import LeftMenuBar, { drawerWidth } from "../../components/LeftMenuBar";
+import LeftMenuBar from "../../components/LeftMenuBar";
 
 // Import componenets
 import StatusChip from "./StatusChip";
 import GenreChip from "./GenreChip";
-
-// ================== MOCK DATA ==================
-type MovieStatus = "Now Showing" | "Coming Soon";
-
+import { useState, useEffect } from "react";
+import moviesApi from "../../api/movieApi";
+// ================== MOcK DATA ==================
 type Movie = {
-  id: number;
-  title: string;
-  releaseDate: string;
-  rating: number;
-  durationMin: number;
-  genres: string[];
-  status: MovieStatus;
-  poster?: string; // url poster, có thể để trống
+    MovieID: number;
+    MName: string; // Title
+    RunTime: number; // Duration (đơn vị phút)
+    releaseDate: string; 
+    closingDate: string;
+    AgeRating: string;
+    AvgRating: number; 
+    Genres: string[]; 
+    Status: MovieStatus; // Tính toán từ SQL
+    poster?: string; // Poster URL (tạm thời vẫn là client-side)
 };
-
-const movies: Movie[] = [
-  {
-    id: 1,
-    title: "Stellar Odyssey",
-    releaseDate: "2025-11-15",
-    rating: 8.5,
-    durationMin: 148,
-    genres: ["Sci-Fi", "Adventure"],
-    status: "Now Showing",
-    poster:
-      "https://images.pexels.com/photos/7991570/pexels-photo-7991570.jpeg?auto=compress&w=80",
-  },
-  {
-    id: 2,
-    title: "The Last Symphony",
-    releaseDate: "2025-11-20",
-    rating: 9.1,
-    durationMin: 132,
-    genres: ["Drama", "Music"],
-    status: "Now Showing",
-    poster:
-      "https://images.pexels.com/photos/164745/pexels-photo-164745.jpeg?auto=compress&w=80",
-  },
-  {
-    id: 3,
-    title: "Shadow Protocol",
-    releaseDate: "2025-11-25",
-    rating: 7.8,
-    durationMin: 125,
-    genres: ["Action", "Thriller"],
-    status: "Now Showing",
-    poster:
-      "https://images.pexels.com/photos/7991505/pexels-photo-7991505.jpeg?auto=compress&w=80",
-  },
-  {
-    id: 4,
-    title: "Midnight Garden",
-    releaseDate: "2025-11-28",
-    rating: 8.2,
-    durationMin: 118,
-    genres: ["Fantasy", "Romance"],
-    status: "Now Showing",
-  },
-  {
-    id: 5,
-    title: "Velocity Rush",
-    releaseDate: "2025-11-30",
-    rating: 7.5,
-    durationMin: 110,
-    genres: ["Action", "Racing"],
-    status: "Now Showing",
-  },
-  {
-    id: 6,
-    title: "Echoes of Tomorrow",
-    releaseDate: "2025-12-10",
-    rating: 8.8,
-    durationMin: 142,
-    genres: ["Sci-Fi", "Drama"],
-    status: "Coming Soon",
-  },
-  {
-    id: 7,
-    title: "The Crimson Crown",
-    releaseDate: "2025-12-15",
-    rating: 8.0,
-    durationMin: 156,
-    genres: ["Fantasy", "Adventure"],
-    status: "Coming Soon",
-  },
-];
-
-
+type MovieStatus = "Now Showing" | "Coming Soon" | "Ended"; // <--- Bổ sung 'Ended'
 // ================== MAIN PAGE ==================
 
 export default function MoviesPage() {
+  const [movies, setMovies] = useState<Movie[]>([]);
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+
+    // 1. FETCH DATA TỪ BACKEND
+    const fetchMovies = async () => {
+        try {
+            setLoading(true);
+            const res = await moviesApi.getAll(); // GET /api/movies
+            
+            // Dữ liệu từ BE đã là cấu trúc Movie[], chỉ cần lưu vào state
+            setMovies(res.data);
+            setError(null);
+        } catch (err: any) {
+            console.error("Lỗi khi tải danh sách phim:", err);
+            // Xử lý lỗi 403 (Token/Quyền hạn)
+            if (err.response && err.response.status === 403) {
+                setError("Bạn không có quyền truy cập chức năng này.");
+            } else {
+                setError(err.response?.data?.message || "Không thể tải dữ liệu từ server.");
+            }
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    useEffect(() => {
+        fetchMovies();
+    }, []);
+    
+    // 2. HÀM XỬ LÝ ACTIONS (Edit/Delete)
+    const handleEdit = (movieId: number) => {
+        alert(`Chức năng Sửa phim ID: ${movieId} chưa được triển khai.`);
+        // Thực tế: Tải chi tiết phim bằng moviesApi.getById(movieId) và mở modal
+    };
+
+    const handleDelete = async (movieId: number) => {
+        if (!window.confirm(`Bạn có chắc chắn muốn xóa phim ID: ${movieId} không? Thao tác này không thể hoàn tác.`)) {
+            return;
+        }
+        try {
+            await moviesApi.delete(movieId); // DELETE /api/movies/:id
+            alert(`Xóa phim ${movieId} thành công!`);
+            fetchMovies(); // Tải lại danh sách
+        } catch (err: any) {
+             alert(`Xóa thất bại: ${err.response?.data?.message || 'Lỗi server.'}`);
+        }
+    };
+
+
+    // 3. HIỂN THỊ TRẠNG THÁI
+    if (loading) return (
+        <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f6f7fb' }}>
+            <LeftMenuBar />
+            <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <CircularProgress />
+                <Typography variant="h6" sx={{ ml: 2 }}>Đang tải danh mục phim...</Typography>
+            </Box>
+        </Box>
+    );
+    
+    if (error) return (
+        <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f6f7fb' }}>
+            <LeftMenuBar />
+            <Box sx={{ flexGrow: 1, p: 4 }}>
+                <Typography variant="h5" color="error">Lỗi Tải Dữ Liệu</Typography>
+                <Typography color="error">{error}</Typography>
+            </Box>
+        </Box>
+    );
   return (
     <Box
       sx={{
@@ -158,6 +157,7 @@ export default function MoviesPage() {
           <Button
             variant="contained"
             startIcon={<AddIcon />}
+            onClick={() => alert("Chức năng thêm phim mới chưa được triển khai.")}
             sx={{
               borderRadius: 999,
               textTransform: "none",
@@ -209,7 +209,7 @@ export default function MoviesPage() {
             <TableBody>
               {movies.map((movie) => (
                 <TableRow
-                  key={movie.id}
+                  key={movie.MovieID}
                   hover
                   sx={{
                     "& td": {
@@ -235,7 +235,7 @@ export default function MoviesPage() {
                           variant="body1"
                           sx={{ fontWeight: 600, mb: 0.3 }}
                         >
-                          {movie.title}
+                          {movie.MName}
                         </Typography>
                         <Typography
                           variant="caption"
@@ -253,21 +253,21 @@ export default function MoviesPage() {
                       <StarRateRoundedIcon
                         sx={{ fontSize: 18, color: "#FACC15" }}
                       />
-                      <Typography variant="body2">{movie.rating}</Typography>
+                      <Typography variant="body2">{movie.AvgRating.toFixed(1)}</Typography> {/* Dùng AvgRating */}
                     </Stack>
                   </TableCell>
 
                   {/* DURATION */}
                   <TableCell>
                     <Typography variant="body2">
-                      {movie.durationMin} min
+                      {movie.RunTime} min {/* Dùng RunTime */}
                     </Typography>
                   </TableCell>
 
                   {/* GENRES */}
                   <TableCell>
                     <Stack direction="row" spacing={1} flexWrap="wrap">
-                      {movie.genres.map((g) => (
+                      {movie.Genres.map((g) => (
                         <GenreChip key={g} label={g} />
                       ))}
                     </Stack>
@@ -275,7 +275,7 @@ export default function MoviesPage() {
 
                   {/* STATUS */}
                   <TableCell>
-                    <StatusChip status={movie.status} />
+                    <StatusChip status={movie.Status as MovieStatus} /> {/* Dùng Status */}
                   </TableCell>
 
                   {/* ACTIONS */}
@@ -285,10 +285,10 @@ export default function MoviesPage() {
                       spacing={1}
                       justifyContent="center"
                     >
-                      <IconButton size="small" color="inherit">
+                      <IconButton size="small" color="inherit" onClick={() => handleEdit(movie.MovieID)}>
                         <EditOutlinedIcon fontSize="small" />
                       </IconButton>
-                      <IconButton size="small" sx={{ color: "#DC2626" }}>
+                      <IconButton size="small" sx={{ color: "#DC2626" }} onClick={() => handleDelete(movie.MovieID)}>
                         <DeleteOutlineOutlinedIcon fontSize="small" />
                       </IconButton>
                     </Stack>

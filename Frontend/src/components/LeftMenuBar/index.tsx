@@ -16,7 +16,7 @@ import MeetingRoomOutlinedIcon from "@mui/icons-material/MeetingRoomOutlined";
 import EventOutlinedIcon from "@mui/icons-material/EventOutlined";
 import PeopleAltOutlinedIcon from "@mui/icons-material/PeopleAltOutlined";
 import LogoutIcon from '@mui/icons-material/Logout';
-import { useNavigate } from "react-router-dom"; // <-- Import navigate
+import { useNavigate, useLocation } from "react-router-dom"; // <-- Import navigate
 import authApi from "../../api/authApi"; // <-- Import authApi
 
 export const drawerWidth = 260;
@@ -28,10 +28,16 @@ const activeMenuItemSx = {
   boxShadow: "0 10px 25px rgba(168,85,247,0.35)",
   "& .MuiListItemIcon-root": { color: "#fff" },
 };
-
+const menuItems = [
+    { label: "Dashboard", icon: <DashboardOutlinedIcon />, path: "/dashboard" },
+    { label: "Movies", icon: <MovieOutlinedIcon />, path: "/movies" },
+    { label: "Rooms", icon: <MeetingRoomOutlinedIcon />, path: "/rooms" },
+    { label: "Showtimes", icon: <EventOutlinedIcon />, path: "/showtimes" },
+    { label: "Employees", icon: <PeopleAltOutlinedIcon />, path: "/employees" },
+];
 function LeftMenuBar() {
   const navigate = useNavigate();
-
+  const location = useLocation();
     // HÀM XỬ LÝ LOGOUT
     const handleLogout = async () => {
         try {
@@ -50,6 +56,12 @@ function LeftMenuBar() {
             navigate("/");
         }
     };
+    const handleNavigation = (path: string) => {
+        navigate(path);
+    };
+
+    // Xác định xem mục nào đang active
+    const isDashboardActive = location.pathname === '/' || location.pathname === '/dashboard';
     return (
         <Box
         sx={{
@@ -108,40 +120,19 @@ function LeftMenuBar() {
         {/* Menu items */}
         <Box sx={{ px: 2 }}>
           <List sx={{ gap: 1, display: "flex", flexDirection: "column" }}>
-            <ListItemButton sx={activeMenuItemSx}>
-              <ListItemIcon>
-                <DashboardOutlinedIcon />
-              </ListItemIcon>
-              <ListItemText primary="Dashboard" />
-            </ListItemButton>
-
-            <ListItemButton sx={{ borderRadius: 4 }}>
-              <ListItemIcon>
-                <MovieOutlinedIcon />
-              </ListItemIcon>
-              <ListItemText primary="Movies" />
-            </ListItemButton>
-
-            <ListItemButton sx={{ borderRadius: 4 }}>
-              <ListItemIcon>
-                <MeetingRoomOutlinedIcon />
-              </ListItemIcon>
-              <ListItemText primary="Rooms" />
-            </ListItemButton>
-
-            <ListItemButton sx={{ borderRadius: 4 }}>
-              <ListItemIcon>
-                <EventOutlinedIcon />
-              </ListItemIcon>
-              <ListItemText primary="Showtimes" />
-            </ListItemButton>
-
-            <ListItemButton sx={{ borderRadius: 4 }}>
-              <ListItemIcon>
-                <PeopleAltOutlinedIcon />
-              </ListItemIcon>
-              <ListItemText primary="Employees" />
-            </ListItemButton>
+            {menuItems.map((item) => (
+                <ListItemButton 
+                    key={item.label}
+                    // Kiểm tra và áp dụng style active
+                    sx={location.pathname === item.path || (item.path === '/dashboard' && isDashboardActive) ? activeMenuItemSx : { borderRadius: 4 }} 
+                    onClick={() => handleNavigation(item.path)} // <-- Gắn chức năng điều hướng
+                >
+                  <ListItemIcon>
+                    {item.icon}
+                  </ListItemIcon>
+                  <ListItemText primary={item.label} />
+                </ListItemButton>
+            ))}
           </List>
         </Box>
         <Box sx={{ px: 2, mt: 1 }}>

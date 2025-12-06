@@ -7,17 +7,35 @@ import {
 
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import type { Room } from "./types/room";
+
 import { getTotalSeats } from "../utils/roomUtils";
 
 
+type RoomPropType = {
+    id: number;
+    name: string;
+    BranchName: string;
+    BranchID: number;
+    rows: number;
+    seatsPerRow: number;
+}
 type RoomListItemProps = {
-  room: Room;
+  room: RoomPropType;
   isActive: boolean;
   onClick: () => void;
 };
-
 export default function RoomListItem({ room, isActive, onClick }: RoomListItemProps) {
+  const handleEdit = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    alert(`Sửa phòng: ${room.name} (${room.BranchID}-${room.id})`);
+  };
+
+  const handleDelete = (e: React.MouseEvent) => {
+    e.stopPropagation();
+    if (window.confirm(`Bạn có chắc muốn xóa phòng ${room.name} không?`)) {
+        alert(`Xóa phòng: ${room.name} (${room.BranchID}-${room.id})`);
+    }
+  };
   return (
     <Box
       onClick={onClick}
@@ -39,7 +57,7 @@ export default function RoomListItem({ room, isActive, onClick }: RoomListItemPr
     >
       <Box>
         <Typography variant="body1" sx={{ fontWeight: 600, mb: 0.5 }}>
-          {room.name}
+          {room.BranchName} - {room.name}
         </Typography>
         <Typography variant="caption" color="text.secondary">
           {room.rows} rows · {room.seatsPerRow} seats/row ·{" "}
@@ -48,10 +66,10 @@ export default function RoomListItem({ room, isActive, onClick }: RoomListItemPr
       </Box>
 
       <Stack direction="row" spacing={1}>
-        <IconButton size="small">
+        <IconButton size="small" onClick={handleEdit}>
           <EditOutlinedIcon fontSize="small" />
         </IconButton>
-        <IconButton size="small" sx={{ color: "#DC2626" }}>
+        <IconButton size="small" sx={{ color: "#DC2626" }} onClick={handleDelete}>
           <DeleteOutlineOutlinedIcon fontSize="small" />
         </IconButton>
       </Stack>
