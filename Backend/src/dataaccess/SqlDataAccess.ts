@@ -6,7 +6,8 @@ import {
     DailyRevenue, // <--- THÊM 3 INTERFACE MỚI NÀY
     Movie,
     RoomDetails,
-    SeatDetail
+    SeatDetail,
+    Showtime
 } from '../models/user';
 // Lấy cấu hình từ biến môi trường
 const config = {
@@ -331,5 +332,71 @@ return movies;
             SStatus: record.SStatus,
         })) as SeatDetail[];
     }
+    async getAllShowtimes(branchId: number, date: string): Promise<Showtime[]> {
+        const db = await getPool();
+        const result = await db.request()
+            .input('BranchID', sql.Int, branchId)
+            .input('Date', sql.Date, date)
+            .execute('Screening.sp_GetAllShowtimes'); // <-- Gọi SP mới
+        
+        // Map dữ liệu trả về sang interface Showtime
+        return result.recordset.map(record => ({
+            TimeID: record.TimeID,
+            BranchID: record.BranchID,
+            RoomID: record.RoomID,
+            Day: record.Day,
+            StartTime: record.StartTime,
+            EndTime: record.EndTime,
+            FormatName: record.FormatName,
+            MovieName: record.MovieName,
+            RoomType: record.RoomType,
+            TotalSeats: record.TotalSeats,
+            TicketsSold: record.TicketsSold,
+            Price: record.Price,
+            // ... (thêm các cột khác nếu cần)
+        })) as Showtime[];
+    }
 
+    // 2. TẠO SUẤT CHIẾU MỚI
+    async createShowtime(showtimeData: any): Promise<void> {
+        const db = await getPool();
+        // Cần logic để lấy TimeID mới nhất nếu không dùng Sequence
+        // Giả sử TimeID được gửi từ Frontend hoặc dùng logic tự sinh ID trong SP
+        const startTimeObj = new Date(`2000-01-01T${showtimeData.StartTime}`);
+        const endTimeObj = new Date(`2000-01-01T${showtimeData.EndTime}`);
+        await db.request()
+            .input('TimeID', sql.Int, showtimeData.TimeID) // Hoặc logic Sequence
+            .input('BranchID', sql.Int, showtimeData.BranchID)
+            .input('RoomID', sql.Int, showtimeData.RoomID)
+            .input('Day', sql.Date, showtimeData.Day)
+            .input('StartTime', sql.Time, startTimeObj)
+            .input('EndTime', sql.Time, endTimeObj)
+            .input('FName', sql.NVarChar(30), showtimeData.FName)
+            .input('MovieID', sql.Int, showtimeData.MovieID)
+            .execute('Screening.sp_InsertShowtime');
+    }
+    
+    // 3. XÓA SUẤT CHIẾU
+    async deleteShowtime(timeId: number, branchId: number): Promise<void> {
+        const db = await getPool();
+        await db.request()
+            .input('TimeID', sql.Int, timeId)
+            .input('BranchID', sql.Int, branchId)
+            .execute('Screening.sp_DeleteShowtime');
+    }
+    async updateShowtime(showtimeData: any): Promise<void> {
+        const db = await getPool();
+        const startTimeObj = new Date(`2000-01-01T${showtimeData.StartTime}`);
+        const endTimeObj = new Date(`2000-01-01T${showtimeData.EndTime}`);
+        await db.request()
+            .input('TimeID', sql.Int, showtimeData.TimeID)
+            .input('BranchID', sql.Int, showtimeData.BranchID)
+            .input('RoomID', sql.Int, showtimeData.RoomID)
+            .input('Day', sql.Date, showtimeData.Day)
+            .input('StartTime', sql.Time, startTimeObj)
+            .input('EndTime', sql.Time, endTimeObj)
+            .input('FName', sql.NVarChar(30), showtimeData.FName)
+            .input('MovieID', sql.Int, showtimeData.MovieID)
+            .execute('Screening.sp_UpdateShowtime'); // <-- Gọi SP mới
+    }
 }

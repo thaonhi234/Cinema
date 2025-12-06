@@ -64,6 +64,21 @@ export interface SeatDetail {
     SType: boolean;
     SStatus: boolean;
 }
+export interface Showtime {
+    TimeID: number;
+    BranchID: number;
+    RoomID: number;
+    Day: string;
+    StartTime: string;
+    EndTime: string;
+    FormatName: string;
+    MovieID: number;
+    MovieName: string;
+    RoomType: string;
+    TotalSeats: number;
+    TicketsSold: number;
+    Price: number;
+}
 // Interface định nghĩa các phương thức truy cập DB bắt buộc
 export interface IDataAccess {
     getUserByEmail(email: string): Promise<User | null>;
@@ -90,4 +105,10 @@ export interface IDataAccess {
     createRoom(room: any): Promise<void>;
     deleteRoom(branchId: number, roomId: number): Promise<void>;
     getSeatLayout(branchId: number, roomId: number): Promise<SeatDetail[]>;
+
+
+    getAllShowtimes(branchId: number, date: string): Promise<Showtime[]>;
+    createShowtime(showtimeData: any): Promise<void>;
+    deleteShowtime(timeId: number, branchId: number): Promise<void>;
+    updateShowtime(showtimeData: any): Promise<void>;
 }

@@ -1193,7 +1193,148 @@ BEGIN
     WHERE CUserID = @CUserID;
 END
 GO
+-- Procedure 18: Lấy danh sách suất chiếu theo ngày và chi nhánh
+CREATE OR ALTER PROCEDURE Screening.sp_GetAllShowtimes
+    @BranchID AS INT,
+    @Date AS DATE
+AS
+BEGIN
+    SET NOCOUNT ON;
 
+    SELECT
+        T.TimeID,
+        T.[Day],
+        T.StartTime,
+        T.EndTime,
+        T.FName AS FormatName,
+        M.MName AS MovieName,
+        M.RunTime,
+        SR.RoomID,
+        SR.RType AS RoomType,
+        SR.RCapacity AS TotalSeats,
+        -- Tính số vé đã bán (Tickets Sold)
+        ISNULL(SUM(CASE WHEN TKT.TicketID IS NOT NULL THEN 1 ELSE 0 END), 0) AS TicketsSold
+        -- Giá (Giả định giá nằm ở bảng Screening.PRICE nếu có, tạm thời bỏ qua)
+        -- Tạm thời Hardcode Price cho ví dụ
+        , 12 AS Price
+    FROM
+        Screening.TIME T
+    JOIN
+        Movie.MOVIE M ON T.MovieID = M.MovieID
+    JOIN
+        Cinema.SCREENROOM SR ON T.BranchID = SR.BranchID AND T.RoomID = SR.RoomID
+    LEFT JOIN 
+        Screening.TICKETS TKT ON T.TimeID = TKT.TimeID
+    WHERE
+        T.BranchID = @BranchID
+        AND T.[Day] = @Date -- Lọc theo ngày
+    GROUP BY
+        T.TimeID, T.[Day], T.StartTime, T.EndTime, T.FName, M.MName, M.RunTime, SR.RoomID, SR.RType, SR.RCapacity
+    ORDER BY
+        T.StartTime ASC;
+END
+GO
+-- Procedure 19: Thêm suất chiếu mới (Dùng cho API POST /showtimes)
+CREATE OR ALTER PROCEDURE Screening.sp_InsertShowtime
+    @TimeID INT,
+    @BranchID INT,
+    @RoomID INT,
+    @Day DATE,
+    @StartTime TIME,
+    @EndTime TIME,
+    @FName NVARCHAR(30),
+    @MovieID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- 1. Kiểm tra trùng lịch (Phòng này đã có suất chiếu vào khoảng thời gian này chưa)
+    IF EXISTS (
+        SELECT 1 FROM Screening.TIME
+        WHERE BranchID = @BranchID AND RoomID = @RoomID AND [Day] = @Day
+        AND (
+            @StartTime < EndTime AND StartTime < @EndTime
+        )
+    )
+    BEGIN
+        RAISERROR('Room is already booked for this time slot on this day.', 16, 1);
+        RETURN;
+    END
+
+    -- 2. Thêm vào bảng Screening.TIME
+    INSERT INTO Screening.TIME (TimeID, BranchID, RoomID, [Day], StartTime, EndTime, FName, MovieID)
+    VALUES (@TimeID, @BranchID, @RoomID, @Day, @StartTime, @EndTime, @FName, @MovieID);
+
+END
+GO
+-- Procedure 20: Xóa suất chiếu (Dùng cho API DELETE /showtimes/:id)
+CREATE OR ALTER PROCEDURE Screening.sp_DeleteShowtime
+    @TimeID AS INT,
+    @BranchID AS INT -- Bắt buộc cho bảo mật và khóa chính
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Kiểm tra đã bán vé chưa
+    IF EXISTS (SELECT 1 FROM Screening.TICKETS WHERE TimeID = @TimeID AND BranchID = @BranchID)
+    BEGIN
+        RAISERROR('Cannot delete showtime; tickets have already been sold.', 16, 1);
+        RETURN;
+    END
+    
+    -- Xóa suất chiếu
+    DELETE FROM Screening.TIME WHERE TimeID = @TimeID AND BranchID = @BranchID;
+
+END
+GO
+-- Procedure 21: Cập nhật suất chiếu (Dùng cho API PUT /showtimes/:id)
+CREATE OR ALTER PROCEDURE Screening.sp_UpdateShowtime
+    @TimeID INT,
+    @BranchID INT,
+    @RoomID INT,
+    @Day DATE,
+    @StartTime TIME,
+    @EndTime TIME,
+    @FName NVARCHAR(30),
+    @MovieID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- 1. Kiểm tra trùng lịch (Loại trừ chính suất chiếu đang được sửa)
+    IF EXISTS (
+        SELECT 1 FROM Screening.TIME
+        WHERE BranchID = @BranchID AND RoomID = @RoomID AND [Day] = @Day
+        AND TimeID <> @TimeID -- <--- NGOẠI TRỪ suất chiếu hiện tại
+        AND (
+           @StartTime < EndTime AND StartTime < @EndTime
+        )
+    )
+    BEGIN
+        RAISERROR('Update failed: Room is already booked for this time slot on this day.', 16, 1);
+        RETURN;
+    END
+    
+    -- 2. Kiểm tra đã bán vé chưa (Không cho phép thay đổi Movie/Room/Time nếu đã bán vé)
+    IF EXISTS (SELECT 1 FROM Screening.TICKETS WHERE TimeID = @TimeID AND BranchID = @BranchID)
+    BEGIN
+        RAISERROR('Cannot update fundamental details; tickets have already been sold.', 16, 1);
+        RETURN;
+    END
+
+    -- 3. Thực hiện Update
+    UPDATE Screening.TIME
+    SET
+        RoomID = @RoomID,
+        [Day] = @Day,
+        StartTime = @StartTime,
+        EndTime = @EndTime,
+        FName = @FName,
+        MovieID = @MovieID
+    WHERE TimeID = @TimeID AND BranchID = @BranchID;
+
+END
+GO
 -----------------------------------------------------------
 -- PHẦN 5: BẢO MẬT - TẠO USER (PART 3) - PHIÊN BẢN CLEAN INSTALL
 -----------------------------------------------------------
