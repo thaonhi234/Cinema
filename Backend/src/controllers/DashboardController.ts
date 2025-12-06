@@ -19,8 +19,15 @@ export class DashboardController {
 
     // Lấy doanh thu hàng tuần và chi tiết theo ngày
     async getWeeklyRevenue(req: Request, res: Response) {
+      const user = (req as any).user;
+        const branchId = user.BranchID;
+
+        // 2. Kiểm tra phân quyền và BranchID
+        if (!branchId || (user.VaiTro !== 'manager' && user.VaiTro !== 'staff')) {
+             return res.status(403).json({ message: 'Không có quyền truy cập hoặc không xác định được chi nhánh.' });
+        }
         try {
-            const data = await dataAccess.getWeeklyRevenueData();
+            const data = await dataAccess.getWeeklyRevenueData(branchId);
             
             // Format lại Daily Revenue cho FE dễ dùng (đảm bảo 7 ngày)
             const days = ['Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday', 'Sunday'];

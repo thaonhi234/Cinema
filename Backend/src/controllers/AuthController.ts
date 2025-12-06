@@ -16,14 +16,15 @@ export class AuthController {
             const user = await userService.login(email, password);
             if (!user) return res.status(401).json({ message: 'Email hoặc mật khẩu không đúng.' });
 
-            const token = signToken({ MaNguoiDung: user.MaNguoiDung, VaiTro: user.VaiTro });
+            const token = signToken({ MaNguoiDung: user.MaNguoiDung, VaiTro: user.VaiTro, BranchID: user.BranchID });
 
             return res.status(200).json({
                 message: 'Đăng nhập thành công!',
                 user: {
                     MaNguoiDung: user.MaNguoiDung,
                     HoTen: user.HoTen,
-                    VaiTro: user.VaiTro
+                    VaiTro: user.VaiTro,
+                    BranchID: user.BranchID
                 },
                 token
             });

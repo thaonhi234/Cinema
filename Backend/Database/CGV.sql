@@ -618,6 +618,7 @@ EXEC Movie.sp_InsertNewMovie
     @agerating = '15+', 
     @Genres = 'Action, Drama';
 GO
+
 --Procedure 2. UPDATE (Kéo dài thời gian công chiếu)
 -- Kiểm tra nếu SP đã tồn tại thì xóa
 IF OBJECT_ID('Movie.sp_UpdateMovie', 'P') IS NOT NULL
@@ -883,6 +884,7 @@ END
 GO
 -- Thêm SP này vào file SQL của bạn (hoặc chạy riêng nếu DB đã tạo)
 CREATE OR ALTER PROCEDURE sp_GetWeeklyRevenueAndGrowth
+    @BranchID AS INT
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -902,7 +904,7 @@ BEGIN
     SELECT @CurrentWeekRevenue = ISNULL(SUM(O.Total), 0)
     FROM Booking.ORDERS O
     INNER JOIN Screening.TICKETS T ON O.OrderID = T.OrderID
-    WHERE T.DaySold BETWEEN @StartOfWeek AND @EndOfWeek; -- Lọc theo DaySold (DATE)
+    WHERE T.DaySold BETWEEN @StartOfWeek AND @EndOfWeek AND T.BranchID = @BranchID; -- Lọc theo DaySold (DATE)
 
     -- Bảng tạm chứa doanh thu tuần trước
     DECLARE @PreviousWeekRevenue DECIMAL(10, 2);
@@ -930,7 +932,7 @@ BEGIN
         ISNULL(SUM(O.Total), 0) AS DailyRevenue
     FROM Booking.ORDERS O
     INNER JOIN Screening.TICKETS T ON O.OrderID = T.OrderID
-    WHERE T.DaySold BETWEEN @StartOfWeek AND @EndOfWeek
+    WHERE T.DaySold BETWEEN @StartOfWeek AND @EndOfWeek AND T.BranchID = @BranchID
     GROUP BY DATENAME(dw, T.DaySold), DATEPART(dw, T.DaySold)
     ORDER BY DayOrder;
 
@@ -1012,7 +1014,161 @@ BEGIN
     GROUP BY M.MovieID, M.MName, M.Descript, M.RunTime, M.isDub, M.isSub, M.releaseDate, M.closingDate, M.AgeRating;
 END;
 GO
+-- Procedure 12: Lấy danh sách phòng chiếu cùng thông tin cơ bản
+CREATE OR ALTER PROCEDURE Cinema.sp_GetAllScreenRooms
+    @BranchID AS INT
+AS
+BEGIN
+    SET NOCOUNT ON;
 
+    SELECT
+        SR.BranchID,
+        B.BName AS BranchName, -- Tên chi nhánh
+        SR.RoomID,
+        SR.RType,
+        SR.RCapacity AS TotalCapacity, -- Sức chứa tổng
+        -- Tính số hàng (SRow) và số cột (SColumn) lớn nhất
+        MAX(S.SRow) AS TotalRows, 
+        MAX(S.SColumn) AS MaxColumns
+    FROM
+        Cinema.SCREENROOM SR
+    JOIN
+        Cinema.BRANCH B ON SR.BranchID = B.BranchID
+    LEFT JOIN
+        Cinema.SEAT S ON SR.BranchID = S.BranchID AND SR.RoomID = S.RoomID
+    WHERE
+        SR.BranchID = @BranchID
+    GROUP BY
+        SR.BranchID, B.BName, SR.RoomID, SR.RType, SR.RCapacity
+    ORDER BY
+        SR.BranchID, SR.RoomID;
+END
+GO
+-- Procedure 13: Thêm phòng mới và tạo ma trận ghế ban đầu
+CREATE OR ALTER PROCEDURE Cinema.sp_CreateScreenRoomWithSeats
+    @BranchID INT,
+    @RoomID INT,
+    @RType VARCHAR(20),
+    @RCapacity SMALLINT,
+    @TotalRows SMALLINT,   -- Số hàng ghế (Ví dụ: 10)
+    @SeatsPerRow SMALLINT  -- Số ghế mỗi hàng (Ví dụ: 12)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Kiểm tra phòng đã tồn tại
+    IF EXISTS (SELECT 1 FROM Cinema.SCREENROOM WHERE BranchID = @BranchID AND RoomID = @RoomID)
+    BEGIN
+        RAISERROR('Room already exists in this branch.', 16, 1);
+        RETURN;
+    END
+
+    -- 1. Thêm vào bảng SCREENROOM
+    INSERT INTO Cinema.SCREENROOM (BranchID, RoomID, RType, RCapacity)
+    VALUES (@BranchID, @RoomID, @RType, @RCapacity);
+
+    -- 2. Tạo ma trận ghế cơ bản (Giả sử tất cả đều là ghế thường, Status=1)
+    DECLARE @RowCounter INT = 1;
+    DECLARE @ColCounter INT = 1;
+
+    WHILE @RowCounter <= @TotalRows
+    BEGIN
+        SET @ColCounter = 1;
+        WHILE @ColCounter <= @SeatsPerRow
+        BEGIN
+            INSERT INTO Cinema.SEAT (BranchID, RoomID, SRow, SColumn, SType, SStatus)
+            VALUES (@BranchID, @RoomID, @RowCounter, @ColCounter, 0, 1); -- SType=0: Ghế thường
+            
+            SET @ColCounter = @ColCounter + 1;
+        END
+        SET @RowCounter = @RowCounter + 1;
+    END
+END
+GO
+-- Procedure 14: Xóa phòng và tất cả ghế liên quan
+CREATE OR ALTER PROCEDURE Cinema.sp_DeleteScreenRoom
+    @BranchID INT,
+    @RoomID INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Kiểm tra phòng có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM Cinema.SCREENROOM WHERE BranchID = @BranchID AND RoomID = @RoomID)
+    BEGIN
+        RAISERROR('Room does not exist.', 16, 1);
+        RETURN;
+    END
+    
+    -- Kiểm tra suất chiếu hiện tại/tương lai
+    IF EXISTS (
+        SELECT 1 
+        FROM Screening.TIME 
+        WHERE BranchID = @BranchID AND RoomID = @RoomID AND [Day] >= CAST(GETDATE() AS DATE)
+    )
+    BEGIN
+        RAISERROR('Cannot delete room because it has current or future showtimes.', 16, 1);
+        RETURN;
+    END
+    -- 1. Xóa các ghế liên quan (Phải xóa SEAT trước do khóa ngoại)
+    DELETE FROM Cinema.SEAT WHERE BranchID = @BranchID AND RoomID = @RoomID;
+
+    -- 2. Xóa phòng
+    DELETE FROM Cinema.SCREENROOM WHERE BranchID = @BranchID AND RoomID = @RoomID;
+END
+GO
+-- Procedure 15: Cập nhật thông tin cơ bản của phòng chiếu
+CREATE OR ALTER PROCEDURE Cinema.sp_UpdateScreenRoom
+    @BranchID INT,
+    @RoomID INT,
+    @RType VARCHAR(20),
+    @RCapacity SMALLINT -- Sức chứa mới
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- Kiểm tra phòng có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM Cinema.SCREENROOM WHERE BranchID = @BranchID AND RoomID = @RoomID)
+    BEGIN
+        RAISERROR('Room does not exist in this branch.', 16, 1);
+        RETURN;
+    END
+
+    -- 1. Cập nhật bảng SCREENROOM
+    UPDATE Cinema.SCREENROOM
+    SET
+        RType = @RType,
+        RCapacity = @RCapacity
+    WHERE BranchID = @BranchID AND RoomID = @RoomID;
+
+    -- LƯU Ý: SP này không cập nhật cấu hình ghế (SEAT). 
+    -- Việc thay đổi số hàng/số cột cần được xử lý riêng hoặc qua một SP khác phức tạp hơn.
+    
+END
+GO
+-- Procedure 17: Lấy ma trận ghế chi tiết của một phòng chiếu
+CREATE OR ALTER PROCEDURE Cinema.sp_GetSeatLayout
+    @BranchID AS INT, -- THAM SỐ BẮT BUỘC
+    @RoomID AS INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    -- ... (Kiểm tra tồn tại phòng) ...
+
+    SELECT
+        S.SRow,
+        S.SColumn,
+        S.SType,
+        S.SStatus
+    FROM
+        Cinema.SEAT S
+    WHERE
+        S.BranchID = @BranchID AND S.RoomID = @RoomID -- LỌC
+    ORDER BY
+        S.SRow ASC, S.SColumn ASC;
+END
+GO
 -- Trigger 1: Cộng điểm Membership khi Order
 CREATE OR ALTER TRIGGER trg_UpdateMemberPoint
 ON Booking.ORDERS

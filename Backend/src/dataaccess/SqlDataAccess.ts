@@ -4,7 +4,9 @@ import {
     DashboardStats, 
     WeeklyRevenue, 
     DailyRevenue, // <--- THÊM 3 INTERFACE MỚI NÀY
-    Movie
+    Movie,
+    RoomDetails,
+    SeatDetail
 } from '../models/user';
 // Lấy cấu hình từ biến môi trường
 const config = {
@@ -85,7 +87,7 @@ export class SQLDataAccess implements IDataAccess {
         // 2. Kiểm tra trong bảng Employee
         result = await db.request()
             .input('email', sql.VarChar(30), email)
-            .query(`SELECT EUserID, EName, Email, EPassword, UserType 
+            .query(`SELECT EUserID, EName, Email, EPassword, UserType, BranchID
                     FROM Staff.EMPLOYEE 
                     WHERE Email = @email`);
 
@@ -98,6 +100,7 @@ export class SQLDataAccess implements IDataAccess {
                 PasswordHash: record.EPassword,
                 VaiTro: record.UserType.toLowerCase() as 'staff' | 'manager', // Role có thể là staff hoặc manager
                 isEmployee: true,
+                BranchID: record.BranchID,
             };
         }
 
@@ -140,11 +143,12 @@ export class SQLDataAccess implements IDataAccess {
     }
 
     // Phương thức MỚI: Lấy dữ liệu Doanh thu hàng tuần
-    async getWeeklyRevenueData(): Promise<{ summary: WeeklyRevenue, daily: DailyRevenue[] }> {
+    async getWeeklyRevenueData(branchID:number): Promise<{ summary: WeeklyRevenue, daily: DailyRevenue[] }> {
         const db = await getPool();
         
         // Gọi Stored Procedure đã được cung cấp
         const result = await db.request()
+            .input('BranchID', sql.Int, branchID)
             .execute('sp_GetWeeklyRevenueAndGrowth');
 
         // result.recordsets[0] là kết quả tổng quan (WeeklyRevenue)
@@ -263,6 +267,69 @@ return movies;
         Genres: record.GenresList ? record.GenresList.split(',').map((g: string) => g.trim()) : [],
         Status: record.Status,
     };
-}
+    // ĐỌC DANH SÁCH PHÒNG
+    }
+    async getAllRooms(branchID: number): Promise<RoomDetails[]> {
+        const db = await getPool();
+        const result = await db.request().input('BranchID', sql.Int, branchID).execute('Cinema.sp_GetAllScreenRooms');
+        
+        // Map dữ liệu trả về sang interface RoomDetails
+        return result.recordset.map(record => ({
+            BranchID: record.BranchID,
+            RoomID: record.RoomID,
+            BranchName: record.BranchName,
+            RType: record.RType,
+            TotalCapacity: record.TotalCapacity,
+            TotalRows: record.TotalRows || 0, // Dùng 0 nếu chưa có ghế
+            MaxColumns: record.MaxColumns || 0,
+        })) as RoomDetails[];
+    }
+
+    // TẠO PHÒNG VÀ GHẾ
+    async createRoom(room: any): Promise<void> {
+        const db = await getPool();
+        await db.request()
+            .input('BranchID', sql.Int, room.BranchID)
+            .input('RoomID', sql.Int, room.RoomID)
+            .input('RType', sql.VarChar(20), room.RType)
+            .input('RCapacity', sql.SmallInt, room.RCapacity)
+            .input('TotalRows', sql.SmallInt, room.TotalRows)
+            .input('SeatsPerRow', sql.SmallInt, room.SeatsPerRow)
+            .execute('Cinema.sp_CreateScreenRoomWithSeats');
+    }
+
+    // XÓA PHÒNG
+    async deleteRoom(branchId: number, roomId: number): Promise<void> {
+        const db = await getPool();
+        await db.request()
+            .input('BranchID', sql.Int, branchId)
+            .input('RoomID', sql.Int, roomId)
+            .execute('Cinema.sp_DeleteScreenRoom');
+    }
+    // CẬP NHẬT PHÒNG
+    async updateRoom(room: any): Promise<void> {
+        const db = await getPool();
+        await db.request()
+            .input('BranchID', sql.Int, room.BranchID)
+            .input('RoomID', sql.Int, room.RoomID)
+            .input('RType', sql.VarChar(20), room.RType)
+            .input('RCapacity', sql.SmallInt, room.RCapacity)
+            .execute('Cinema.sp_UpdateScreenRoom');
+    }
+    async getSeatLayout(branchId: number, roomId: number): Promise<SeatDetail[]> {
+        const db = await getPool();
+
+        const result = await db.request()
+            .input('BranchID', sql.Int, branchId)
+            .input('RoomID', sql.Int, roomId)
+            .execute('Cinema.sp_GetSeatLayout'); // <-- Gọi SP này
+
+        return result.recordset.map(record => ({
+            SRow: record.SRow,
+            SColumn: record.SColumn,
+            SType: record.SType,
+            SStatus: record.SStatus,
+        })) as SeatDetail[];
+    }
 
 }
