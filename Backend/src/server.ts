@@ -6,6 +6,7 @@ import dashboardRoutes from "./routes/dashboardRoutes";
 import movieRoutes from "./routes/movieRoute";
 import roomRoutes from "./routes/roomRoutes";
 import showtimeRoutes from "./routes/showtimeRoutes";
+import employeeRoutes from "./routes/employeeRoutes";
 const app = express();
 app.use(cors());
 app.use(express.json());
@@ -16,6 +17,7 @@ app.use("/api/dashboard", dashboardRoutes);
 app.use("/api/movies", movieRoutes);
 app.use("/api/rooms", roomRoutes);
 app.use("/api/showtimes", showtimeRoutes);
+app.use("/api/employees", employeeRoutes);
 app.listen(3001, () => {
     console.log("Backend chạy tại http://localhost:3001");
 });

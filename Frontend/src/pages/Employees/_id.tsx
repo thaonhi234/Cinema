@@ -1,3 +1,4 @@
+import * as React from "react";
 import {
   Box,
   Paper,
@@ -11,74 +12,123 @@ import {
   TableBody,
   TextField,
   InputAdornment,
+  IconButton,
+  CircularProgress,
 } from "@mui/material";
 
 import AddIcon from "@mui/icons-material/Add";
 import SearchIcon from "@mui/icons-material/Search";
 import EmailOutlinedIcon from "@mui/icons-material/EmailOutlined";
 import PhoneInTalkOutlinedIcon from "@mui/icons-material/PhoneInTalkOutlined";
+import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
+import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
 
-import LeftMenuBar, { drawerWidth } from "../../components/LeftMenuBar";
-import type { Employee } from "./types/Employee";
-import RoleChip from "./RoleChip";
+import LeftMenuBar from "../../components/LeftMenuBar";
+import RoleChip from "./RoleChip"; // Đã sửa lỗi import
 
+import { useState, useEffect } from "react";
+import employeeApi from "../../api/employeeApi";
+import { useDebounce } from 'use-debounce'; 
 
-// ================== MOCK DATA ==================
-const employees: Employee[] = [
-  {
-    id: "NV001",
-    fullName: "Nguyen Van An",
-    email: "an.nguyen@cinemax.com",
-    phone: "0901234567",
-    salary: "15,000,000 VND",
-    role: "Manager",
-  },
-  {
-    id: "NV002",
-    fullName: "Tran Thi Binh",
-    email: "binh.tran@cinemax.com",
-    phone: "0912345678",
-    salary: "12,000,000 VND",
-    role: "Ticket Seller",
-  },
-  {
-    id: "NV003",
-    fullName: "Le Van Cuong",
-    email: "cuong.le@cinemax.com",
-    phone: "0923456789",
-    salary: "10,000,000 VND",
-    role: "Technician",
-  },
-  {
-    id: "NV004",
-    fullName: "Pham Thi Dung",
-    email: "dung.pham@cinemax.com",
-    phone: "0934567890",
-    salary: "11,000,000 VND",
-    role: "Ticket Seller",
-  },
-  {
-    id: "NV005",
-    fullName: "Hoang Van Em",
-    email: "em.hoang@cinemax.com",
-    phone: "0945678901",
-    salary: "9,000,000 VND",
-    role: "Security",
-  },
-  {
-    id: "NV006",
-    fullName: "Vu Thi Phuong",
-    email: "phuong.vu@cinemax.com",
-    phone: "0956789012",
-    salary: "13,000,000 VND",
-    role: "Accountant",
-  },
-];
+// ====================================================================
+// KHAI BÁO TYPE (Đã chuyển từ user.ts)
+// ====================================================================
 
+// Kiểu dữ liệu Role (Phải bao gồm string để tránh lỗi casing từ backend)
+type EmployeeRole =
+  | "manager"
+  | "staff"
+  | "technician"
+  | "security"
+  | "accountant"
+  | string; 
 
+interface Employee {
+  EmployeeID: string;
+  FullName: string;
+  Email: string;
+  PhoneNumber: string;
+  Salary: number; 
+  Role: EmployeeRole;
+  BranchName: string;
+  BranchID: number;
+}
+
+// HÀM FORMAT TIỀN TỆ (Đã chuyển ra ngoài component)
+const formatSalary = (salary: number) => {
+    // Đây là dòng thêm "VND"
+    return `${salary.toLocaleString('en-US', { maximumFractionDigits: 0 })}`; 
+};
 // ================== MAIN PAGE ==================
 
 export default function EmployeesPage() {
+    // Khởi tạo employees là mảng rỗng để tránh lỗi truy cập index
+    const [employees, setEmployees] = useState<Employee[]>([]); 
+    const [loading, setLoading] = useState(true);
+    const [error, setError] = useState<string | null>(null);
+    const [searchTerm, setSearchTerm] = useState('');
+
+    const [debouncedSearchTerm] = useDebounce(searchTerm, 300); 
+
+    // ... (Hàm fetchEmployees, handleDelete, handleEdit giữ nguyên)
+    const fetchEmployees = async (searchQuery: string) => {
+        try {
+            setLoading(true);
+            const res = await employeeApi.getAllEmployees(searchQuery); 
+            // Đảm bảo dữ liệu nhận được đúng kiểu Employee[]
+            setEmployees(res.data as Employee[]);
+            setError(null);
+        } catch (err: any) {
+            console.error("Lỗi khi tải nhân viên:", err);
+            setError(err.response?.data?.message || "Không thể tải danh sách nhân viên.");
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    // ... (Hàm useEffect giữ nguyên)
+    useEffect(() => {
+        fetchEmployees(debouncedSearchTerm);
+    }, [debouncedSearchTerm]);
+    
+    
+    const handleDelete = async (employeeId: string) => {
+        if (!window.confirm(`Bạn có chắc chắn muốn xóa nhân viên ID: ${employeeId} không?`)) return;
+
+        try {
+            await employeeApi.deleteEmployee(employeeId); 
+            alert(`Xóa nhân viên ${employeeId} thành công!`);
+            fetchEmployees(searchTerm); 
+        } catch (err: any) {
+            alert(`Xóa thất bại: ${err.response?.data?.message || 'Lỗi server.'}`);
+        }
+    };
+
+    const handleEdit = (employee: Employee) => {
+        alert(`Chức năng Sửa nhân viên ${employee.EmployeeID} chưa được triển khai. Dữ liệu: ${employee.FullName}`);
+    };
+    
+
+    // 4. HIỂN THỊ TRẠNG THÁI (Giữ nguyên)
+    if (loading) return (
+        <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f6f7fb' }}>
+            <LeftMenuBar />
+            <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                <CircularProgress />
+            </Box>
+        </Box>
+    );
+
+    if (error) return (
+        <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f6f7fb' }}>
+            <LeftMenuBar />
+            <Box sx={{ flexGrow: 1, p: 4 }}>
+                <Typography variant="h5" color="error">Lỗi Tải Dữ Liệu</Typography>
+                <Typography color="error">{error}</Typography>
+            </Box>
+        </Box>
+    );
+    
   return (
     <Box
       sx={{
@@ -111,7 +161,7 @@ export default function EmployeesPage() {
         >
           <Box>
             <Typography variant="h4" sx={{ fontWeight: 700 }}>
-              Employee Management
+              Employee Management ({employees[0]?.BranchName || 'N/A'})
             </Typography>
             <Typography variant="body2" color="text.secondary">
               View employee information and roles
@@ -136,12 +186,14 @@ export default function EmployeesPage() {
           </Button>
         </Box>
 
-        {/* SEARCH BAR */}
+        {/* SEARCH BAR (Gắn state) */}
         <Box sx={{ mb: 3, maxWidth: 600 }}>
           <TextField
             fullWidth
             placeholder="Search by name, employee ID, email..."
             variant="outlined"
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
             InputProps={{
               startAdornment: (
                 <InputAdornment position="start">
@@ -161,54 +213,38 @@ export default function EmployeesPage() {
         {/* TABLE CARD */}
         <Paper
           elevation={0}
-          sx={{
-            borderRadius: 4,
-            overflow: "hidden",
-            border: "1px solid #f0f0f0",
-            bgcolor: "#ffffff",
-          }}
+          // ... (Styles giữ nguyên)
         >
           <Table>
+            {/* TABLE HEAD */}
             <TableHead>
-              <TableRow
-                sx={{
-                  bgcolor: "#fafafa",
-                  "& th": {
-                    fontWeight: 600,
-                    color: "text.secondary",
-                    borderBottom: "1px solid #eee",
-                  },
-                }}
-              >
-                <TableCell>Employee ID</TableCell>
-                <TableCell>Full Name</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell>Phone Number</TableCell>
-                <TableCell>Salary</TableCell>
-                <TableCell>Role</TableCell>
-              </TableRow>
+                <TableRow>
+                    <TableCell>Employee ID</TableCell>
+                    <TableCell>Full Name</TableCell>
+                    <TableCell>Email</TableCell>
+                    <TableCell>Phone Number</TableCell>
+                    <TableCell>Salary</TableCell>
+                    <TableCell>Role</TableCell>
+                    <TableCell align="center">Actions</TableCell>
+                </TableRow>
             </TableHead>
 
             <TableBody>
               {employees.map((emp) => (
                 <TableRow
-                  key={emp.id}
+                  key={emp.EmployeeID}
                   hover
-                  sx={{
-                    "& td": {
-                      borderBottom: "1px solid #f3f4f6",
-                    },
-                  }}
+                  // ... (Styles giữ nguyên)
                 >
                   {/* ID */}
                   <TableCell>
-                    <Typography variant="body2">{emp.id}</Typography>
+                    <Typography variant="body2">{emp.EmployeeID}</Typography>
                   </TableCell>
 
                   {/* Name */}
                   <TableCell>
                     <Typography variant="body2" sx={{ fontWeight: 600 }}>
-                      {emp.fullName}
+                      {emp.FullName}
                     </Typography>
                   </TableCell>
 
@@ -219,7 +255,7 @@ export default function EmployeesPage() {
                         sx={{ fontSize: 18, color: "text.disabled" }}
                       />
                       <Typography variant="body2">
-                        {emp.email}
+                        {emp.Email}
                       </Typography>
                     </Stack>
                   </TableCell>
@@ -230,7 +266,7 @@ export default function EmployeesPage() {
                       <PhoneInTalkOutlinedIcon
                         sx={{ fontSize: 18, color: "text.disabled" }}
                       />
-                      <Typography variant="body2">{emp.phone}</Typography>
+                      <Typography variant="body2">{emp.PhoneNumber}</Typography>
                     </Stack>
                   </TableCell>
 
@@ -240,14 +276,26 @@ export default function EmployeesPage() {
                       variant="body2"
                       sx={{ color: "#16A34A", fontWeight: 500 }}
                     >
-                      $ {emp.salary}
+                      $ {formatSalary(emp.Salary)}
                     </Typography>
                   </TableCell>
 
                   {/* Role chip */}
                   <TableCell>
-                    <RoleChip role={emp.role} />
+                    <RoleChip role={emp.Role as EmployeeRole} />
                   </TableCell>
+                  
+                  {/* ACTIONS CELL */}
+                  <TableCell align="center">
+                        <Stack direction="row" spacing={1} justifyContent="center">
+                            <IconButton size="small" onClick={() => handleEdit(emp)}>
+                                <EditOutlinedIcon fontSize="small" />
+                            </IconButton>
+                            <IconButton size="small" sx={{ color: "#DC2626" }} onClick={() => handleDelete(emp.EmployeeID)}>
+                                <DeleteOutlineOutlinedIcon fontSize="small" />
+                            </IconButton>
+                        </Stack>
+                    </TableCell>
                 </TableRow>
               ))}
             </TableBody>

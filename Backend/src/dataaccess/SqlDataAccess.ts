@@ -7,7 +7,8 @@ import {
     Movie,
     RoomDetails,
     SeatDetail,
-    Showtime
+    Showtime,
+    Employee
 } from '../models/user';
 // Lấy cấu hình từ biến môi trường
 const config = {
@@ -398,5 +399,61 @@ return movies;
             .input('FName', sql.NVarChar(30), showtimeData.FName)
             .input('MovieID', sql.Int, showtimeData.MovieID)
             .execute('Screening.sp_UpdateShowtime'); // <-- Gọi SP mới
+    }
+    async getAllEmployees(branchId: number, searchTerm?: string): Promise<Employee[]> {
+        const db = await getPool();
+        const result = await db.request()
+            .input('BranchID', sql.Int, branchId)
+            .input('SearchTerm', sql.NVarChar(50), searchTerm)
+            .execute('Staff.sp_GetAllEmployees'); // <-- SP đã được tạo
+        
+        return result.recordset.map(record => ({
+            EmployeeID: record.EmployeeID,
+            FullName: record.FullName,
+            Email: record.Email,
+            PhoneNumber: record.PhoneNumber,
+            Salary: parseFloat(record.Salary),
+            Role: record.Role.toLowerCase(),
+            BranchID: record.BranchID,
+            BranchName: record.BranchName,
+            Sex: record.Sex,
+        })) as Employee[];
+    }
+
+    // 2. TẠO NHÂN VIÊN MỚI (POST)
+    async createEmployee(employeeData: any): Promise<void> {
+        const db = await getPool();
+        await db.request()
+            .input('EName', sql.VarChar(30), employeeData.FullName)
+            .input('Sex', sql.Char(1), employeeData.Sex)
+            .input('PhoneNumber', sql.VarChar(15), employeeData.PhoneNumber)
+            .input('Email', sql.VarChar(30), employeeData.Email)
+            .input('EPassword', sql.VarChar(20), employeeData.EPassword)
+            .input('Salary', sql.Decimal(10, 2), employeeData.Salary)
+            .input('UserType', sql.NVarChar(15), employeeData.Role)
+            .input('ManageID', sql.VarChar(20), employeeData.ManageID || null) // Xử lý ManageID có thể là null
+            .input('BranchID', sql.Int, employeeData.BranchID)
+            .execute('Staff.sp_InsertEmployee');
+    }
+    
+    // 3. CẬP NHẬT NHÂN VIÊN (PUT)
+    async updateEmployee(employeeData: any): Promise<void> {
+        const db = await getPool();
+        await db.request()
+            .input('EUserID', sql.VarChar(20), employeeData.EmployeeID)
+            .input('EName', sql.VarChar(30), employeeData.FullName)
+            .input('PhoneNumber', sql.VarChar(15), employeeData.PhoneNumber)
+            .input('Salary', sql.Decimal(10, 2), employeeData.Salary)
+            .input('UserType', sql.NVarChar(15), employeeData.Role)
+            .input('BranchID', sql.Int, employeeData.BranchID)
+            .execute('Staff.sp_UpdateEmployee');
+    }
+    
+    // 4. XÓA NHÂN VIÊN (DELETE)
+    async deleteEmployee(employeeId: string): Promise<void> {
+        const db = await getPool();
+        await db.request()
+            .input('EUserID', sql.VarChar(20), employeeId)
+            .execute('Staff.sp_DeleteEmployee');
     }
 }

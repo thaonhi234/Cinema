@@ -79,6 +79,17 @@ export interface Showtime {
     TicketsSold: number;
     Price: number;
 }
+export interface Employee {
+    EmployeeID: string;
+    FullName: string;
+    Email: string;
+    PhoneNumber: string;
+    Salary: number;
+    Role: 'staff' | 'manager';
+    BranchID: number;
+    BranchName: string;
+    Sex: 'M' | 'F';
+}
 // Interface định nghĩa các phương thức truy cập DB bắt buộc
 export interface IDataAccess {
     getUserByEmail(email: string): Promise<User | null>;
@@ -111,4 +122,10 @@ export interface IDataAccess {
     createShowtime(showtimeData: any): Promise<void>;
     deleteShowtime(timeId: number, branchId: number): Promise<void>;
     updateShowtime(showtimeData: any): Promise<void>;
+
+    
+    getAllEmployees(branchId: number, searchTerm?: string): Promise<Employee[]>;
+    createEmployee(employeeData: any): Promise<void>;
+    updateEmployee(employeeData: any): Promise<void>;
+    deleteEmployee(employeeId: string): Promise<void>;
 }
