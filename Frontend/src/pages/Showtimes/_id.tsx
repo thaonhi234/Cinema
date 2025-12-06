@@ -11,6 +11,7 @@ import {
   TableBody,
   TextField,
   InputAdornment,
+  CircularProgress,
 } from "@mui/material";
 
 import MovieFilterOutlinedIcon from "@mui/icons-material/MovieFilterOutlined";
@@ -18,105 +19,114 @@ import TodayOutlinedIcon from "@mui/icons-material/Today";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 
 import LeftMenuBar from "../../components/LeftMenuBar";
-import type { Showtime } from "./types/Showtime";
+
 import ShowtimeRow from "./ShowtimeRow";
+import { useState, useEffect } from "react";
+import showtimeApi from "../../api/showtimeApi"; // API Service
+import { useNavigate } from "react-router-dom";
+import { format } from "date-fns";
 
-
-/* ============ TYPES & MOCK DATA ============ */
-const showtimes: Showtime[] = [
-  {
-    id: 1,
-    movieTitle: "Stellar Odyssey",
-    runtimeMin: 148,
-    room: "Royal Hall A",
-    date: "2025-12-02",
-    time: "10:00",
-    priceUSD: 12,
-    soldSeats: 61,
-    totalSeats: 120,
-  },
-  {
-    id: 2,
-    movieTitle: "Stellar Odyssey",
-    runtimeMin: 148,
-    room: "Royal Hall A",
-    date: "2025-12-02",
-    time: "13:30",
-    priceUSD: 12,
-    soldSeats: 22,
-    totalSeats: 120,
-  },
-  {
-    id: 3,
-    movieTitle: "Stellar Odyssey",
-    runtimeMin: 148,
-    room: "Gold Screen B",
-    date: "2025-12-02",
-    time: "16:00",
-    priceUSD: 15,
-    soldSeats: 53,
-    totalSeats: 80,
-  },
-  {
-    id: 4,
-    movieTitle: "Stellar Odyssey",
-    runtimeMin: 148,
-    room: "Premium C",
-    date: "2025-12-02",
-    time: "19:30",
-    priceUSD: 18,
-    soldSeats: 130,
-    totalSeats: 168,
-  },
-  {
-    id: 5,
-    movieTitle: "Stellar Odyssey",
-    runtimeMin: 148,
-    room: "IMAX Theater",
-    date: "2025-12-02",
-    time: "21:00",
-    priceUSD: 22,
-    soldSeats: 40,
-    totalSeats: 240,
-  },
-  {
-    id: 6,
-    movieTitle: "The Last Symphony",
-    runtimeMin: 132,
-    room: "Royal Hall A",
-    date: "2025-12-02",
-    time: "11:00",
-    priceUSD: 12,
-    soldSeats: 95,
-    totalSeats: 120,
-  },
-  {
-    id: 7,
-    movieTitle: "The Last Symphony",
-    runtimeMin: 132,
-    room: "Gold Screen B",
-    date: "2025-12-02",
-    time: "14:30",
-    priceUSD: 15,
-    soldSeats: 46,
-    totalSeats: 80,
-  },
-  {
-    id: 8,
-    movieTitle: "The Last Symphony",
-    runtimeMin: 132,
-    room: "Premium C",
-    date: "2025-12-02",
-    time: "18:00",
-    priceUSD: 18,
-    soldSeats: 43,
-    totalSeats: 168,
-  },
-];
-
-/* ============ MAIN PAGE ============ */
+export type Showtime = {
+  TimeID: number;
+  MovieName: string;
+  RunTimeMin: number;
+  RoomType: string;
+  RoomID: number;
+  BranchID: number;
+  Day: string; // YYYY-MM-DD
+  StartTime: string; // HH:mm:ss
+  EndTime: string;
+  Price: number;
+  TicketsSold: number;
+  TotalSeats: number;
+};
+export type ShowtimeDisplay = {
+    id: number;
+    movieTitle: string;
+    runtimeMin: number;
+    room: string;
+    date: string;
+    time: string; 
+    priceUSD: number;
+    soldSeats: number;
+    totalSeats: number;
+}
 
 export default function ShowtimesPage() {
+  const navigate = useNavigate();
+  const [showtimes, setShowtimes] = useState<Showtime[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  
+  // Lọc theo ngày hiện tại mặc định
+  const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
+
+  // 1. FETCH DATA TỪ BACKEND
+  const fetchShowtimes = async () => {
+    try {
+        setLoading(true);
+        // API gọi GET /api/showtimes?date=YYYY-MM-DD (BranchID được lấy từ Token)
+        const res = await showtimeApi.getAllShowtimes(selectedDate); 
+        
+        setShowtimes(res.data);
+        setError(null);
+    } catch (err: any) {
+        console.error("Lỗi khi tải suất chiếu:", err);
+        setError(err.response?.data?.message || "Không thể tải danh sách suất chiếu.");
+    } finally {
+        setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    fetchShowtimes();
+  }, [selectedDate]); // Chạy lại khi ngày được chọn thay đổi
+
+  // 2. Format dữ liệu từ BE sang FE Display
+  const formattedShowtimes: ShowtimeDisplay[] = showtimes.map(st => ({
+    
+    id: st.TimeID,
+    movieTitle: st.MovieName,
+    runtimeMin: st.RunTimeMin,
+    room: `${st.RoomType} ${st.RoomID}`, // Ví dụ: "IMAX 1"
+    date: st.Day,
+    time: st.StartTime, // Chỉ lấy HH:MM
+    priceUSD: st.Price, 
+    soldSeats: st.TicketsSold,
+    totalSeats: st.TotalSeats,
+  }));
+  
+  // 3. Handle Loading/Error States
+  if (loading) return (
+      <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f6f7fb' }}>
+          <LeftMenuBar />
+          <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+              <CircularProgress />
+              <Typography variant="h6" sx={{ ml: 2 }}>Đang tải lịch chiếu...</Typography>
+          </Box>
+      </Box>
+  );
+  if (error) return (
+      <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f6f7fb' }}>
+          <LeftMenuBar />
+          <Box sx={{ flexGrow: 1, p: 4 }}>
+              <Typography variant="h5" color="error">Lỗi Tải Dữ Liệu</Typography>
+              <Typography color="error">{error}</Typography>
+          </Box>
+      </Box>
+  );
+  
+  // 4. Handle Actions (Placeholder - Cần tích hợp API Delete)
+  const handleDelete = async (timeId: number) => {
+    if (!window.confirm(`Bạn có chắc chắn muốn xóa suất chiếu ID: ${timeId} không?`)) return;
+    try {
+        await showtimeApi.deleteShowtime(timeId);
+        alert("Xóa thành công!");
+        fetchShowtimes(); // Tải lại dữ liệu
+    } catch (err: any) {
+        alert(`Xóa thất bại: ${err.response?.data?.message || 'Lỗi server.'}`);
+    }
+  }
   return (
     <Box
       sx={{
@@ -215,7 +225,8 @@ export default function ShowtimesPage() {
 
             <TextField
               size="small"
-              placeholder="mm/dd/yyyy"
+              value={selectedDate} // Gắn giá trị vào state
+              onChange={(e) => setSelectedDate(e.target.value)}
               InputProps={{
                 startAdornment: (
                   <InputAdornment position="start">
@@ -270,8 +281,8 @@ export default function ShowtimesPage() {
             </TableHead>
 
             <TableBody>
-              {showtimes.map((st) => (
-                <ShowtimeRow key={st.id} showtime={st} />
+              {formattedShowtimes.map((st) => (
+                <ShowtimeRow key={st.id} showtime={st} onDelete={handleDelete} />
               ))}
             </TableBody>
           </Table>

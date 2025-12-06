@@ -8,15 +8,18 @@ import {
 import AvailabilityBar from "./AvailabilityBar";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import type { Showtime } from "./types/Showtime"
-
+import type { ShowtimeDisplay } from "./_id"; // <-- Sửa import
 /* ============ ShowtimeRow COMPONENT ============ */
 
 type ShowtimeRowProps = {
-  showtime: Showtime;
+  showtime: ShowtimeDisplay;
+  onDelete: (id: number) => void; // <-- Thêm hàm delete
 };
 
-export default function ShowtimeRow({ showtime }: ShowtimeRowProps) {
+export default function ShowtimeRow({ showtime, onDelete }: ShowtimeRowProps) {
+  const handleEdit = () => {
+    alert(`Chức năng Sửa suất chiếu ID: ${showtime.id} chưa được triển khai.`);
+  };
   return (
     <TableRow
       hover
@@ -67,10 +70,10 @@ export default function ShowtimeRow({ showtime }: ShowtimeRowProps) {
       {/* ACTIONS */}
       <TableCell align="center">
         <Stack direction="row" spacing={1} justifyContent="center">
-          <IconButton size="small">
+          <IconButton size="small" onClick={handleEdit}>
             <EditOutlinedIcon fontSize="small" />
           </IconButton>
-          <IconButton size="small" sx={{ color: "#DC2626" }}>
+          <IconButton size="small" sx={{ color: "#DC2626" }} onClick={() => onDelete(showtime.id)}>
             <DeleteOutlineOutlinedIcon fontSize="small" />
           </IconButton>
         </Stack>

@@ -398,8 +398,8 @@ INSERT INTO Cinema.SEAT (BranchID, RoomID, SRow, SColumn, SType, SStatus) VALUES
 
 INSERT INTO Movie.MOVIE (MovieID, MName, Descript, RunTime, isDub, isSub, releaseDate, closingDate, AgeRating) VALUES
 (1, 'Avengers', 'Superhero movie', 120, 1, 1, '2025-01-01', '2025-03-01', '13+'),
-(2, 'Inception', 'Mind-bending thriller', 150, 0, 1, '2025-02-01', '2025-04-01', '16+'),
-(3, 'Titanic', 'Romantic drama', 195, 1, 1, '2025-03-01', '2025-06-01', '13+'),
+(2, 'Inception', 'Mind-bending thriller', 150, 0, 1, '2025-12-01', '2025-12-31', '16+'),
+(3, 'Titanic', 'Romantic drama', 195, 1, 1, '2025-12-01', '2025-12-31', '13+'),
 (4, 'Joker', 'Psychological thriller', 122, 0, 1, '2025-01-15', '2025-03-15', '18+'),
 (5, 'Spiderman', 'Action movie', 130, 1, 1, '2025-02-10', '2025-04-10', '13+'),
 (6, 'Avatar', 'Sci-fi adventure', 160, 1, 1, '2025-03-01', '2025-06-01', '13+'),
@@ -486,7 +486,7 @@ INSERT INTO Booking.COUPONUSAGE (CouponID, OrderID, CUserID, UseDate) VALUES
 
 INSERT INTO Screening.TIME (TimeID, Day, StartTime, EndTime, FName, MovieID, RoomID, BranchID) VALUES
 (1, '2025-01-10', '10:00', '12:00', '2D', 1, 1, 1), (2, '2025-01-10', '12:30', '14:30', '3D', 1, 2, 1),
-(3, '2025-01-11', '15:00', '17:30', 'IMAX', 2, 1, 2), (4, '2025-01-12', '18:00', '20:00', '2D', 3, 1, 3),
+(3, '2025-12-06', '15:00', '17:30', 'IMAX', 2, 1, 2), (4, '2025-01-12', '18:00', '20:00', '2D', 3, 1, 3),
 (5, '2025-01-13', '20:30', '22:30', '3D', 4, 1, 4), (6, '2025-01-14', '10:00', '12:30', '2D', 5, 2, 2),
 (7, '2025-01-15', '13:00', '15:30', '3D', 5, 3, 2), (8, '2025-01-16', '16:00', '18:30', 'IMAX', 6, 2, 3),
 (9, '2025-01-17', '19:00', '21:30', '2D', 7, 1, 4), (10, '2025-01-18', '14:00', '16:30', '3D', 8, 2, 5),
@@ -1203,20 +1203,29 @@ BEGIN
 
     SELECT
         T.TimeID,
-        T.[Day],
-        T.StartTime,
-        T.EndTime,
+        CONVERT(VARCHAR(10), T.[Day], 23) AS [Day], 
+        CONVERT(VARCHAR(5), T.StartTime, 108) AS StartTime, 
+        CONVERT(VARCHAR(5), T.EndTime, 108) AS EndTime, 
+        
         T.FName AS FormatName,
         M.MName AS MovieName,
-        M.RunTime,
+        
+        -- FIX MỚI: Tính toán thời lượng:
+        -- Nếu RunTime > 0, dùng RunTime. 
+        -- Nếu RunTime là NULL/0, tính chênh lệch giữa EndTime và StartTime.
+        ISNULL(M.RunTime, 
+               DATEDIFF(MINUTE, 
+                        CAST(T.StartTime AS DATETIME), 
+                        CAST(T.EndTime AS DATETIME))
+              ) AS RunTimeMin, -- Đổi tên thành RunTime
+        
         SR.RoomID,
         SR.RType AS RoomType,
         SR.RCapacity AS TotalSeats,
-        -- Tính số vé đã bán (Tickets Sold)
+        
+        -- Tính số vé đã bán
         ISNULL(SUM(CASE WHEN TKT.TicketID IS NOT NULL THEN 1 ELSE 0 END), 0) AS TicketsSold
-        -- Giá (Giả định giá nằm ở bảng Screening.PRICE nếu có, tạm thời bỏ qua)
-        -- Tạm thời Hardcode Price cho ví dụ
-        , 12 AS Price
+        , 12 AS Price -- Giá hardcode
     FROM
         Screening.TIME T
     JOIN
@@ -1227,7 +1236,7 @@ BEGIN
         Screening.TICKETS TKT ON T.TimeID = TKT.TimeID
     WHERE
         T.BranchID = @BranchID
-        AND T.[Day] = @Date -- Lọc theo ngày
+        AND T.[Day] = @Date 
     GROUP BY
         T.TimeID, T.[Day], T.StartTime, T.EndTime, T.FName, M.MName, M.RunTime, SR.RoomID, SR.RType, SR.RCapacity
     ORDER BY
