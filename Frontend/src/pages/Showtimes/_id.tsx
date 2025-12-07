@@ -29,7 +29,8 @@ import { format } from "date-fns";
 export type Showtime = {
   TimeID: number;
   MovieName: string;
-  RunTimeMin: number;
+  RunTime: number;
+  RuntimeMinutes: number;
   RoomType: string;
   RoomID: number;
   BranchID: number;
@@ -87,7 +88,7 @@ export default function ShowtimesPage() {
     
     id: st.TimeID,
     movieTitle: st.MovieName,
-    runtimeMin: st.RunTimeMin,
+    runtimeMin: st.RuntimeMinutes || 0,
     room: `${st.RoomType} ${st.RoomID}`, // Ví dụ: "IMAX 1"
     date: st.Day,
     time: st.StartTime, // Chỉ lấy HH:MM

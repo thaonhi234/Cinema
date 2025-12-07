@@ -53,9 +53,15 @@ getMovieById = async (req: Request, res: Response) => {
         try {
             await dataAccess.createMovie(rest, Genres);
             res.status(201).json({ message: 'Movie added successfully.' });
-        } catch (error) {
-            // Xử lý lỗi từ RAISERROR (ví dụ: Closing date must be after release date)
-            return res.status(400).json({ message: (error as any).originalError.info.message });
+        } catch (error: any) {
+        console.error("Lỗi khi tạo movie:", error);
+
+        const message =
+            error?.originalError?.info?.message ||
+            error?.message ||
+            "Lỗi server khi tạo movie";
+
+        return res.status(400).json({ message });
         }
     }
 

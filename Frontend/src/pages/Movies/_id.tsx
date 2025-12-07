@@ -28,7 +28,7 @@ import StatusChip from "./StatusChip";
 import GenreChip from "./GenreChip";
 import { useState, useEffect } from "react";
 import moviesApi from "../../api/movieApi";
-// ================== MOcK DATA ==================
+import MovieFormModal from "./MovieFormModal"; 
 type Movie = {
     MovieID: number;
     MName: string; // Title
@@ -38,16 +38,99 @@ type Movie = {
     AgeRating: string;
     AvgRating: number; 
     Genres: string[]; 
+    Descript: string;
+    isDub?: boolean;
+    isSub?: boolean;
+
     Status: MovieStatus; // Tính toán từ SQL
     poster?: string; // Poster URL (tạm thời vẫn là client-side)
 };
 type MovieStatus = "Now Showing" | "Coming Soon" | "Ended"; // <--- Bổ sung 'Ended'
 // ================== MAIN PAGE ==================
-
+interface ModalState {
+  isOpen: boolean;
+  isEdit: boolean; // True nếu là Sửa, False nếu là Thêm
+  currentMovie: Movie | null; // Dữ liệu phim hiện tại (chỉ khi Edit)
+}
 export default function MoviesPage() {
   const [movies, setMovies] = useState<Movie[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
+    const [modalState, setModalState] = useState<ModalState>({
+        isOpen: false,
+        isEdit: false,
+        currentMovie: null,
+    });
+    const handleOpenCreateModal = () => {
+        setModalState({ isOpen: true, isEdit: false, currentMovie: null });
+    };
+    const handleOpenEditModal = (movie: Movie) => {
+        setModalState({ isOpen: true, isEdit: true, currentMovie: movie });
+    };
+    const handleCloseModal = () => {
+        setModalState({ isOpen: false, isEdit: false, currentMovie: null });
+    };
+    const handleDelete = async (movieId: number) => {
+    if (!window.confirm(`Bạn có chắc chắn muốn xóa phim ID: ${movieId} không? Phim này chỉ có thể xóa nếu đã hết thời gian công chiếu.`)) return;
+
+    try {
+        await moviesApi.delete(movieId); // Gọi API DELETE
+        alert(`Xóa phim ID: ${movieId} thành công!`);
+        fetchMovies(); // Tải lại danh sách
+    } catch (err: any) {
+        // Lỗi 400 Bad Request thường là do phim đang công chiếu (validation từ SP)
+        alert(`Xóa thất bại: ${err.response?.data?.message || 'Lỗi server.'}`);
+    }
+    };
+    const handleSaveMovie = async (data: any, genres: string[]) => {
+    try {
+        // 1. Chuyển sang Date object
+        const releaseDateObj = new Date(data.releaseDate);
+        const closingDateObj = new Date(data.closingDate);
+
+        // 2. Kiểm tra hợp lệ
+        if (isNaN(releaseDateObj.getTime())) {
+            alert("Ngày công chiếu không hợp lệ!");
+            return;
+        }
+        if (isNaN(closingDateObj.getTime())) {
+            alert("Ngày kết thúc công chiếu không hợp lệ!");
+            return;
+        }
+
+        // 3. Chuẩn hóa payload
+        const payload = {
+            MName: data.MName,
+            Descript: data.Descript || "Đang cập nhật mô tả.",
+            RunTime: Number(data.RunTime),
+            releaseDate: releaseDateObj,  // gửi Date object
+            closingDate: closingDateObj,  // gửi Date object
+            AgeRating: data.AgeRating,
+            isDub: data.isDub ?? false,
+            isSub: data.isSub ?? true,
+            AvgRating: data.AvgRating ?? 0,
+            Genres: genres,
+        };
+
+        console.log("Payload gửi lên backend:", payload);
+
+        if (modalState.isEdit && modalState.currentMovie) {
+            // Cập nhật
+            await moviesApi.update(modalState.currentMovie.MovieID, payload);
+            alert("Cập nhật phim thành công!");
+        } else {
+            // Thêm mới
+            await moviesApi.create(payload);
+            alert("Thêm phim mới thành công!");
+        }
+
+        handleCloseModal(); // đóng modal
+        fetchMovies();      // tải lại danh sách
+    } catch (err: any) {
+        console.error("Lỗi khi tạo/cập nhật movie:", err);
+        alert(`Thao tác thất bại: ${err.response?.data?.message || err.message || 'Lỗi server.'}`);
+    }
+};
 
     // 1. FETCH DATA TỪ BACKEND
     const fetchMovies = async () => {
@@ -75,25 +158,7 @@ export default function MoviesPage() {
         fetchMovies();
     }, []);
     
-    // 2. HÀM XỬ LÝ ACTIONS (Edit/Delete)
-    const handleEdit = (movieId: number) => {
-        alert(`Chức năng Sửa phim ID: ${movieId} chưa được triển khai.`);
-        // Thực tế: Tải chi tiết phim bằng moviesApi.getById(movieId) và mở modal
-    };
-
-    const handleDelete = async (movieId: number) => {
-        if (!window.confirm(`Bạn có chắc chắn muốn xóa phim ID: ${movieId} không? Thao tác này không thể hoàn tác.`)) {
-            return;
-        }
-        try {
-            await moviesApi.delete(movieId); // DELETE /api/movies/:id
-            alert(`Xóa phim ${movieId} thành công!`);
-            fetchMovies(); // Tải lại danh sách
-        } catch (err: any) {
-             alert(`Xóa thất bại: ${err.response?.data?.message || 'Lỗi server.'}`);
-        }
-    };
-
+  
 
     // 3. HIỂN THỊ TRẠNG THÁI
     if (loading) return (
@@ -157,7 +222,7 @@ export default function MoviesPage() {
           <Button
             variant="contained"
             startIcon={<AddIcon />}
-            onClick={() => alert("Chức năng thêm phim mới chưa được triển khai.")}
+            onClick={handleOpenCreateModal}
             sx={{
               borderRadius: 999,
               textTransform: "none",
@@ -285,7 +350,7 @@ export default function MoviesPage() {
                       spacing={1}
                       justifyContent="center"
                     >
-                      <IconButton size="small" color="inherit" onClick={() => handleEdit(movie.MovieID)}>
+                      <IconButton size="small" color="inherit" onClick={() => handleOpenEditModal(movie)}>
                         <EditOutlinedIcon fontSize="small" />
                       </IconButton>
                       <IconButton size="small" sx={{ color: "#DC2626" }} onClick={() => handleDelete(movie.MovieID)}>
@@ -297,6 +362,11 @@ export default function MoviesPage() {
               ))}
             </TableBody>
           </Table>
+          <MovieFormModal 
+          modalState={modalState}
+          onClose={handleCloseModal}
+          onSave={handleSaveMovie} 
+      />
         </Paper>
       </Box>
     </Box>

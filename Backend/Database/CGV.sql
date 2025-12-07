@@ -560,7 +560,6 @@ IF OBJECT_ID('Movie.sp_InsertNewMovie', 'P') IS NOT NULL
 GO
 
 CREATE PROCEDURE Movie.sp_InsertNewMovie
-    @id INT,
     @name VARCHAR(255),
     @descript NVARCHAR(MAX),
     @runtime TINYINT,
@@ -569,23 +568,35 @@ CREATE PROCEDURE Movie.sp_InsertNewMovie
     @release DATE,
     @closing DATE,
     @agerating VARCHAR(30),
-    @Genres NVARCHAR(MAX) -- danh sách genres
+    @Genres NVARCHAR(MAX) -- danh sách genres, format: 'Action,Sci-Fi'
 AS
 BEGIN
     SET NOCOUNT ON;
 
+    -- Validate date
     IF @release >= @closing
         THROW 50001, 'Release date must be earlier than closing date.', 1;
 
     IF @release < CAST(GETDATE() AS DATE)
         THROW 50002, 'Release date cannot be in the past.', 1;
 
+    -----------------------------------------
+    -- 🔥 Tự sinh MovieID = MAX(MovieID) + 1
+    -----------------------------------------
+    DECLARE @NewMovieID INT;
+
+    SELECT @NewMovieID = ISNULL(MAX(MovieID), 0) + 1
+    FROM Movie.MOVIE;
+
+    -----------------------------------------
+    -- Insert vào Movie
+    -----------------------------------------
     INSERT INTO Movie.MOVIE (MovieID, MName, Descript, RunTime, isDub, isSub, releaseDate, closingDate, AgeRating)
-    VALUES (@id, @name, @descript, @runtime, @dub, @sub, @release, @closing, @agerating);
+    VALUES (@NewMovieID, @name, @descript, @runtime, @dub, @sub, @release, @closing, @agerating);
 
-    DECLARE @NewMovieID INT = @id;
-
-    -- Chèn genres vào MovieGenre
+    -----------------------------------------
+    -- Insert Genres
+    -----------------------------------------
     DECLARE @Genre NVARCHAR(255);
     DECLARE @Pos INT = 1;
     DECLARE @NextPos INT;
@@ -595,10 +606,12 @@ BEGIN
     BEGIN
         SET @NextPos = CHARINDEX(',', @Genres, @Pos);
         IF @NextPos = 0 SET @NextPos = @Len + 1;
+
         SET @Genre = LTRIM(RTRIM(SUBSTRING(@Genres, @Pos, @NextPos - @Pos)));
 
         IF LEN(@Genre) > 0
-            INSERT INTO Movie.MovieGenre (MovieID, Genre) VALUES (@NewMovieID, @Genre);
+            INSERT INTO Movie.MovieGenre (MovieID, Genre)
+            VALUES (@NewMovieID, @Genre);
 
         SET @Pos = @NextPos + 1;
     END
@@ -606,8 +619,9 @@ END;
 GO
 
 
+
 EXEC Movie.sp_InsertNewMovie 
-    @id = 17, 
+ 
     @name = 'Doraemon', 
     @descript = 'Animation', 
     @runtime = 100, 
@@ -677,7 +691,7 @@ END;
 GO
 
 EXEC Movie.sp_UpdateMovie
-    @id = 17,
+    @id = 16,
     @name = 'Doraemon Updated',
     @descript = 'Animation movie updated description',
     @runtime = 105,
@@ -1251,11 +1265,7 @@ BEGIN
         -- FIX MỚI: Tính toán thời lượng:
         -- Nếu RunTime > 0, dùng RunTime. 
         -- Nếu RunTime là NULL/0, tính chênh lệch giữa EndTime và StartTime.
-        ISNULL(M.RunTime, 
-               DATEDIFF(MINUTE, 
-                        CAST(T.StartTime AS DATETIME), 
-                        CAST(T.EndTime AS DATETIME))
-              ) AS RunTimeMin, -- Đổi tên thành RunTime
+       ISNULL(M.RunTime, 0) AS RuntimeMinutes,
         
         SR.RoomID,
         SR.RType AS RoomType,

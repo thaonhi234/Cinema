@@ -203,16 +203,25 @@ return movies;
     // Phương thức TẠO (Sử dụng SP newMovie hoặc sp_InsertNewMovie nếu bạn đã tạo)
     async createMovie(movie: any, genres: string[]): Promise<void> {
         const db = await getPool();
+        const release = new Date(movie.releaseDate);
+const closing = new Date(movie.closingDate);
+
+if (isNaN(release.getTime())) {
+    throw new Error("Release date is invalid");
+}
+if (isNaN(closing.getTime())) {
+    throw new Error("Closing date is invalid");
+}
         // Giả sử bạn sử dụng SP Movie.sp_InsertNewMovie đã được gợi ý
         await db.request()
-            .input('id', sql.Int, movie.MovieID)
+          
             .input('name', sql.VarChar(255), movie.MName)
             .input('descript', sql.NVarChar(sql.MAX), movie.Descript || 'No description provided')
             .input('runtime', sql.TinyInt, movie.RunTime)
             .input('dub', sql.Bit, movie.isDub)
             .input('sub', sql.Bit, movie.isSub)
-            .input('release', sql.Date, movie.releaseDate)
-            .input('closing', sql.Date, movie.closingDate)
+            .input('release', sql.Date, release)
+        .input('closing', sql.Date, closing)
             .input('agerating', sql.VarChar(30), movie.AgeRating)
             // Tham số cuối cùng: Genres
             .input('Genres', sql.NVarChar(sql.MAX), genres.join(',')) 
