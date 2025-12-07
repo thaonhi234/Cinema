@@ -882,6 +882,44 @@ BEGIN
 
 END
 GO
+-- TRONG SQL SERVER MANAGEMENT STUDIO (SSMS)
+CREATE OR ALTER PROCEDURE Staff.sp_GetAllEmployees
+    @BranchID AS INT,
+    @SearchTerm NVARCHAR(50) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    SET @SearchTerm = ISNULL(@SearchTerm, '');
+    IF @SearchTerm <> ''
+        SET @SearchTerm = '%' + @SearchTerm + '%';
+
+    SELECT
+        E.EUserID AS EmployeeID,
+        E.EName AS FullName,
+        E.Email,
+        E.PhoneNumber,
+        E.Salary,
+        E.UserType AS Role,
+        B.BName AS BranchName, 
+        E.BranchID,
+        E.Sex
+    FROM
+        Staff.EMPLOYEE E
+    JOIN
+        Cinema.BRANCH B ON E.BranchID = B.BranchID
+    WHERE
+        E.BranchID = @BranchID 
+        AND (
+            @SearchTerm IS NULL OR @SearchTerm = '' OR
+            E.EName LIKE @SearchTerm OR
+            E.EUserID LIKE @SearchTerm OR
+            E.Email LIKE @SearchTerm
+        )
+    ORDER BY
+        E.UserType DESC, E.EName ASC;
+END
+GO
 -- Thêm SP này vào file SQL của bạn (hoặc chạy riêng nếu DB đã tạo)
 CREATE OR ALTER PROCEDURE sp_GetWeeklyRevenueAndGrowth
     @BranchID AS INT
