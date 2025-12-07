@@ -967,7 +967,6 @@ IF OBJECT_ID('Movie.sp_InsertNewMovie', 'P') IS NOT NULL
 GO
 
 CREATE PROCEDURE Movie.sp_InsertNewMovie
-    @id INT,
     @name VARCHAR(255),
     @descript NVARCHAR(MAX),
     @runtime TINYINT,
@@ -976,23 +975,35 @@ CREATE PROCEDURE Movie.sp_InsertNewMovie
     @release DATE,
     @closing DATE,
     @agerating VARCHAR(30),
-    @Genres NVARCHAR(MAX) -- danh sách genres
+    @Genres NVARCHAR(MAX) -- danh sách genres, format: 'Action,Sci-Fi'
 AS
 BEGIN
     SET NOCOUNT ON;
 
+    -- Validate date
     IF @release >= @closing
         THROW 50001, 'Release date must be earlier than closing date.', 1;
 
     IF @release < CAST(GETDATE() AS DATE)
         THROW 50002, 'Release date cannot be in the past.', 1;
 
+    -----------------------------------------
+    -- 🔥 Tự sinh MovieID = MAX(MovieID) + 1
+    -----------------------------------------
+    DECLARE @NewMovieID INT;
+
+    SELECT @NewMovieID = ISNULL(MAX(MovieID), 0) + 1
+    FROM Movie.MOVIE;
+
+    -----------------------------------------
+    -- Insert vào Movie
+    -----------------------------------------
     INSERT INTO Movie.MOVIE (MovieID, MName, Descript, RunTime, isDub, isSub, releaseDate, closingDate, AgeRating)
-    VALUES (@id, @name, @descript, @runtime, @dub, @sub, @release, @closing, @agerating);
+    VALUES (@NewMovieID, @name, @descript, @runtime, @dub, @sub, @release, @closing, @agerating);
 
-    DECLARE @NewMovieID INT = @id;
-
-    -- Chèn genres vào MovieGenre
+    -----------------------------------------
+    -- Insert Genres
+    -----------------------------------------
     DECLARE @Genre NVARCHAR(255);
     DECLARE @Pos INT = 1;
     DECLARE @NextPos INT;
@@ -1002,10 +1013,12 @@ BEGIN
     BEGIN
         SET @NextPos = CHARINDEX(',', @Genres, @Pos);
         IF @NextPos = 0 SET @NextPos = @Len + 1;
+
         SET @Genre = LTRIM(RTRIM(SUBSTRING(@Genres, @Pos, @NextPos - @Pos)));
 
         IF LEN(@Genre) > 0
-            INSERT INTO Movie.MovieGenre (MovieID, Genre) VALUES (@NewMovieID, @Genre);
+            INSERT INTO Movie.MovieGenre (MovieID, Genre)
+            VALUES (@NewMovieID, @Genre);
 
         SET @Pos = @NextPos + 1;
     END
@@ -1013,8 +1026,9 @@ END;
 GO
 
 
+
 EXEC Movie.sp_InsertNewMovie 
-    @id = 31, 
+ 
     @name = 'Doraemon', 
     @descript = 'Animation', 
     @runtime = 100, 
@@ -1022,7 +1036,7 @@ EXEC Movie.sp_InsertNewMovie
     @sub = 0, 
     @release = '2025-12-10', 
     @closing = '2026-01-10', 
-    @agerating = 'K', 
+    @agerating = '15+', 
     @Genres = 'Action, Drama';
 GO
 
@@ -1084,7 +1098,7 @@ END;
 GO
 
 EXEC Movie.sp_UpdateMovie
-    @id = 31,
+    @id = 16,
     @name = 'Doraemon Updated',
     @descript = 'Animation movie updated description',
     @runtime = 105,
@@ -1092,55 +1106,58 @@ EXEC Movie.sp_UpdateMovie
     @sub = 0,
     @release = '2025-12-10',
     @closing = '2026-01-15',
-    @agerating = 'K',
+    @agerating = '15+',
     @Genres = 'Action, Drama';
 GO
-
 --Procedure 3. DELETE
 --Có thể xóa phim nếu đã qua thời gian công chiếu
 --Không thể xóa phim nếu đang nằm trong thời gian công chiếu
 CREATE OR ALTER PROCEDURE deleteMovie(
-    @id AS INT
+	@id AS INT
 )
 AS
 BEGIN
-    -- Kiểm tra xem phim có tồn tại không
-    IF NOT EXISTS (SELECT 1 FROM Movie.MOVIE WHERE MovieID = @id)
-    BEGIN
-        THROW 50001, 'Movie does not exist.', 1;
-    END
+	-- Kiểm tra phim tồn tại
+	IF NOT EXISTS (SELECT 1 FROM Movie.MOVIE WHERE MovieID = @id)
+		THROW 50001, 'Movie does not exist.', 1;
 
-    -- Kiểm tra xem phim đang chiếu không được phép xóa
-    IF EXISTS (
-        SELECT 1
-        FROM Movie.MOVIE
-        WHERE MovieID = @id AND closingDate >= CAST(GETDATE() AS DATE)
-    )
-    BEGIN
-        THROW 50002, 'Movie that are currently showing cannot be deleted.', 1;
-    END
+	-- Kiểm tra phim đang chiếu
+	IF EXISTS (
+		SELECT 1
+		FROM Movie.MOVIE
+		WHERE MovieID = @id AND closingDate >= CAST(GETDATE() AS DATE)
+	)
+		THROW 50002, 'Movies that are currently showing cannot be deleted.', 1;
 
-    -- Xóa vé liên quan đến các suất chiếu của phim
-    DELETE T
-    FROM Screening.TICKETS T
-    INNER JOIN Screening.TIME TM ON T.TimeID = TM.TimeID
-    WHERE TM.MovieID = @id;
-
-    -- Xóa các suất chiếu của phim
-    DELETE FROM Screening.TIME WHERE MovieID = @id;
-
-    -- Xóa các bảng liên quan đến movie
+    -- Xóa các bảng phụ thuộc
     DELETE FROM Movie.MOVIEGENRE WHERE MovieID = @id;
     DELETE FROM Movie.FEATURES  WHERE MovieID = @id;
     DELETE FROM Movie.REVIEW    WHERE MovieID = @id;
-    DELETE FROM Movie.MOVIEFORMAT WHERE MovieID = @id; -- bổ sung xóa MOVIEFORMAT
+    DELETE FROM Movie.MOVIEFORMAT WHERE MovieID = @id;
+    -- Lấy danh sách TimeID liên quan
+    DECLARE @TimeIDs TABLE (TimeID INT);
+    INSERT INTO @TimeIDs(TimeID)
+    SELECT TimeID
+    FROM Screening.TIME
+    WHERE MovieID = @id;
 
-    -- Cuối cùng xóa movie
-    DELETE FROM Movie.MOVIE WHERE MovieID = @id;
+    -- Xóa vé liên quan
+    DELETE FROM Screening.TICKETS
+    WHERE TimeID IN (SELECT TimeID FROM @TimeIDs);
+
+    -- Xóa lịch chiếu
+    DELETE FROM Screening.TIME
+    WHERE MovieID = @id;
+
+    -- Xóa movie
+    DELETE FROM Movie.MOVIE
+    WHERE MovieID = @id;
 END;
 GO
 
+-- Test
 EXEC deleteMovie 15;
+
 
 --Procedure 4. Danh sách và số lượng nhân viên trong 1 chi nhánh
 IF OBJECT_ID('empList', 'P') IS NOT NULL

@@ -143,7 +143,7 @@ export default function MovieFormModal({ modalState, onClose, onSave }: MovieFor
                 <Grid container spacing={2}>
                     
                     {/* Tên Phim */}
-                    <Grid item xs={12}>
+                     <Grid size={{ xs: 12, md: 6 }}>
                         <TextField 
                             label="Movie Title" 
                             name="MName" 
@@ -155,7 +155,7 @@ export default function MovieFormModal({ modalState, onClose, onSave }: MovieFor
                     </Grid>
                     
                     {/* Thời lượng & Xếp hạng tuổi */}
-                    <Grid item xs={6}>
+                    <Grid size={{ xs: 12, md: 6 }}>
                         <TextField 
                             label="Duration (minutes)" 
                             name="RunTime" 
@@ -166,23 +166,26 @@ export default function MovieFormModal({ modalState, onClose, onSave }: MovieFor
                             fullWidth 
                         />
                     </Grid>
-                    <Grid item xs={6}>
-                    <Typography variant="subtitle2" gutterBottom>Genres</Typography>
-                    <Stack direction="row" spacing={1} flexWrap="wrap">
-                        {availableGenres.map(genre => (
-                            <Chip
-                                key={genre}
-                                label={genre}
-                                onClick={() => handleGenreChange(genre)}
-                                color={selectedGenres.includes(genre) ? 'primary' : 'default'}
-                                variant={selectedGenres.includes(genre) ? 'filled' : 'outlined'}
-                            />
-                        ))}
-                    </Stack>
-                </Grid>
+                    <Grid size={{ xs: 12, md:12}}>
+                        <Typography variant="subtitle2" gutterBottom>Thể loại (Genres)</Typography>
+                        <Stack spacing={{ xs: 1, sm: 1 }}
+                                direction="row"
+                                useFlexGap
+                                sx={{ flexWrap: 'wrap' }}>
+                            {availableGenres.map(genre => (
+                                <Chip
+                                    key={genre}
+                                    label={genre}
+                                    onClick={() => handleGenreChange(genre)}
+                                    color={selectedGenres.includes(genre) ? 'primary' : 'default'}
+                                    variant={selectedGenres.includes(genre) ? 'filled' : 'outlined'}
+                                />
+                            ))}
+                        </Stack>
+                    </Grid>
 
-                    {/* Ngày công chiếu & Ngày kết thúc */}
-                    <Grid item xs={6}>
+                     {/* Ngày công chiếu & Ngày kết thúc */}
+                    <Grid size={{ xs: 12, md:4}}>
                         <TextField 
                             label="Release Date" 
                             name="releaseDate" 
@@ -195,9 +198,10 @@ export default function MovieFormModal({ modalState, onClose, onSave }: MovieFor
                         />
                     </Grid>
                 
+                
                     
-                    {/* Genres */}
-                    <Grid item xs={6}>
+                     {/* Genres */}
+                    <Grid size={{ xs: 12, md:4}}>
                     <TextField 
                         select 
                         label="Rating (Age Restriction)" 
@@ -208,49 +212,48 @@ export default function MovieFormModal({ modalState, onClose, onSave }: MovieFor
                     >
                         {ageRatings.map(rating => <MenuItem key={rating} value={rating}>{rating}</MenuItem>)}
                     </TextField>
-                </Grid>
-                    <Grid item xs={12}>
-                    <TextField 
-                        label="Closing Date" 
-                        name="closingDate" 
-                        type="date"
-                        value={formData.closingDate} 
-                        onChange={handleChange} 
-                        fullWidth 
-                        InputLabelProps={{ shrink: true }}
-                        required
-                    />
-                </Grid>
+                    </Grid>
+                        <Grid size={{ xs: 12, md:4}}>
+                        <TextField 
+                            label="Closing Date" 
+                            name="closingDate" 
+                            type="date"
+                            value={formData.closingDate} 
+                            onChange={handleChange} 
+                            fullWidth 
+                            InputLabelProps={{ shrink: true }}
+                        />
+                    </Grid>
                 {/* Description (Trường bắt buộc cho Backend) */}
-                <Grid item xs={12}>
-                    <TextField 
-                        label="Description" 
-                        name="Descript" 
-                        value={formData.Descript} 
-                        onChange={handleChange} 
-                        fullWidth 
-                         multiline
-                        rows={3}
-                        required 
-                        
-                    />
-                </Grid>
+                    <Grid size={{ xs: 12, md:12}}>
+                        <TextField 
+                            label="Description" 
+                            name="Descript" 
+                            value={formData.Descript} 
+                            onChange={handleChange} 
+                            fullWidth 
+                            multiline
+                            rows={3}
+                            required 
+                        />
+                    </Grid>
                     {/* Checkboxes */}
                     {/* Checkboxes Dub/Sub (Giữ nguyên) */}
-                <Grid item xs={6}>
-                    <FormControlLabel
-                        control={<Checkbox checked={formData.isDub} onChange={handleChange} name="isDub" />}
-                        label="Dub"
-                    />
-                </Grid>
-                <Grid item xs={6}>
+                    <Grid item xs={6}>
+                        <FormControlLabel
+                            control={<Checkbox checked={formData.isDub} onChange={handleChange} name="isDub" />}
+                            label="Dub"
+                        />
+                    </Grid>
+                    <Grid item xs={6}>
                     <FormControlLabel
                         control={<Checkbox checked={formData.isSub} onChange={handleChange} name="isSub" />}
                         label="Sub"
                     />
-                </Grid>
-                </Grid>
+                    </Grid>
+                    </Grid>
             </DialogContent>
+                   
             
             <DialogActions style={{ padding: '0 24px 24px 24px' }}>
                 <div style={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
