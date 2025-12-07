@@ -63,22 +63,7 @@ CREATE TABLE Customer.MEMBERSHIP (
     CONSTRAINT fk_mem_cus FOREIGN KEY (CUserID) REFERENCES Customer.CUSTOMER(CUserID)
 );
 
--- 3. Branch
-CREATE TABLE Cinema.BRANCH (
-    BranchID INT PRIMARY KEY,
-    BName VARCHAR(32),
-    BAddress VARCHAR(30)
-);
-
--- 4. BranchPhone
-CREATE TABLE Cinema.BRANCHPHONENUMBER (
-    BranchID INT,
-    BPhoneNumber VARCHAR(15),
-    PRIMARY KEY (BranchID, BPhoneNumber),
-    CONSTRAINT fk_phone_branch FOREIGN KEY (BranchID) REFERENCES Cinema.BRANCH (BranchID)
-);
-
--- 5. Employee
+-- 3. Employee
 -- SỬA LỖI: Nhúng trực tiếp logic sinh ID vào DEFAULT
 CREATE TABLE Staff.EMPLOYEE (
     EUserID VARCHAR(20) PRIMARY KEY DEFAULT ('EMP' + RIGHT('000' + CAST(NEXT VALUE FOR Seq_EmployeeID AS VARCHAR(3)), 3)),
@@ -89,13 +74,12 @@ CREATE TABLE Staff.EMPLOYEE (
     EPassword VARCHAR(20) NOT NULL,
     Salary DECIMAL(10, 2) NOT NULL,
     UserType NVARCHAR(15) NOT NULL,
-    ManageID VARCHAR(20) NULL,
+    ManageID VARCHAR(20),
     BranchID INT NOT NULL,
-    CONSTRAINT fk_emp_man FOREIGN KEY (ManageID) REFERENCES Staff.EMPLOYEE (EUserID),
-    CONSTRAINT fk_emp_br FOREIGN KEY (BranchID) REFERENCES Cinema.BRANCH (BranchID) ON DELETE CASCADE
+    CONSTRAINT fk_emp_man FOREIGN KEY (ManageID) REFERENCES Staff.EMPLOYEE (EUserID)
 );
 
--- 6. WorkShift
+-- 4. WorkShift
 CREATE TABLE Staff.WORKSHIFT (
     StartTime TIME NOT NULL,
     EndTime TIME NOT NULL,
@@ -104,7 +88,7 @@ CREATE TABLE Staff.WORKSHIFT (
     PRIMARY KEY (StartTime, EndTime, WDate)
 );
 
--- 7. Work
+-- 5. Work
 CREATE TABLE Staff.WORK (
     EUserID VARCHAR(20),
     StartTime TIME NOT NULL,
@@ -113,6 +97,23 @@ CREATE TABLE Staff.WORK (
     PRIMARY KEY (EUserID, StartTime, EndTime, WDate),
     CONSTRAINT fk_work_emp FOREIGN KEY (EUserID) REFERENCES Staff.EMPLOYEE (EUserID),
     CONSTRAINT fk_work_shift FOREIGN KEY (StartTime, EndTime, WDate) REFERENCES Staff.WORKSHIFT (StartTime, EndTime, WDate)
+);
+
+-- 6. Branch
+CREATE TABLE Cinema.BRANCH (
+    BranchID INT PRIMARY KEY,
+    BName VARCHAR(32),
+    ManageID VARCHAR(20),
+    BAddress VARCHAR(30),
+    CONSTRAINT fk_branch_emp_man FOREIGN KEY (ManageID) REFERENCES Staff.EMPLOYEE (EUserID)
+);
+
+-- 7. BranchPhone
+CREATE TABLE Cinema.BRANCHPHONENUMBER (
+    BranchID INT,
+    BPhoneNumber VARCHAR(15),
+    PRIMARY KEY (BranchID, BPhoneNumber),
+    CONSTRAINT fk_phone_branch FOREIGN KEY (BranchID) REFERENCES Cinema.BRANCH (BranchID)
 );
 
 -- 8. ScreenRoom
@@ -147,7 +148,8 @@ CREATE TABLE Movie.MOVIE (
     isSub BIT NOT NULL,
     releaseDate DATE NOT NULL,
     closingDate DATE NOT NULL,
-    AgeRating VARCHAR(30) NOT NULL
+    AgeRating VARCHAR(30) NOT NULL,
+    posterURL VARCHAR(MAX)
 );
 
 -- 11. Genre
@@ -201,7 +203,7 @@ CREATE TABLE Movie.REVIEW (
 -- 18. ORDERS
 CREATE TABLE Booking.ORDERS (
     OrderID INT PRIMARY KEY,
-    OrderTime TIME NOT NULL,
+    OrderTime DATETIME NOT NULL,
     PaymentMethod VARCHAR(30),
     Total DECIMAL (10, 2) NOT NULL,
     CUserID VARCHAR(20) NOT NULL,
@@ -299,6 +301,11 @@ CREATE TABLE Products.MERCHANDISE (
     EndDate DATE,
     CONSTRAINT fk_mer_add FOREIGN KEY (ProductID) REFERENCES Products.ADDONITEM (ProductID)
 );
+
+ALTER TABLE Staff.EMPLOYEE
+ADD CONSTRAINT fk_emp_br_brid FOREIGN KEY (BranchID)
+               REFERENCES Cinema.BRANCH (BranchID);
+
 GO
 
 -- View
@@ -316,217 +323,602 @@ GO
 -----------------------------------------------------------
 SET DATEFORMAT DMY;
 
+ALTER TABLE Staff.EMPLOYEE
+NOCHECK CONSTRAINT fk_emp_br_brid;
+
+ALTER TABLE Staff.EMPLOYEE
+NOCHECK CONSTRAINT fk_emp_man;
+
 -- Insert Customer (Không cần điền CUserID, nó tự sinh CUSxxx)
 INSERT INTO Customer.CUSTOMER (CName, Sex, PhoneNumber, Email, EPassword, UserType) VALUES
-('Mai Anh', 'F', '0909123456', 'maianh@gmail.com', 'pass123', 'member'),
-('Nguyen Van A', 'M', '0912345678', 'vana@gmail.com', 'pass456', 'member'),
-('Tran Thi B', 'F', '0923456789', 'ttb@gmail.com', 'pass789', 'member'),
-('Le Van C', 'M', '0934567890', 'lvc@gmail.com', 'pass321', 'member'),
-('Pham Thi D', 'F', '0945678901', 'ptd@gmail.com', 'pass654', 'member'),
-('Nguyen Thi E', 'F', '0956789012', 'nte@gmail.com', 'pass111', 'member'),
-('Le Van F', 'M', '0967890123', 'lvf@gmail.com', 'pass222', 'member'),
-('Tran Van G', 'M', '0978901234', 'tvg@gmail.com', 'pass333', 'member'),
-('Pham Thi H', 'F', '0989012345', 'pth@gmail.com', 'pass444', 'member'),
-('Hoang Van I', 'M', '0990123456', 'hvi@gmail.com', 'pass555', 'member'),
-('Nguyen Van J', 'M', '0901234567', 'nvj@gmail.com', 'pass666', 'member'),
-('Le Thi K', 'F', '0912345679', 'ltk@gmail.com', 'pass777', 'member'),
-('Tran Thi L', 'F', '0923456790', 'ttl@gmail.com', 'pass888', 'member'),
-('Pham Van M', 'M', '0934567901', 'pvm@gmail.com', 'pass999', 'member'),
-('Hoang Thi N', 'F', '0945679012', 'htn@gmail.com', 'pass000', 'member');
+('Nguyen Van A', 'M', '0901000001', 'a1@example.com', 'passA1', 'member'),
+('Tran Thi B', 'F', '0901000002', 'b2@example.com', 'passB2', 'member'),
+('Le Van C', 'M', '0901000003', 'c3@example.com', 'passC3', 'member'),
+('Pham Thi D', 'F', '0901000004', 'd4@example.com', 'passD4', 'member'),
+('Hoang Van E', 'M', '0901000005', 'e5@example.com', 'passE5', 'member'),
+('Vo Thi F', 'F', '0901000006', 'f6@example.com', 'passF6', 'member'),
+('Do Van G', 'M', '0901000007', 'g7@example.com', 'passG7', 'member'),
+('Bui Thi H', 'F', '0901000008', 'h8@example.com', 'passH8', 'member'),
+('Phan Van I', 'M', '0901000009', 'i9@example.com', 'passI9', 'member'),
+('Ngo Thi J', 'F', '0901000010', 'j10@example.com', 'passJ10', 'member'),
+('Dinh Van K', 'M', '0901000011', 'k11@example.com', 'passK11', 'member'),
+('Cao Thi L', 'F', '0901000012', 'l12@example.com', 'passL12', 'member'),
+('Trinh Van M', 'M', '0901000013', 'm13@example.com', 'passM13', 'member'),
+('Ly Thi N', 'F', '0901000014', 'n14@example.com', 'passN14', 'member'),
+('Dang Van O', 'M', '0901000015', 'o15@example.com', 'passO15', 'member'),
+('Mai Thi P', 'F', '0901000016', 'p16@example.com', 'passP16', 'member'),
+('Viet Van Q', 'M', '0901000017', 'q17@example.com', 'passQ17', 'member'),
+('Ta Thi R', 'F', '0901000018', 'r18@example.com', 'passR18', 'member'),
+('Quach Van S', 'M', '0901000019', 's19@example.com', 'passS19', 'member'),
+('Ton Nu T', 'F', '0901000020', 't20@example.com', 'passT20', 'member'),
+('Ninh Van U', 'M', '0901000021', 'u21@example.com', 'passU21', 'member'),
+('Kieu Thi V', 'F', '0901000022', 'v22@example.com', 'passV22', 'member'),
+('Lam Van W', 'M', '0901000023', 'w23@example.com', 'passW23', 'member'),
+('Duong Thi X', 'F', '0901000024', 'x24@example.com', 'passX24', 'member'),
+('Vu Van Y', 'M', '0901000025', 'y25@example.com', 'passY25', 'member'),
+('Chu Thi Z', 'F', '0901000026', 'z26@example.com', 'passZ26', 'member'),
+('Cao Van AA', 'M', '0901000027', 'aa27@example.com', 'passAA27', 'member'),
+('Ngo Thi BB', 'F', '0901000028', 'bb28@example.com', 'passBB28', 'member'),
+('Duy Van CC', 'M', '0901000029', 'cc29@example.com', 'passCC29', 'member'),
+('Tram Thi DD', 'F', '0901000030', 'dd30@example.com', 'passDD30', 'member');
 
 INSERT INTO Customer.MEMBERSHIP (MemberID, Point, MemberRank, CUserID) VALUES
-(1, 100, 2, 'CUS001'), (2, 500, 3, 'CUS002'), (3, 50, 1, 'CUS003'), (4, 1000, 4, 'CUS004'),
-(5, 200, 2, 'CUS005'), (6, 150, 2, 'CUS006'), (7, 300, 3, 'CUS007'), (8, 50, 1, 'CUS008'),
-(9, 400, 3, 'CUS009'), (10, 600, 4, 'CUS010'), (11, 250, 2, 'CUS011'), (12, 120, 2, 'CUS012'),
-(13, 500, 3, 'CUS013'), (14, 700, 4, 'CUS014'), (15, 80, 1, 'CUS015');
-
-INSERT INTO Cinema.BRANCH (BranchID, BName, BAddress) VALUES 
-(1, 'CGV Vincom', 'Hanoi'), (2, 'CGV Aeon', 'Ho Chi Minh'), (3, 'CGV Royal', 'Da Nang'),
-(4, 'CGV Crescent', 'Can Tho'), (5, 'CGV Bitexco', 'Ho Chi Minh'), (6, 'CGV Landmark', 'Ho Chi Minh'),
-(7, 'CGV Lotte', 'Hanoi'), (8, 'CGV Vincom Center', 'Da Nang'), (9, 'CGV Aeon Mall', 'Binh Duong'),
-(10, 'CGV Bitexco Tower', 'Ho Chi Minh'), (11, 'CGV Royal City', 'Hanoi'), (12, 'CGV Times City', 'Hanoi'),
-(13, 'CGV Crescent Mall', 'Can Tho'), (14, 'CGV Sun Plaza', 'Ha Long'), (15, 'CGV Vincom Plaza', 'Hai Phong');
-
-INSERT INTO Cinema.BRANCHPHONENUMBER (BranchID, BPhoneNumber) VALUES
-(1, '0241234567'), (2, '0282345678'), (3, '0236345678'), (4, '0291234567'), (5, '0289876543'),
-(6, '0281112233'), (7, '0243334455'), (8, '0236667788'), (9, '0277778899'), (10, '0289990011'),
-(11, '0245556677'), (12, '0248889900'), (13, '0292223344'), (14, '0201112233'), (15, '0223334455');
+(1, 120, 1, 'CUS001'), (2, 300, 2, 'CUS002'), (3, 450, 2, 'CUS003'), (4, 50, 1, 'CUS004'), (5, 800, 3, 'CUS005'),
+(6, 1500, 4, 'CUS006'), (7, 700, 3, 'CUS007'), (8, 200, 1, 'CUS008'), (9, 950, 3, 'CUS009'), (10, 110, 1, 'CUS010'),
+(11, 250, 2, 'CUS011'), (12, 1200, 4, 'CUS012'), (13, 430, 2, 'CUS013'), (14, 560, 2, 'CUS014'), (15, 780, 3, 'CUS015'),
+(16, 90, 1, 'CUS016'), (17, 1400, 4, 'CUS017'), (18, 310, 2, 'CUS018'), (19, 600, 3, 'CUS019'), (20, 100, 1, 'CUS020'),
+(21, 820, 3, 'CUS021'), (22, 130, 1, 'CUS022'), (23, 400, 2, 'CUS023'), (24, 2000, 4, 'CUS024'), (25, 260, 2, 'CUS025'),
+(26, 520, 2, 'CUS026'), (27, 880, 3, 'CUS027'), (28, 1750, 4, 'CUS028'), (29, 340, 2, 'CUS029'), (30, 620, 3, 'CUS030');
 
 -- Insert Employee (Tự sinh EMPxxx)
-INSERT INTO Staff.EMPLOYEE (EName, Sex, PhoneNumber, Email, EPassword, Salary, UserType, ManageID, BranchID) VALUES
-('Nguyen Van Q', 'M', '0911222333', 'nvq@gmail.com', 'emp123', 1200, 'manager', NULL, 1);
+INSERT INTO Staff.EMPLOYEE 
+(EName, Sex, PhoneNumber, Email, EPassword, Salary, UserType, ManageID, BranchID) VALUES 
+('Tran Van A', 'M', '0901111001', 'a1@cgv.vn', 'emp001', 7000, 'staff', NULL, 1),
+('Nguyen Thi B', 'F', '0901111002', 'b2@cgv.vn', 'emp002', 7500, 'staff', NULL, 2),
+('Le Van C', 'M', '0901111003', 'c3@cgv.vn', 'emp003', 6800, 'staff', NULL, 3),
+('Pham Thi D', 'F', '0901111004', 'd4@cgv.vn', 'emp004', 7200, 'staff', NULL, 4),
+('Do Van E', 'M', '0901111005', 'e5@cgv.vn', 'emp005', 6900, 'staff', NULL, 5);
 
--- Các Employee tiếp theo
-INSERT INTO Staff.EMPLOYEE (EName, Sex, PhoneNumber, Email, EPassword, Salary, UserType, ManageID, BranchID) VALUES
-('Tran Thi R', 'F', '0922333444', 'ttr@gmail.com', 'emp234', 800, 'staff', 'EMP001', 1),
-('Le Van S', 'M', '0933444555', 'lvs@gmail.com', 'emp345', 900, 'staff', 'EMP001', 2),
-('Pham Thi T', 'F', '0944555666', 'ptt@gmail.com', 'emp456', 850, 'staff', 'EMP001', 3),
-('Hoang Van U', 'M', '0955666777', 'hvu@gmail.com', 'emp567', 1000, 'manager', NULL, 2),
-('Le Thi O', 'F', '0911122334', 'lto@gmail.com', 'emp678', 900, 'staff', 'EMP001', 3),
-('Tran Van P', 'M', '0922233445', 'tvp@gmail.com', 'emp789', 950, 'staff', 'EMP005', 2),
-('Pham Thi Q', 'F', '0933344556', 'ptq@gmail.com', 'emp890', 800, 'staff', 'EMP001', 1),
-('Hoang Van R', 'M', '0944455667', 'hvr@gmail.com', 'emp901', 1000, 'manager', NULL, 3),
-('Nguyen Thi S', 'F', '0955566778', 'nts@gmail.com', 'emp012', 850, 'staff', 'EMP009', 3),
-('Le Van T', 'M', '0966677889', 'lvt@gmail.com', 'emp123', 900, 'staff', 'EMP009', 3),
-('Tran Thi U', 'F', '0977788990', 'ttu@gmail.com', 'emp234', 950, 'staff', 'EMP005', 2),
-('Pham Van V', 'M', '0988899001', 'pvk@gmail.com', 'emp345', 1100, 'manager', NULL, 1),
-('Hoang Thi W', 'F', '0999900112', 'htw@gmail.com', 'emp456', 870, 'staff', 'EMP013', 2),
-('Nguyen Van X', 'M', '0900011223', 'nvx@gmail.com', 'emp567', 920, 'staff', 'EMP013', 2);
+INSERT INTO Staff.EMPLOYEE 
+(EName, Sex, PhoneNumber, Email, EPassword, Salary, UserType, ManageID, BranchID) VALUES
+('Nguyen Van F', 'M', '0901111101', 'f6@cgv.vn', 'emp006', 3200, 'staff', 'EMP001', 1),
+('Tran Thi G', 'F', '0901111102', 'g7@cgv.vn', 'emp007', 3500, 'staff', 'EMP001', 1),
+('Hoang Van H', 'M', '0901111103', 'h8@cgv.vn', 'emp008', 4000, 'staff', 'EMP001', 1),
+('Vo Thi I', 'F', '0901111104', 'i9@cgv.vn', 'emp009', 3600, 'staff', 'EMP001', 1),
+('Ly Van J', 'M', '0901111105', 'j10@cgv.vn', 'emp010', 3900, 'staff', 'EMP001', 1),
+('Phan Thi K', 'F', '0901111201', 'k11@cgv.vn', 'emp011', 3100, 'staff', 'EMP002', 2),
+('Bui Van L', 'M', '0901111202', 'l12@cgv.vn', 'emp012', 4300, 'staff', 'EMP002', 2),
+('Dang Thi M', 'F', '0901111203', 'm13@cgv.vn', 'emp013', 3800, 'staff', 'EMP002', 2),
+('Ngo Van N', 'M', '0901111204', 'n14@cgv.vn', 'emp014', 4500, 'staff', 'EMP002', 2),
+('Trinh Thi O', 'F', '0901111205', 'o15@cgv.vn', 'emp015', 3600, 'staff', 'EMP002', 2),
+('Vo Van P', 'M', '0901111301', 'p16@cgv.vn', 'emp016', 3300, 'staff', 'EMP003', 3),
+('Luong Thi Q', 'F', '0901111302', 'q17@cgv.vn', 'emp017', 4200, 'staff', 'EMP003', 3),
+('Ha Van R', 'M', '0901111303', 'r18@cgv.vn', 'emp018', 3900, 'staff', 'EMP003', 3),
+('Chu Thi S', 'F', '0901111304', 's19@cgv.vn', 'emp019', 3100, 'staff', 'EMP003', 3),
+('Vu Van T', 'M', '0901111305', 't20@cgv.vn', 'emp020', 3700, 'staff', 'EMP003', 3),
+('Tran Van U', 'M', '0901111401', 'u21@cgv.vn', 'emp021', 3400, 'staff', 'EMP004', 4),
+('Nguyen Thi V', 'F', '0901111402', 'v22@cgv.vn', 'emp022', 3600, 'staff', 'EMP004', 4),
+('Le Van W', 'M', '0901111403', 'w23@cgv.vn', 'emp023', 4100, 'staff', 'EMP004', 4),
+('Pham Thi X', 'F', '0901111404', 'x24@cgv.vn', 'emp024', 3800, 'staff', 'EMP004', 4),
+('Do Van Y', 'M', '0901111405', 'y25@cgv.vn', 'emp025', 3500, 'staff', 'EMP004', 4),
+('Hoang Thi Z', 'F', '0901111501', 'z26@cgv.vn', 'emp026', 4300, 'staff', 'EMP005', 5),
+('Ly Van AA', 'M', '0901111502', 'aa27@cgv.vn', 'emp027', 3800, 'staff', 'EMP005', 5),
+('Ngo Thi AB', 'F', '0901111503', 'ab28@cgv.vn', 'emp028', 3100, 'staff', 'EMP005', 5),
+('Bui Van AC', 'M', '0901111504', 'ac29@cgv.vn', 'emp029', 4200, 'staff', 'EMP005', 5),
+('Tran Thi AD', 'F', '0901111505', 'ad30@cgv.vn', 'emp030', 3900, 'staff', 'EMP005', 5);
+
+SELECT * FROM Staff.EMPLOYEE
+
+INSERT INTO Cinema.BRANCH (BranchID, BName, ManageID, BAddress) VALUES
+(1, 'CGV Aeon Tan Phu', 'EMP002', '30 Tan Phu, HCM'),
+(2, 'CGV Vincom Dong Khoi', 'EMP003', '70 Dong Khoi, HCM'),
+(3, 'CGV Aeon Binh Duong', 'EMP004', '1 Binh Duong'),
+(4, 'CGV Vincom Thao Dien', 'EMP005', '159 XLHN, HCM'),
+(5, 'CGV Go Vap', 'EMP006', '12 Phan Van Tri, HCM');
+
+INSERT INTO Cinema.BRANCHPHONENUMBER (BranchID, BPhoneNumber) VALUES
+(1, '0281111001'), (1, '0281111002'),
+(2, '0282222001'), (2, '0282222002'),
+(3, '0274111101'), (3, '0274111102'),
+(4, '0284444001'), (4, '0284444002'),
+(5, '0285555001'), (5, '0285555002');
+
+ALTER TABLE Staff.EMPLOYEE
+WITH CHECK CHECK CONSTRAINT ALL;
 
 INSERT INTO Staff.WORKSHIFT (StartTime, EndTime, WDate, Work) VALUES
-('08:00', '12:00', 1, 'Morning shift'), ('12:00', '16:00', 2, 'Afternoon shift'), ('16:00', '20:00', 3, 'Evening shift'),
-('20:00', '00:00', 4, 'Night shift'), ('10:00', '14:00', 5, 'Late morning shift'), ('06:00', '10:00', 1, 'Early morning shift'),
-('10:00', '14:00', 2, 'Late morning shift'), ('14:00', '18:00', 3, 'Afternoon shift'), ('18:00', '22:00', 4, 'Evening shift'),
-('22:00', '02:00', 5, 'Late night shift'), ('07:00', '11:00', 6, 'Morning shift'), ('11:00', '15:00', 7, 'Noon shift'),
-('15:00', '19:00', 1, 'Afternoon shift'), ('19:00', '23:00', 2, 'Night shift'), ('08:00', '12:00', 3, 'Morning shift');
+('08:00', '12:00', 1, N'Ve sinh phong chieu'),
+('12:00', '16:00', 1, N'Ban ve'),
+('16:00', '20:00', 1, N'Kiem tra thiet bi'),
+('08:00', '12:00', 2, N'Ve sinh phong chieu'),
+('12:00', '16:00', 2, N'Ban ve'),
+('16:00', '20:00', 2, N'Kiem tra thiet bi'),
+('08:00', '12:00', 3, N'Ve sinh phong chieu'),
+('12:00', '16:00', 3, N'Ban ve'),
+('16:00', '20:00', 3, N'Kiem tra thiet bi'),
+('08:00', '12:00', 4, N'Ve sinh phong chieu'),
+('12:00', '16:00', 4, N'Ban ve'),
+('16:00', '20:00', 4, N'Kiem tra thiet bi'),
+('08:00', '12:00', 5, N'Ve sinh phong chieu'),
+('12:00', '16:00', 5, N'Ban ve'),
+('16:00', '20:00', 5, N'Kiem tra thiet bi'),
+('08:00', '12:00', 6, N'Ve sinh phong chieu'),
+('12:00', '16:00', 6, N'Ban ve'),
+('16:00', '20:00', 6, N'Kiem tra thiet bi'),
+('08:00', '12:00', 7, N'Ve sinh phong chieu'),
+('12:00', '16:00', 7, N'Ban ve'),
+('16:00', '20:00', 7, N'Kiem tra thiet bi'),
+('20:00', '23:00', 1, N'Don dep cuoi ngay'),
+('20:00', '23:00', 2, N'Don dep cuoi ngay'),
+('20:00', '23:00', 3, N'Don dep cuoi ngay'),
+('20:00', '23:00', 4, N'Don dep cuoi ngay'),
+('20:00', '23:00', 5, N'Don dep cuoi ngay'),
+('20:00', '23:00', 6, N'Don dep cuoi ngay'),
+('20:00', '23:00', 7, N'Don dep cuoi ngay'),
+('09:00', '13:00', 1, N'Ho tro quan ly'),
+('13:00', '17:00', 2, N'Ho tro van hanh'),
+('17:00', '21:00', 3, N'Ho tro ban ve');
 
 INSERT INTO Staff.WORK (EUserID, StartTime, EndTime, WDate) VALUES
-('EMP002', '08:00', '12:00', 1), ('EMP003', '12:00', '16:00', 2), ('EMP004', '16:00', '20:00', 3), ('EMP002', '20:00', '00:00', 4),
-('EMP003', '10:00', '14:00', 5), ('EMP006', '06:00', '10:00', 1), ('EMP007', '10:00', '14:00', 2), ('EMP008', '14:00', '18:00', 3),
-('EMP009', '18:00', '22:00', 4), ('EMP010', '22:00', '02:00', 5), ('EMP011', '07:00', '11:00', 6), ('EMP012', '11:00', '15:00', 7),
-('EMP013', '15:00', '19:00', 1), ('EMP014', '19:00', '23:00', 2), ('EMP015', '08:00', '12:00', 3);
+('EMP002', '08:00', '12:00', 1), ('EMP003', '12:00', '16:00', 1), ('EMP004', '16:00', '20:00', 1),
+('EMP005', '08:00', '12:00', 2), ('EMP006', '12:00', '16:00', 2), ('EMP007', '16:00', '20:00', 2),
+('EMP008', '08:00', '12:00', 3), ('EMP009', '12:00', '16:00', 3), ('EMP010', '16:00', '20:00', 3),
+('EMP011', '08:00', '12:00', 4), ('EMP012', '12:00', '16:00', 4), ('EMP013', '16:00', '20:00', 4),
+('EMP014', '08:00', '12:00', 5), ('EMP015', '12:00', '16:00', 5), ('EMP016', '16:00', '20:00', 5),
+('EMP017', '08:00', '12:00', 6), ('EMP018', '12:00', '16:00', 6), ('EMP019', '16:00', '20:00', 6),
+('EMP020', '08:00', '12:00', 7), ('EMP021', '12:00', '16:00', 7), ('EMP022', '16:00', '20:00', 7),
+('EMP023', '20:00', '23:00', 1), ('EMP024', '20:00', '23:00', 2), ('EMP025', '20:00', '23:00', 3),
+('EMP026', '20:00', '23:00', 4), ('EMP027', '20:00', '23:00', 5), ('EMP028', '20:00', '23:00', 6),
+('EMP029', '20:00', '23:00', 7), ('EMP030', '09:00', '13:00', 1), ('EMP001', '13:00', '17:00', 2);
 
 INSERT INTO Cinema.SCREENROOM (BranchID, RoomID, RType, RCapacity) VALUES
-(1, 1, '2D', 100), (1, 2, '3D', 80), (2, 1, 'IMAX', 150), (2, 2, '2D', 100), (2, 3, '3D', 80),
-(3, 1, '2D', 90), (3, 2, 'IMAX', 120), (4, 1, '3D', 120), (4, 2, '2D', 90), (5, 1, '3D', 110), (5, 2, '2D', 100),
-(1, 3, '4DX', 70), (2, 4, '4DX', 60), (3, 3, 'VR', 50), (4, 3, 'VR', 55);
+-- Branch 1
+(1, 1, 'Standard', 90),
+(1, 2, 'IMAX', 100),
+(1, 3, '4DX', 85),
+-- Branch 2
+(2, 1, 'Standard', 95),
+(2, 2, 'IMAX', 100),
+(2, 3, 'Standard', 88),
+-- Branch 3
+(3, 1, '4DX', 82),
+(3, 2, 'Standard', 90),
+(3, 3, 'IMAX', 100),
+-- Branch 4
+(4, 1, 'Standard', 85),
+(4, 2, '4DX', 92),
+(4, 3, 'IMAX', 100),
+-- Branch 5
+(5, 1, 'Standard', 80),
+(5, 2, 'Standard', 90),
+(5, 3, '4DX', 95);
 
-INSERT INTO Cinema.SEAT (BranchID, RoomID, SRow, SColumn, SType, SStatus) VALUES
-(1, 1, 1, 1, 0, 1), (1, 1, 1, 2, 0, 1), (1, 2, 1, 1, 1, 1), (1, 2, 1, 2, 1, 1), (2, 1, 1, 1, 0, 1),
-(2, 1, 1, 2, 0, 1), (2, 2, 1, 1, 0, 1), (2, 3, 1, 1, 1, 1), (3, 1, 1, 1, 0, 1), (3, 2, 1, 1, 1, 1),
-(4, 1, 1, 1, 0, 1), (4, 2, 1, 1, 1, 1), (5, 1, 1, 1, 0, 1), (5, 2, 1, 1, 0, 1), (1, 3, 1, 1, 1, 1);
+--script sinh ghế
+BEGIN
 
-INSERT INTO Movie.MOVIE (MovieID, MName, Descript, RunTime, isDub, isSub, releaseDate, closingDate, AgeRating) VALUES
-(1, 'Avengers', 'Superhero movie', 120, 1, 1, '2025-01-01', '2025-03-01', '13+'),
-(2, 'Inception', 'Mind-bending thriller', 150, 0, 1, '2025-12-01', '2025-12-31', '16+'),
-(3, 'Titanic', 'Romantic drama', 195, 1, 1, '2025-12-01', '2025-12-31', '13+'),
-(4, 'Joker', 'Psychological thriller', 122, 0, 1, '2025-01-15', '2025-03-15', '18+'),
-(5, 'Spiderman', 'Action movie', 130, 1, 1, '2025-02-10', '2025-04-10', '13+'),
-(6, 'Avatar', 'Sci-fi adventure', 160, 1, 1, '2025-03-01', '2025-06-01', '13+'),
-(7, 'Interstellar', 'Space epic', 169, 0, 1, '2025-04-01', '2025-07-01', '13+'),
-(8, 'The Godfather', 'Crime drama', 175, 0, 1, '2025-05-01', '2025-08-01', '18+'),
-(9, 'Frozen', 'Animated family', 102, 1, 1, '2025-06-01', '2025-09-01', '0+'),
-(10, 'Black Panther', 'Superhero movie', 134, 1, 1, '2025-07-01', '2025-10-01', '13+'),
-(11, 'The Matrix', 'Sci-fi action', 136, 0, 1, '2025-03-15', '2025-06-15', '16+'),
-(12, 'Jaws', 'Thriller classic', 124, 0, 1, '2025-04-10', '2025-07-10', '16+'),
-(13, 'Lion King', 'Animated musical', 88, 1, 1, '2025-05-10', '2025-08-10', '0+'),
-(14, 'Thor', 'Superhero adventure', 115, 1, 1, '2025-06-15', '2025-09-15', '13+'),
-(15, 'Wonder Woman', 'Action superhero', 141, 1, 1, '2025-07-20', '2025-10-20', '13+');
+SET NOCOUNT ON;
+
+DECLARE @BranchID INT, @RoomID INT, @Capacity INT;
+DECLARE @count INT, @row INT, @col INT;
+
+DECLARE cur CURSOR FOR
+SELECT BranchID, RoomID, RCapacity
+FROM Cinema.SCREENROOM;
+
+OPEN cur;
+FETCH NEXT FROM cur INTO @BranchID, @RoomID, @Capacity;
+
+WHILE @@FETCH_STATUS = 0
+BEGIN
+    SET @count = 0;
+    SET @row = 1;
+
+    WHILE @row <= 10 AND @count < @Capacity
+    BEGIN
+        SET @col = 1;
+
+        WHILE @col <= 10 AND @count < @Capacity
+        BEGIN
+            INSERT INTO Cinema.SEAT (BranchID, RoomID, SRow, SColumn, SType, SStatus)
+            VALUES (
+                @BranchID,
+                @RoomID,
+                @row,
+                @col,
+                CASE WHEN @col >= 8 THEN 1 ELSE 0 END,  -- VIP từ cột 8 đến 10
+                1                                       -- Ghế đang hoạt động
+            );
+
+            SET @count = @count + 1;
+            SET @col = @col + 1;
+        END
+
+        SET @row = @row + 1;
+    END
+
+    FETCH NEXT FROM cur INTO @BranchID, @RoomID, @Capacity;
+END
+
+CLOSE cur;
+DEALLOCATE cur;
+
+END;
+
+INSERT INTO Movie.MOVIE (
+    MovieID, MName, Descript, RunTime, isDub, isSub,
+    releaseDate, closingDate, AgeRating, posterURL
+) VALUES
+(1, 'Dune: Part Two', 'Epic sci-fi adventure on Arrakis.', 165, 0, 1, '2025-01-15', '2025-04-15', 'T13', NULL),
+(2, 'Oppenheimer', 'Story of J. Robert Oppenheimer.', 180, 0, 1, '2025-02-10', '2025-05-20', 'T16', NULL),
+(3, 'Barbie', 'A journey of self-discovery in the real world.', 114, 1, 1, '2025-03-01', '2025-06-10', 'K', NULL),
+(4, 'Godzilla Minus One', 'Japan faces a new monster threat.', 130, 0, 1, '2025-04-05', '2025-07-15', 'T13', NULL),
+(5, 'Spider-Man: Across the Spider-Verse', 'Miles enters new dimensions.', 142, 1, 1, '2025-05-10', '2026-01-05', 'K', NULL),
+(6, 'Inside Out 2', 'Riley faces new emotions.', 100, 1, 1, '2025-06-12', '2025-09-10', 'K', NULL),
+(7, 'The Batman', 'Batman uncovers Gotham corruption.', 176, 0, 1, '2025-01-25', '2025-04-30', 'T13', NULL),
+(8, 'Avatar: The Way of Water', 'Return to Pandora oceans.', 190, 0, 1, '2025-02-20', '2025-05-25', 'T13', NULL),
+(9, 'Wonka', 'The early life of Willy Wonka.', 115, 1, 1, '2025-03-15', '2025-06-28', 'K', NULL),
+(10, 'Mission: Impossible – Dead Reckoning', 'Ethan Hunt faces a new threat.', 158, 0, 1, '2025-04-18', '2025-08-01', 'T13', NULL),
+(11, 'John Wick: Chapter 4', 'John Wick returns for revenge.', 169, 0, 1, '2025-01-30', '2025-05-20', 'T16', NULL),
+(12, 'The Marvels', 'Captain Marvel joins new heroes.', 105, 1, 1, '2025-02-28', '2025-06-05', 'T13', NULL),
+(13, 'The Creator', 'AI uprising threatens humanity.', 133, 0, 1, '2025-05-18', '2026-02-10', 'T13', NULL),
+(14, 'Napoleon', 'Epic biography of Napoleon Bonaparte.', 158, 0, 1, '2025-03-30', '2025-07-02', 'T13', NULL),
+(15, 'Kung Fu Panda 4', 'Po trains a new warrior.', 100, 1, 1, '2025-06-10', '2025-09-25', 'K', NULL),
+(16, 'Aquaman and the Lost Kingdom', 'Aquaman protects Atlantis.', 124, 1, 1, '2025-04-01', '2026-03-15', 'T13', NULL),
+(17, 'The Hunger Games: The Ballad of Songbirds & Snakes', 'Prequel to Hunger Games.', 157, 0, 1, '2025-02-20', '2025-06-20', 'T13', NULL),
+(18, 'The Equalizer 3', 'McCall seeks justice in Italy.', 109, 0, 1, '2025-03-18', '2025-06-30', 'T13', NULL),
+(19, 'Indiana Jones and the Dial of Destiny', 'Indiana Jones travels through time.', 142, 0, 1, '2025-05-01', '2025-08-10', 'T13', NULL),
+(20, 'Elemental', 'Fire and water form an unlikely bond.', 102, 1, 1, '2025-02-01', '2026-01-20', 'K', NULL),
+(21, 'The Flash', 'Flash resets the universe.', 144, 0, 1, '2025-03-05', '2025-06-12', 'T13', NULL),
+(22, 'Transformers: Rise of the Beasts', 'Autobots meet the Maximals.', 120, 1, 1, '2025-05-10', '2025-08-18', 'T13', NULL),
+(23, 'Blue Beetle', 'A young hero gains alien armor.', 128, 1, 1, '2025-07-01', '2026-05-10', 'T13', NULL),
+(24, 'The Super Mario Bros. Movie', 'Mario rescues the Mushroom Kingdom.', 92, 1, 1, '2025-01-25', '2025-04-05', 'K', NULL),
+(25, 'The Little Mermaid', 'Live-action remake of classic.', 135, 1, 1, '2025-02-20', '2025-06-10', 'K', NULL),
+(26, 'Guardians of the Galaxy Vol. 3', 'Guardians face their pasts.', 150, 0, 1, '2025-03-12', '2025-07-12', 'T13', NULL),
+(27, 'Creed III', 'Adonis Creed faces a rival.', 116, 0, 1, '2025-04-14', '2025-07-22', 'T13', NULL),
+(28, 'Top Gun: Maverick (Re-release)', 'Maverick trains new pilots.', 131, 0, 1, '2025-09-01', '2025-12-10', 'T13', NULL),
+(29, 'Smile 2', 'Horror sequel with new curse.', 100, 0, 1, '2025-08-15', '2026-02-28', 'T16', NULL),
+(30, 'Deadpool & Wolverine', 'Deadpool teams up with Wolverine.', 130, 0, 1, '2025-10-01', '2026-04-01', 'T16', NULL);
 
 INSERT INTO Movie.GENRE (Genre) VALUES
-('Action'), ('Drama'), ('Comedy'), ('Thriller'), ('Romance'),
-('Sci-Fi'), ('Horror'), ('Musical'), ('Animation'), ('Fantasy'),
-('Crime'), ('Documentary'), ('Adventure'), ('Mystery'), ('Action-Comedy');
+('Action'), ('Adventure'), ('Sci-Fi'), ('Fantasy'), ('Drama'),
+('Biography'), ('Comedy'), ('Animation'), ('Family'), ('Thriller'),
+('Horror'), ('Romance'), ('Crime'), ('Superhero');
 
 INSERT INTO Movie.MOVIEGENRE (MovieID, Genre) VALUES
-(1, 'Action'), (2, 'Thriller'), (3, 'Romance'), (4, 'Drama'), (5, 'Action'),
-(6, 'Sci-Fi'), (7, 'Sci-Fi'), (8, 'Crime'), (9, 'Animation'), (10, 'Action'),
-(11, 'Sci-Fi'), (12, 'Horror'), (13, 'Musical'), (14, 'Fantasy'), (15, 'Action');
+(1, 'Sci-Fi'), (2, 'Horror'), (3, 'Fantasy'), (4, 'Action'), (5, 'Superhero'), (6, 'Animation'),
+(7, 'Thriller'), (8, 'Comedy'), (9, 'Action'), (10, 'Crime'), (11, 'Superhero'), (12, 'Action'),
+(13, 'Biography'), (14, 'Biography'), (15, 'Drama'), (16, 'Sci-Fi'), (17, 'Action'), (18, 'Superhero'),
+(19, 'Romance'), (20, 'Animation'), (21, 'Thriller'), (22, 'Animation'), (23, 'Action'), (24, 'Animation'),
+(25, 'Adventure'), (26, 'Sci-Fi'), (27, 'Fantasy'), (28, 'Comedy'), (29, 'Animation'), (30, 'Drama');
 
 INSERT INTO Movie.FORMATS (FName) VALUES
-('2D'), ('3D'), ('IMAX'), ('4DX'), ('VR'), ('2D Premium'), ('3D Premium'), ('IMAX 3D'),
-('Dolby Cinema'), ('ScreenX'), ('4DX Screen'), ('Premium VR'), ('D-Box');
+('Standard'), ('IMAX'), ('4DX');
 
 INSERT INTO Movie.MOVIEFORMAT (MovieID, FName) VALUES
-(1, '2D'), (1, '3D'), (2, 'IMAX'), (3, '2D'), (4, '3D'), (6, 'IMAX'), (6, '3D Premium'),
-(7, '2D Premium'), (8, '2D'), (9, '3D'), (10, 'IMAX 3D'), (11, 'Dolby Cinema'), (12, 'ScreenX'),
-(13, '4DX Screen'), (14, 'Premium VR');
+(1, 'IMAX'), (2, 'IMAX'), (3, 'Standard'), (4, '4DX'), (5, 'IMAX'), (6, 'Standard'),
+(7, 'IMAX'), (8, 'Standard'), (9, '4DX'), (10, 'IMAX'), (11, 'Standard'), (12, 'Standard'),
+(13, 'Standard'), (14, 'Standard'), (15, 'Standard'), (16, 'IMAX'), (17, '4DX'), (18, 'Standard'),
+(19, 'Standard'), (20, '4DX'), (21, 'Standard'), (22, 'Standard'), (23, '4DX'), (24, 'Standard'),
+(25, 'Standard'), (26, 'IMAX'), (27, 'Standard'), (28, 'Standard'), (29, 'Standard'), (30, 'Standard');
 
 INSERT INTO Movie.ACTOR (FullName) VALUES
-('Robert Downey Jr'), ('Leonardo DiCaprio'), ('Kate Winslet'), ('Joaquin Phoenix'), ('Tom Holland'),
-('Samuel L. Jackson'), ('Chris Evans'), ('Scarlett Johansson'), ('Gal Gadot'), ('Chris Hemsworth'),
-('Emma Watson'), ('Daniel Radcliffe'), ('Morgan Freeman'), ('Johnny Depp'), ('Brad Pitt');
+('Tom Holland'), ('Zendaya'), ('Timothee Chalamet'), ('Florence Pugh'),
+('Cillian Murphy'), ('Emily Blunt'), ('Ryan Gosling'), ('Margot Robbie'),
+('Keanu Reeves'), ('Ana de Armas'), ('Leonardo DiCaprio'), ('Jennifer Lawrence'),
+('Chris Hemsworth'), ('Scarlett Johansson'), ('Robert Downey Jr'), ('Chris Evans'),
+('Emma Stone'), ('Andrew Garfield'), ('Henry Cavill'), ('Gal Gadot');
 
 INSERT INTO Movie.FEATURES (MovieID, FullName) VALUES
-(1, 'Robert Downey Jr'), (2, 'Leonardo DiCaprio'), (3, 'Kate Winslet'), (4, 'Joaquin Phoenix'), (5, 'Tom Holland'),
-(6, 'Samuel L. Jackson'), (7, 'Chris Evans'), (8, 'Scarlett Johansson'), (9, 'Gal Gadot'), (10, 'Chris Hemsworth'),
-(11, 'Emma Watson'), (12, 'Daniel Radcliffe'), (13, 'Morgan Freeman'), (14, 'Johnny Depp'), (15, 'Brad Pitt');
+(1, 'Tom Holland'), (1, 'Zendaya'), 
+(2, 'Timothee Chalamet'), (2, 'Florence Pugh'),
+(3, 'Cillian Murphy'), (3, 'Emily Blunt'),
+(4, 'Ryan Gosling'), (4, 'Margot Robbie'),
+(5, 'Keanu Reeves'), (5, 'Ana de Armas'),
+(6, 'Leonardo DiCaprio'), (6, 'Jennifer Lawrence'),
+(7, 'Chris Hemsworth'), (7, 'Scarlett Johansson'),
+(8, 'Robert Downey Jr'), (8, 'Chris Evans'),
+(9, 'Emma Stone'), (9, 'Andrew Garfield'),
+(10, 'Henry Cavill'), (10, 'Gal Gadot'),
+(11, 'Tom Holland'), (11, 'Zendaya'),
+(12, 'Timothee Chalamet'), (12, 'Florence Pugh'),
+(13, 'Cillian Murphy'), (13, 'Emily Blunt'),
+(14, 'Ryan Gosling'), (14, 'Margot Robbie'),
+(15, 'Keanu Reeves'), (15, 'Ana de Armas'),
+(16, 'Leonardo DiCaprio'), (16, 'Jennifer Lawrence'),
+(17, 'Chris Hemsworth'), (17, 'Scarlett Johansson'),
+(18, 'Robert Downey Jr'), (18, 'Chris Evans'),
+(19, 'Emma Stone'), (19, 'Andrew Garfield'),
+(20, 'Henry Cavill'), (20, 'Gal Gadot'),
+(21, 'Tom Holland'), (21, 'Zendaya'),
+(22, 'Timothee Chalamet'), (22, 'Florence Pugh'),
+(23, 'Cillian Murphy'), (23, 'Emily Blunt'),
+(24, 'Ryan Gosling'), (24, 'Margot Robbie'),
+(25, 'Keanu Reeves'), (25, 'Ana de Armas'),
+(26, 'Leonardo DiCaprio'), (26, 'Jennifer Lawrence'),
+(27, 'Chris Hemsworth'), (27, 'Scarlett Johansson'),
+(28, 'Robert Downey Jr'), (28, 'Chris Evans'),
+(29, 'Emma Stone'), (29, 'Andrew Garfield'),
+(30, 'Henry Cavill'), (30, 'Gal Gadot');
 
 INSERT INTO Movie.REVIEW (MovieID, CUserID, Rating, RDate, Comment) VALUES
-(1, 'CUS001', 9, '2025-01-05', 'Great movie!'), (2, 'CUS002', 8, '2025-02-10', 'Mind-blowing.'),
-(3, 'CUS003', 7, '2025-03-15', 'Touching story.'), (4, 'CUS004', 10, '2025-01-20', 'Amazing!'),
-(5, 'CUS005', 8, '2025-02-25', 'Good action scenes.'), (6, 'CUS006', 9, '2025-03-05', 'Amazing visuals!'),
-(7, 'CUS007', 8, '2025-04-10', 'Epic story.'), (8, 'CUS008', 10, '2025-05-15', 'Masterpiece!'),
-(9, 'CUS009', 7, '2025-06-05', 'Fun for kids.'), (10, 'CUS010', 8, '2025-07-10', 'Great action scenes.'),
-(11, 'CUS011', 9, '2025-03-20', 'Classic sci-fi.'), (12, 'CUS012', 7, '2025-04-25', 'Suspenseful.'),
-(13, 'CUS013', 8, '2025-05-30', 'Beautiful animation.'), (14, 'CUS014', 9, '2025-06-25', 'Enjoyable.'),
-(15, 'CUS015', 8, '2025-07-30', 'Heroic adventure.');
+(1, 'CUS001', 8, '2025-01-16', N'Good movie'),
+(1, 'CUS002', 9, '2025-01-17', N'Great storyline'),
+(2, 'CUS003', 7, '2025-02-11', N'Nice effects'),
+(2, 'CUS004', 8, '2025-02-12', N'Enjoyable'),
+(3, 'CUS005', 9, '2025-03-02', N'Excellent'),
+(3, 'CUS006', 6, '2025-03-03', N'Average'),
+(4, 'CUS007', 8, '2025-04-06', N'Good pacing'),
+(4, 'CUS008', 7, '2025-04-07', N'Solid'),
+(5, 'CUS009', 9, '2025-05-11', N'Awesome'),
+(5, 'CUS010', 8, '2025-05-12', N'Well made'),
+(6, 'CUS011', 7, '2025-06-13', N'Entertaining'),
+(6, 'CUS012', 8, '2025-06-14', N'Fun movie'),
+(7, 'CUS013', 8, '2025-01-26', N'Nice visuals'),
+(7, 'CUS014', 9, '2025-01-27', N'Great cast'),
+(8, 'CUS015', 6, '2025-02-21', N'Okay'),
+(8, 'CUS016', 7, '2025-02-22', N'Not bad'),
+(9, 'CUS017', 9, '2025-03-16', N'Very good'),
+(9, 'CUS018', 8, '2025-03-17', N'Interesting'),
+(10, 'CUS019', 7, '2025-04-19', N'Entertaining'),
+(10, 'CUS020', 8, '2025-04-20', N'Good experience'),
+(11, 'CUS021', 9, '2025-01-31', N'Impressive'),
+(11, 'CUS022', 6, '2025-02-01', N'Fine'),
+(12, 'CUS023', 7, '2025-03-01', N'Enjoyable'),
+(12, 'CUS024', 8, '2025-03-02', N'Good watch'),
+(13, 'CUS025', 8, '2025-05-19', N'Well done'),
+(13, 'CUS026', 7, '2025-05-20', N'Decent'),
+(14, 'CUS027', 9, '2025-03-31', N'Fantastic'),
+(14, 'CUS028', 8, '2025-04-01', N'Worth watching'),
+(15, 'CUS029', 7, '2025-06-11', N'Fine movie'),
+(15, 'CUS030', 8, '2025-06-12', N'Good overall'),
+(16, 'CUS001', 6, '2025-04-02', N'Meh'),
+(16, 'CUS002', 7, '2025-04-03', N'Average+'),
+(17, 'CUS003', 8, '2025-02-21', N'Nice'),
+(17, 'CUS004', 9, '2025-02-22', N'Great film'),
+(18, 'CUS005', 7, '2025-03-19', N'Pretty good'),
+(18, 'CUS006', 6, '2025-03-20', N'Just ok'),
+(19, 'CUS007', 9, '2025-05-02', N'Excellent'),
+(19, 'CUS008', 8, '2025-05-03', N'Good film'),
+(20, 'CUS009', 7, '2025-06-13', N'Solid movie'),
+(20, 'CUS010', 8, '2025-06-14', N'Nice'),
+(21, 'CUS011', 8, '2025-01-17', N'Good pacing'),
+(21, 'CUS012', 7, '2025-01-18', N'Watchable'),
+(22, 'CUS013', 9, '2025-05-11', N'Excellent'),
+(22, 'CUS014', 8, '2025-05-12', N'Enjoyable'),
+(23, 'CUS015', 7, '2025-07-02', N'Not bad'),
+(23, 'CUS016', 8, '2025-07-03', N'Pretty good'),
+(24, 'CUS017', 9, '2025-01-06', N'Great movie'),
+(24, 'CUS018', 7, '2025-01-07', N'Nice'),
+(25, 'CUS019', 8, '2025-02-21', N'Good experience'),
+(25, 'CUS020', 7, '2025-02-22', N'Decent'),
+(26, 'CUS021', 9, '2025-03-13', N'Fantastic'),
+(26, 'CUS022', 8, '2025-03-14', N'Good acting'),
+(27, 'CUS023', 7, '2025-04-15', N'Fine'),
+(27, 'CUS024', 8, '2025-04-16', N'Good'),
+(28, 'CUS025', 9, '2025-09-02', N'Amazing'),
+(28, 'CUS026', 8, '2025-09-03', N'Nice'),
+(29, 'CUS027', 7, '2025-08-16', N'Average'),
+(29, 'CUS028', 8, '2025-08-17', N'Enjoyable'),
+(30, 'CUS029', 9, '2025-10-02', N'Great ending'),
+(30, 'CUS030', 8, '2025-10-03', N'Good movie');
 
 INSERT INTO Booking.ORDERS (OrderID, OrderTime, PaymentMethod, Total, CUserID, EUserID) VALUES
-(1, '10:00', 'Cash', 250, 'CUS001', 'EMP002'), (2, '11:00', 'Card', 300, 'CUS002', 'EMP003'),
-(3, '12:00', 'Cash', 400, 'CUS003', 'EMP004'), (4, '13:00', 'Card', 500, 'CUS004', 'EMP005'),
-(5, '14:00', 'Cash', 350, 'CUS005', 'EMP002'), (6, '15:00', 'Card', 450, 'CUS006', 'EMP007'),
-(7, '16:00', 'Cash', 300, 'CUS007', 'EMP008'), (8, '17:00', 'Card', 500, 'CUS008', 'EMP009'),
-(9, '18:00', 'Cash', 350, 'CUS009', 'EMP010'), (10, '19:00', 'Card', 400, 'CUS010', 'EMP011'),
-(11, '20:00', 'Cash', 450, 'CUS011', 'EMP012'), (12, '21:00', 'Card', 550, 'CUS012', 'EMP013'),
-(13, '22:00', 'Cash', 500, 'CUS013', 'EMP014'), (14, '23:00', 'Card', 600, 'CUS014', 'EMP015'),
-(15, '08:00', 'Cash', 350, 'CUS015', 'EMP006');
+(1, '2025-11-24 09:15:00', 'Cash',       150000, 'CUS001', 'EMP006'),
+(2, '2025-11-25 10:20:00', 'Momo',       220000, 'CUS002', 'EMP007'),
+(3, '2025-11-26 11:05:00', 'ZaloPay',    180000, 'CUS003', 'EMP008'),
+(4, '2025-11-27 12:40:00', 'Visa',       300000, 'CUS004', 'EMP009'),
+(5, '2025-11-28 13:25:00', 'Mastercard', 250000, 'CUS005', 'EMP010'),
+(6, '2025-11-29 14:10:00', 'Cash',       170000, 'CUS006', 'EMP011'),
+(7, '2025-11-30 15:50:00', 'Momo',       260000, 'CUS007', 'EMP012'),
+(8, '2025-12-01 16:30:00', 'ZaloPay',    210000, 'CUS008', 'EMP013'),
+(9, '2025-12-02 17:45:00', 'Visa',       320000, 'CUS009', 'EMP014'),
+(10,'2025-12-03 18:05:00', 'Mastercard', 290000, 'CUS010', 'EMP015'),
+(11,'2025-11-24 11:30:00', 'Cash',       200000, 'CUS011', 'EMP016'),
+(12,'2025-11-25 12:50:00', 'Momo',       240000, 'CUS012', 'EMP017'),
+(13,'2025-11-26 14:15:00', 'ZaloPay',    280000, 'CUS013', 'EMP018'),
+(14,'2025-11-27 15:35:00', 'Visa',       330000, 'CUS014', 'EMP019'),
+(15,'2025-11-28 16:25:00', 'Mastercard', 350000, 'CUS015', 'EMP020'),
+(16,'2025-11-29 17:10:00', 'Cash',       190000, 'CUS016', 'EMP021'),
+(17,'2025-11-30 18:20:00', 'Momo',       260000, 'CUS017', 'EMP022'),
+(18,'2025-12-01 19:30:00', 'ZaloPay',    310000, 'CUS018', 'EMP023'),
+(19,'2025-12-02 20:45:00', 'Visa',       270000, 'CUS019', 'EMP024'),
+(20,'2025-12-03 21:05:00', 'Mastercard', 340000, 'CUS020', 'EMP025'),
+(21,'2025-11-24 09:10:00', 'Cash',       180000, 'CUS021', 'EMP026'),
+(22,'2025-11-25 10:40:00', 'Momo',       220000, 'CUS022', 'EMP027'),
+(23,'2025-11-26 12:00:00', 'ZaloPay',    260000, 'CUS023', 'EMP028'),
+(24,'2025-11-27 13:30:00', 'Visa',       300000, 'CUS024', 'EMP029'),
+(25,'2025-11-28 15:00:00', 'Mastercard', 350000, 'CUS025', 'EMP030'),
+(26,'2025-11-29 16:20:00', 'Cash',       200000, 'CUS026', 'EMP002'),
+(27,'2025-11-30 17:35:00', 'Momo',       240000, 'CUS027', 'EMP003'),
+(28,'2025-12-01 18:55:00', 'ZaloPay',    280000, 'CUS028', 'EMP004'),
+(29,'2025-12-02 20:10:00', 'Visa',       320000, 'CUS029', 'EMP005'),
+(30,'2025-12-03 21:45:00', 'Mastercard', 360000, 'CUS030', 'EMP001');
 
 INSERT INTO Booking.COUPON (CouponID, StartDate, EndDate, SaleOff, ReleaseNum, AvailNum) VALUES
-(1, '2025-01-01', '2025-03-01', 10, 100, 50), (2, '2025-01-05', '2025-03-05', 15, 200, 150),
-(3, '2025-02-01', '2025-04-01', 20, 150, 100), (4, '2025-02-10', '2025-04-10', 25, 50, 25),
-(5, '2025-03-01', '2025-05-01', 30, 70, 30), (6, '2025-03-01', '2025-06-01', 12, 100, 80),
-(7, '2025-03-05', '2025-06-05', 15, 200, 150), (8, '2025-04-01', '2025-07-01', 20, 150, 120),
-(9, '2025-04-10', '2025-07-10', 25, 50, 40), (10, '2025-05-01', '2025-08-01', 30, 70, 60),
-(11, '2025-05-10', '2025-08-10', 10, 80, 70), (12, '2025-06-01', '2025-09-01', 15, 60, 50),
-(13, '2025-06-05', '2025-09-05', 20, 90, 80), (14, '2025-07-01', '2025-10-01', 25, 100, 90),
-(15, '2025-07-10', '2025-10-10', 30, 120, 100);
+(1, '2025-01-01', '2025-02-01', 10, 1000, 800),
+(2, '2025-02-01', '2025-03-01', 15, 500, 200),
+(3, '2025-03-10', '2025-04-10', 20, 300, 150),
+(4, '2025-04-01', '2025-04-30', 25, 200, 50),
+(5, '2025-05-01', '2025-05-31', 30, 100, 25),
+(6, '2025-06-10', '2025-07-10', 35, 500, 400),
+(7, '2025-07-15', '2025-08-15', 40, 150, 120),
+(8, '2025-08-01', '2025-08-20', 50, 80, 40),
+(9, '2025-09-01', '2025-09-30', 5, 2000, 1990),
+(10, '2025-10-01', '2025-12-31', 12, 100, 90);
 
 INSERT INTO Booking.OWN (CUserID, CouponID, isUsed) VALUES
-('CUS001', 1, 0), ('CUS002', 2, 0), ('CUS003', 3, 0), ('CUS004', 4, 0), ('CUS005', 5, 0),
-('CUS006', 6, 0), ('CUS007', 7, 0), ('CUS008', 8, 0), ('CUS009', 9, 0), ('CUS010', 10, 0),
-('CUS011', 11, 0), ('CUS012', 12, 0), ('CUS013', 13, 0), ('CUS014', 14, 0), ('CUS015', 15, 0);
+('CUS001', 1, 0), ('CUS001', 2, 1),
+('CUS002', 1, 1), ('CUS002', 3, 0),
+('CUS003', 2, 0), ('CUS003', 4, 1),
+('CUS004', 3, 1), ('CUS004', 5, 0),
+('CUS005', 4, 1), ('CUS005', 6, 0),
+('CUS006', 5, 0), ('CUS006', 7, 1),
+('CUS007', 6, 1), ('CUS007', 8, 0),
+('CUS008', 7, 0), ('CUS008', 9, 1),
+('CUS009', 8, 1), ('CUS009', 10, 0),
+('CUS010', 1, 0), ('CUS010', 4, 0),
+('CUS011', 2, 1), ('CUS011', 5, 1),
+('CUS012', 3, 0), ('CUS012', 6, 1),
+('CUS013', 4, 0), ('CUS013', 7, 0),
+('CUS014', 5, 1), ('CUS014', 8, 0),
+('CUS015', 6, 0), ('CUS015', 9, 1),
+('CUS016', 7, 1), ('CUS016', 10, 0),
+('CUS017', 1, 1), ('CUS017', 6, 0),
+('CUS018', 2, 0), ('CUS018', 7, 1),
+('CUS019', 3, 1), ('CUS019', 8, 0),
+('CUS020', 4, 0), ('CUS020', 9, 1),
+('CUS021', 5, 1), ('CUS021', 10, 1),
+('CUS022', 1, 0), ('CUS022', 7, 0),
+('CUS023', 2, 1), ('CUS023', 8, 1),
+('CUS024', 3, 1), ('CUS024', 9, 0),
+('CUS025', 4, 1), ('CUS025', 10, 0),
+('CUS026', 5, 0), ('CUS026', 8, 1),
+('CUS027', 6, 1), ('CUS027', 9, 0),
+('CUS028', 7, 0), ('CUS028', 10, 1),
+('CUS029', 8, 1), ('CUS029', 9, 0),
+('CUS030', 9, 1), ('CUS030', 10, 0);
 
 INSERT INTO Booking.COUPONUSAGE (CouponID, OrderID, CUserID, UseDate) VALUES
-(1, 1, 'CUS001', '2025-01-10'), (2, 2, 'CUS002', '2025-02-15'), (3, 3, 'CUS003', '2025-03-20'),
-(4, 4, 'CUS004', '2025-02-25'), (5, 5, 'CUS005', '2025-03-30'), (6, 6, 'CUS006', '2025-03-10'),
-(7, 7, 'CUS007', '2025-04-15'), (8, 8, 'CUS008', '2025-05-20'), (9, 9, 'CUS009', '2025-04-25'),
-(10, 10, 'CUS010', '2025-05-30'), (11, 11, 'CUS011', '2025-06-10'), (12, 12, 'CUS012', '2025-07-15'),
-(13, 13, 'CUS013', '2025-07-20'), (14, 14, 'CUS014', '2025-08-10'), (15, 15, 'CUS015', '2025-08-25');
+(2, 1, 'CUS001', '2024-01-12'),
+(1, 2, 'CUS002', '2024-01-15'),
+(4, 3, 'CUS003', '2024-01-18'),
+(3, 4, 'CUS004', '2024-01-21'),
+(4, 5, 'CUS005', '2024-02-01'),
+(7, 6, 'CUS006', '2024-02-05'),
+(6, 7, 'CUS007', '2024-02-10'),
+(9, 8, 'CUS008', '2024-02-12'),
+(8, 9, 'CUS009', '2024-02-20'),
+(2, 10, 'CUS011', '2024-03-01'),
+(5, 11, 'CUS011', '2024-03-02'),
+(6, 12, 'CUS012', '2024-03-05'),
+(5, 13, 'CUS014', '2024-03-10'),
+(9, 14, 'CUS015', '2024-03-15');
 
 INSERT INTO Screening.TIME (TimeID, Day, StartTime, EndTime, FName, MovieID, RoomID, BranchID) VALUES
-(1, '2025-01-10', '10:00', '12:00', '2D', 1, 1, 1), (2, '2025-01-10', '12:30', '14:30', '3D', 1, 2, 1),
-(3, '2025-12-06', '15:00', '17:30', 'IMAX', 2, 1, 2), (4, '2025-01-12', '18:00', '20:00', '2D', 3, 1, 3),
-(5, '2025-01-13', '20:30', '22:30', '3D', 4, 1, 4), (6, '2025-01-14', '10:00', '12:30', '2D', 5, 2, 2),
-(7, '2025-01-15', '13:00', '15:30', '3D', 5, 3, 2), (8, '2025-01-16', '16:00', '18:30', 'IMAX', 6, 2, 3),
-(9, '2025-01-17', '19:00', '21:30', '2D', 7, 1, 4), (10, '2025-01-18', '14:00', '16:30', '3D', 8, 2, 5),
-(11, '2025-01-19', '15:00', '17:30', '4DX', 9, 3, 1), (12, '2025-01-20', '18:00', '20:30', 'VR', 10, 3, 3),
-(13, '2025-01-21', '20:00', '22:30', '2D', 11, 1, 5), (14, '2025-01-22', '11:00', '13:30', '3D', 12, 2, 1),
-(15, '2025-01-23', '12:00', '14:30', 'IMAX', 13, 1, 2);
+(1, '2025-01-15', '10:00', '12:30', 'IMAX', 1, 2, 1),
+(2, '2025-02-10', '13:00', '15:30', 'IMAX', 2, 2, 1),
+(3, '2025-03-01', '16:00', '18:30', 'Standard', 3, 1, 1),
+(4, '2025-04-05', '19:00', '21:30', '4DX', 4, 3, 1),
+(5, '2025-05-10', '21:30', '00:00', 'IMAX', 5, 2, 1),
+(6, '2025-06-12', '10:00', '12:30', 'Standard', 6, 1, 2),
+(7, '2025-01-25', '13:00', '15:30', 'IMAX', 7, 2, 2),
+(8, '2025-02-20', '16:00', '18:30', 'Standard', 8, 1, 2),
+(9, '2025-03-15', '19:00', '21:30', '4DX', 9, 3, 2),
+(10, '2025-04-18', '21:30', '00:00', 'IMAX', 10, 2, 2),
+(11, '2025-01-30', '10:00', '12:30', 'Standard', 11, 2, 3),
+(12, '2025-02-28', '13:00', '15:30', 'Standard', 12, 2, 3),
+(13, '2025-05-18', '16:00', '18:30', 'Standard', 13, 2, 3),
+(14, '2025-03-30', '19:00', '21:30', 'Standard', 14, 2, 3),
+(15, '2025-06-10', '21:30', '00:00', 'Standard', 15, 2, 3),
+(16, '2025-04-01', '10:00', '12:30', 'IMAX', 16, 3, 4),
+(17, '2025-02-20', '13:00', '15:30', '4DX', 17, 2, 4),
+(18, '2025-03-18', '16:00', '18:30', 'Standard', 18, 1, 4),
+(19, '2025-05-01', '19:00', '21:30', 'Standard', 19, 1, 4),
+(20, '2025-02-01', '21:30', '00:00', '4DX', 20, 2, 4),
+(21, '2025-03-05', '10:00', '12:30', 'Standard', 21, 1, 5),
+(22, '2025-05-10', '13:00', '15:30', 'Standard', 22, 2, 5),
+(23, '2025-07-01', '16:00', '18:30', '4DX', 23, 3, 5),
+(24, '2025-01-25', '19:00', '21:30', 'Standard', 24, 1, 5),
+(25, '2025-02-20', '21:30', '00:00', 'Standard', 25, 2, 5),
+(26, '2025-03-12', '10:00', '12:30', 'IMAX', 26, 2, 1),
+(27, '2025-04-14', '13:00', '15:30', 'Standard', 27, 1, 1),
+(28, '2025-09-01', '16:00', '18:30', 'Standard', 28, 1, 1),
+(29, '2025-08-15', '19:00', '21:30', 'Standard', 29, 1, 1),
+(30, '2025-10-01', '21:30', '00:00', 'Standard', 30, 1, 1),
+(31, '2025-03-12', '10:00', '12:30', 'IMAX', 26, 2, 2),
+(32, '2025-04-14', '13:00', '15:30', 'Standard', 27, 1, 2),
+(33, '2025-09-01', '16:00', '18:30', 'Standard', 28, 1, 2),
+(34, '2025-08-15', '19:00', '21:30', 'Standard', 29, 1, 2),
+(35, '2025-10-01', '21:30', '00:00', 'Standard', 30, 1, 2),
+(36, '2025-01-15', '10:00', '12:30', 'IMAX', 1, 2, 3),
+(37, '2025-02-10', '13:00', '15:30', 'IMAX', 2, 2, 3),
+(38, '2025-03-01', '16:00', '18:30', 'Standard', 3, 2, 3),
+(39, '2025-04-05', '19:00', '21:30', '4DX', 4, 1, 3),
+(40, '2025-05-10', '21:30', '00:00', 'IMAX', 5, 3, 3),
+(41, '2025-06-12', '10:00', '12:30', 'Standard', 6, 1, 4),
+(42, '2025-01-25', '13:00', '15:30', 'IMAX', 7, 3, 4),
+(43, '2025-02-20', '16:00', '18:30', 'Standard', 8, 1, 4),
+(44, '2025-03-15', '19:00', '21:30', '4DX', 9, 2, 4),
+(45, '2025-04-18', '21:30', '00:00', 'IMAX', 10, 3, 4),
+(46, '2025-01-30', '10:00', '12:30', 'Standard', 11, 1, 5),
+(47, '2025-02-28', '13:00', '15:30', 'Standard', 12, 2, 5),
+(48, '2025-05-18', '16:00', '18:30', 'Standard', 13, 1, 5),
+(49, '2025-03-30', '19:00', '21:30', 'Standard', 14, 1, 5),
+(50, '2025-06-10', '21:30', '00:00', 'Standard', 15, 2, 5);
 
-INSERT INTO Screening.TICKETS (TicketID, DaySold, TimeID, OrderID, BranchID, RoomID, SRow, SColumn) VALUES
-(1, '2025-01-10', 1, 1, 1, 1, 1, 1), (2, '2025-01-10', 1, 2, 1, 1, 1, 2),
-(3, '2025-01-10', 2, 3, 1, 2, 1, 1), (4, '2025-01-10', 2, 4, 1, 2, 1, 2),
-(5, '2025-01-11', 3, 5, 2, 1, 1, 1), (6, '2025-01-11', 3, 6, 2, 1, 1, 2),
-(7, '2025-01-12', 4, 7, 3, 1, 1, 1), (8, '2025-01-12', 4, 8, 3, 2, 1, 1),
-(9, '2025-01-13', 5, 9, 4, 1, 1, 1), (10, '2025-01-13', 5, 10, 4, 2, 1, 1),
-(11, '2025-01-14', 6, 11, 2, 2, 1, 1), (12, '2025-01-15', 7, 12, 2, 3, 1, 1),
-(13, '2025-01-16', 8, 13, 3, 2, 1, 1), (14, '2025-01-17', 9, 14, 4, 1, 1, 1),
-(15, '2025-01-18', 10, 15, 5, 2, 1, 1);
+-- script sinh vé
+BEGIN
+
+SET NOCOUNT ON;
+
+DECLARE @TicketID INT = 1;
+
+WITH SeatList AS (
+    SELECT 
+        s.BranchID,
+        s.RoomID,
+        s.SRow,
+        s.SColumn,
+        t.TimeID,
+        o.OrderID,
+        ROW_NUMBER() OVER(ORDER BY s.BranchID, s.RoomID, s.SRow, s.SColumn) AS rn
+    FROM Cinema.SEAT s
+    JOIN Screening.TIME t 
+        ON t.BranchID = s.BranchID AND t.RoomID = s.RoomID
+    JOIN Booking.ORDERS o 
+        ON o.CUserID IN (SELECT CUserID FROM Customer.CUSTOMER)
+    WHERE s.SStatus = 1
+)
+INSERT INTO Screening.TICKETS (TicketID, DaySold, TimeID, OrderID, BranchID, RoomID, SRow, SColumn)
+SELECT 
+    ROW_NUMBER() OVER(ORDER BY BranchID, RoomID, SRow, SColumn) AS TicketID,
+    GETDATE() AS DaySold,
+    TimeID,
+    OrderID,
+    BranchID,
+    RoomID,
+    SRow,
+    SColumn
+FROM SeatList;
+END;
 
 INSERT INTO Products.ADDONITEM (ProductID, Price, ItemType, OrderID) VALUES
-(1, 50, 'Popcorn', 1), (2, 30, 'Drink', 2), (3, 100, 'Combo', 3), (4, 80, 'Snack', 4),
-(5, 60, 'Drink', 5), (6, 70, 'Popcorn', 6), (7, 40, 'Drink', 7), (8, 120, 'Combo', 8),
-(9, 90, 'Snack', 9), (10, 60, 'Drink', 10), (11, 80, 'Popcorn', 11), (12, 50, 'Drink', 12),
-(13, 150, 'Combo', 13), (14, 100, 'Snack', 14), (15, 70, 'Drink', 15);
+(1, 50.00, 'Food', 1), (2, 35.00, 'Drink', 1),
+(3, 45.00, 'Food', 2), (4, 40.00, 'Drink', 2),
+(5, 60.00, 'Food', 3), (6, 30.00, 'Drink', 3),
+(7, 55.00, 'Food', 4), (8, 38.00, 'Drink', 4),
+(9, 50.00, 'Food', 5), (10, 32.00, 'Drink', 5),
+(11, 65.00, 'Food', 6), (12, 40.00, 'Drink', 6),
+(13, 70.00, 'Food', 7), (14, 35.00, 'Drink', 7),
+(15, 55.00, 'Food', 8), (16, 30.00, 'Drink', 8),
+(17, 60.00, 'Food', 9), (18, 38.00, 'Drink', 9),
+(19, 50.00, 'Food', 10), (20, 32.00, 'Drink', 10);
 
 INSERT INTO Products.FOODDRINK (ProductID, PType, PName, Quantity) VALUES
-(1, 'Snack', 'Popcorn Large', 2), (2, 'Drink', 'Coke', 1), (3, 'Combo', 'Popcorn + Coke', 1),
-(4, 'Snack', 'Nachos', 3), (5, 'Drink', 'Pepsi', 2), (6, 'Snack', 'Popcorn Medium', 2),
-(7, 'Drink', 'Sprite', 1), (8, 'Combo', 'Popcorn + Fanta', 1), (9, 'Snack', 'Chips', 3),
-(10, 'Drink', '7Up', 2), (11, 'Snack', 'Popcorn Small', 1), (12, 'Drink', 'Orange Juice', 2),
-(13, 'Combo', 'Nachos + Coke', 1), (14, 'Snack', 'Pretzel', 2), (15, 'Drink', 'Lemonade', 1);
+(1, 'Popcorn', 'Caramel Popcorn', 100),
+(2, 'Soda', 'Coca Cola', 150),
+(3, 'Popcorn', 'Butter Popcorn', 120),
+(4, 'Juice', 'Orange Juice', 100),
+(5, 'Popcorn', 'Cheese Popcorn', 110),
+(6, 'Soda', 'Pepsi', 130),
+(7, 'Snack', 'Nachos', 80),
+(8, 'Drink', 'Lemon Tea', 90),
+(9, 'Popcorn', 'Caramel Popcorn', 100),
+(10, 'Soda', 'Sprite', 120);
 
 INSERT INTO Products.MERCHANDISE (ProductID, AvailNum, MerchName, StartDate, EndDate) VALUES
-(1, 20, 'T-shirt Avengers', '2025-01-01', '2025-03-01'), (2, 15, 'Cap Inception', '2025-02-01', '2025-04-01'),
-(3, 30, 'Poster Titanic', '2025-03-01', '2025-06-01'), (4, 10, 'Mug Joker', '2025-01-15', '2025-03-15'),
-(5, 25, 'Action Figure Spiderman', '2025-02-10', '2025-04-10'), (6, 25, 'Poster Avatar', '2025-03-01', '2025-06-01'),
-(7, 20, 'T-shirt Interstellar', '2025-04-01', '2025-07-01'), (8, 15, 'Mug Godfather', '2025-05-01', '2025-08-01'),
-(9, 30, 'Figurine Frozen', '2025-06-01', '2025-09-01'), (10, 18, 'Poster Black Panther', '2025-07-01', '2025-10-01'),
-(11, 22, 'T-shirt Matrix', '2025-03-15', '2025-06-15'), (12, 16, 'Cap Jaws', '2025-04-10', '2025-07-10'),
-(13, 28, 'Poster Lion King', '2025-05-10', '2025-08-10'), (14, 12, 'Mug Thor', '2025-06-15', '2025-09-15'),
-(15, 20, 'Action Figure Wonder Woman', '2025-07-20', '2025-10-20');
+(11, 50, 'Movie Poster', '2025-12-01', '2026-01-31'),
+(12, 30, 'Keychain', '2025-12-05', '2026-02-28'),
+(13, 20, 'T-shirt', '2025-12-10', '2026-03-31'),
+(14, 15, 'Cap', '2025-12-12', '2026-03-15'),
+(15, 40, 'Mug', '2025-12-15', '2026-04-30'),
+(16, 25, 'Sticker', '2025-12-20', '2026-05-31'),
+(17, 35, 'Notebook', '2025-12-22', '2026-06-30'),
+(18, 20, 'Bag', '2025-12-25', '2026-07-31'),
+(19, 30, 'Figure', '2025-12-28', '2026-08-31'),
+(20, 15, 'Calendar', '2025-12-30', '2026-09-30');
 GO
+
 
 -----------------------------------------------------------
 -- PHẦN 4: PROGRAMMABILITY (Procedures, Functions, Triggers)
@@ -560,6 +952,7 @@ IF OBJECT_ID('Movie.sp_InsertNewMovie', 'P') IS NOT NULL
 GO
 
 CREATE PROCEDURE Movie.sp_InsertNewMovie
+    @id INT,
     @name VARCHAR(255),
     @descript NVARCHAR(MAX),
     @runtime TINYINT,
@@ -568,35 +961,23 @@ CREATE PROCEDURE Movie.sp_InsertNewMovie
     @release DATE,
     @closing DATE,
     @agerating VARCHAR(30),
-    @Genres NVARCHAR(MAX) -- danh sách genres, format: 'Action,Sci-Fi'
+    @Genres NVARCHAR(MAX) -- danh sách genres
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Validate date
     IF @release >= @closing
         THROW 50001, 'Release date must be earlier than closing date.', 1;
 
     IF @release < CAST(GETDATE() AS DATE)
         THROW 50002, 'Release date cannot be in the past.', 1;
 
-    -----------------------------------------
-    -- 🔥 Tự sinh MovieID = MAX(MovieID) + 1
-    -----------------------------------------
-    DECLARE @NewMovieID INT;
-
-    SELECT @NewMovieID = ISNULL(MAX(MovieID), 0) + 1
-    FROM Movie.MOVIE;
-
-    -----------------------------------------
-    -- Insert vào Movie
-    -----------------------------------------
     INSERT INTO Movie.MOVIE (MovieID, MName, Descript, RunTime, isDub, isSub, releaseDate, closingDate, AgeRating)
-    VALUES (@NewMovieID, @name, @descript, @runtime, @dub, @sub, @release, @closing, @agerating);
+    VALUES (@id, @name, @descript, @runtime, @dub, @sub, @release, @closing, @agerating);
 
-    -----------------------------------------
-    -- Insert Genres
-    -----------------------------------------
+    DECLARE @NewMovieID INT = @id;
+
+    -- Chèn genres vào MovieGenre
     DECLARE @Genre NVARCHAR(255);
     DECLARE @Pos INT = 1;
     DECLARE @NextPos INT;
@@ -606,12 +987,10 @@ BEGIN
     BEGIN
         SET @NextPos = CHARINDEX(',', @Genres, @Pos);
         IF @NextPos = 0 SET @NextPos = @Len + 1;
-
         SET @Genre = LTRIM(RTRIM(SUBSTRING(@Genres, @Pos, @NextPos - @Pos)));
 
         IF LEN(@Genre) > 0
-            INSERT INTO Movie.MovieGenre (MovieID, Genre)
-            VALUES (@NewMovieID, @Genre);
+            INSERT INTO Movie.MovieGenre (MovieID, Genre) VALUES (@NewMovieID, @Genre);
 
         SET @Pos = @NextPos + 1;
     END
@@ -619,9 +998,8 @@ END;
 GO
 
 
-
 EXEC Movie.sp_InsertNewMovie 
- 
+    @id = 31, 
     @name = 'Doraemon', 
     @descript = 'Animation', 
     @runtime = 100, 
@@ -629,7 +1007,7 @@ EXEC Movie.sp_InsertNewMovie
     @sub = 0, 
     @release = '2025-12-10', 
     @closing = '2026-01-10', 
-    @agerating = '15+', 
+    @agerating = 'K', 
     @Genres = 'Action, Drama';
 GO
 
@@ -691,7 +1069,7 @@ END;
 GO
 
 EXEC Movie.sp_UpdateMovie
-    @id = 16,
+    @id = 31,
     @name = 'Doraemon Updated',
     @descript = 'Animation movie updated description',
     @runtime = 105,
@@ -699,36 +1077,50 @@ EXEC Movie.sp_UpdateMovie
     @sub = 0,
     @release = '2025-12-10',
     @closing = '2026-01-15',
-    @agerating = '15+',
+    @agerating = 'K',
     @Genres = 'Action, Drama';
 GO
+
 --Procedure 3. DELETE
 --Có thể xóa phim nếu đã qua thời gian công chiếu
 --Không thể xóa phim nếu đang nằm trong thời gian công chiếu
 CREATE OR ALTER PROCEDURE deleteMovie(
-	@id AS INT
+    @id AS INT
 )
 AS
 BEGIN
-	IF NOT EXISTS (SELECT 1 FROM Movie.MOVIE WHERE MovieID = @id)
-	BEGIN
-		THROW 50001, 'Movie does not exist.', 1;
-	END
+    -- Kiểm tra xem phim có tồn tại không
+    IF NOT EXISTS (SELECT 1 FROM Movie.MOVIE WHERE MovieID = @id)
+    BEGIN
+        THROW 50001, 'Movie does not exist.', 1;
+    END
 
-	IF EXISTS (
-		SELECT 1
-		FROM Movie.MOVIE
-		WHERE MovieID = @id AND closingDate >= CAST(GETDATE() AS DATE)
-	)
-	BEGIN
-		THROW 50002, 'Movie that are currently showing cannot be deleted.', 1;
-	END
+    -- Kiểm tra xem phim đang chiếu không được phép xóa
+    IF EXISTS (
+        SELECT 1
+        FROM Movie.MOVIE
+        WHERE MovieID = @id AND closingDate >= CAST(GETDATE() AS DATE)
+    )
+    BEGIN
+        THROW 50002, 'Movie that are currently showing cannot be deleted.', 1;
+    END
 
+    -- Xóa vé liên quan đến các suất chiếu của phim
+    DELETE T
+    FROM Screening.TICKETS T
+    INNER JOIN Screening.TIME TM ON T.TimeID = TM.TimeID
+    WHERE TM.MovieID = @id;
+
+    -- Xóa các suất chiếu của phim
+    DELETE FROM Screening.TIME WHERE MovieID = @id;
+
+    -- Xóa các bảng liên quan đến movie
     DELETE FROM Movie.MOVIEGENRE WHERE MovieID = @id;
     DELETE FROM Movie.FEATURES  WHERE MovieID = @id;
     DELETE FROM Movie.REVIEW    WHERE MovieID = @id;
+    DELETE FROM Movie.MOVIEFORMAT WHERE MovieID = @id; -- bổ sung xóa MOVIEFORMAT
 
-    -- Xóa movie
+    -- Cuối cùng xóa movie
     DELETE FROM Movie.MOVIE WHERE MovieID = @id;
 END;
 GO
@@ -894,44 +1286,6 @@ BEGIN
     -- Xóa nhân viên chính
     DELETE FROM Staff.EMPLOYEE WHERE EUserID = @EUserID;
 
-END
-GO
--- TRONG SQL SERVER MANAGEMENT STUDIO (SSMS)
-CREATE OR ALTER PROCEDURE Staff.sp_GetAllEmployees
-    @BranchID AS INT,
-    @SearchTerm NVARCHAR(50) = NULL
-AS
-BEGIN
-    SET NOCOUNT ON;
-    
-    SET @SearchTerm = ISNULL(@SearchTerm, '');
-    IF @SearchTerm <> ''
-        SET @SearchTerm = '%' + @SearchTerm + '%';
-
-    SELECT
-        E.EUserID AS EmployeeID,
-        E.EName AS FullName,
-        E.Email,
-        E.PhoneNumber,
-        E.Salary,
-        E.UserType AS Role,
-        B.BName AS BranchName, 
-        E.BranchID,
-        E.Sex
-    FROM
-        Staff.EMPLOYEE E
-    JOIN
-        Cinema.BRANCH B ON E.BranchID = B.BranchID
-    WHERE
-        E.BranchID = @BranchID 
-        AND (
-            @SearchTerm IS NULL OR @SearchTerm = '' OR
-            E.EName LIKE @SearchTerm OR
-            E.EUserID LIKE @SearchTerm OR
-            E.Email LIKE @SearchTerm
-        )
-    ORDER BY
-        E.UserType DESC, E.EName ASC;
 END
 GO
 -- Thêm SP này vào file SQL của bạn (hoặc chạy riêng nếu DB đã tạo)
@@ -1265,7 +1619,11 @@ BEGIN
         -- FIX MỚI: Tính toán thời lượng:
         -- Nếu RunTime > 0, dùng RunTime. 
         -- Nếu RunTime là NULL/0, tính chênh lệch giữa EndTime và StartTime.
-       ISNULL(M.RunTime, 0) AS RuntimeMinutes,
+        ISNULL(M.RunTime, 
+               DATEDIFF(MINUTE, 
+                        CAST(T.StartTime AS DATETIME), 
+                        CAST(T.EndTime AS DATETIME))
+              ) AS RunTimeMin, -- Đổi tên thành RunTime
         
         SR.RoomID,
         SR.RType AS RoomType,
@@ -1392,6 +1750,26 @@ BEGIN
 
 END
 GO
+
+--Procedure 22: Cập nhật poster cho phim
+CREATE OR ALTER PROCEDURE Movie.sp_AddPoster
+    @MovieID INT
+    @posterURL VARCHAR(MAX)
+AS
+BEGIN
+    IF NOT EXISTS (SELECT 1 FROM Movie.MOVIE WHERE MovieID = @id)
+    BEGIN
+        THROW 50001, 'Movie does not exist.', 1;
+    END
+
+    UPDATE Movie.MOVIE
+    SET posterURL = @posterURL
+    WHERE MovieID = @MovieID;
+
+    PRINT'Poster uploaded successfull!';
+
+END;
+    
 -----------------------------------------------------------
 -- PHẦN 5: BẢO MẬT - TẠO USER (PART 3) - PHIÊN BẢN CLEAN INSTALL
 -----------------------------------------------------------
