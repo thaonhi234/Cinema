@@ -407,8 +407,6 @@ INSERT INTO Staff.EMPLOYEE
 ('Bui Van AC', 'M', '0901111504', 'ac29@cgv.vn', 'emp029', 4200, 'staff', 'EMP005', 5),
 ('Tran Thi AD', 'F', '0901111505', 'ad30@cgv.vn', 'emp030', 3900, 'staff', 'EMP005', 5);
 
-SELECT * FROM Staff.EMPLOYEE
-
 INSERT INTO Cinema.BRANCH (BranchID, BName, ManageID, BAddress) VALUES
 (1, 'CGV Aeon Tan Phu', 'EMP002', '30 Tan Phu, HCM'),
 (2, 'CGV Vincom Dong Khoi', 'EMP003', '70 Dong Khoi, HCM'),
@@ -703,36 +701,36 @@ INSERT INTO Movie.REVIEW (MovieID, CUserID, Rating, RDate, Comment) VALUES
 (30, 'CUS030', 8, '2025-10-03', N'Good movie');
 
 INSERT INTO Booking.ORDERS (OrderID, OrderTime, PaymentMethod, Total, CUserID, EUserID) VALUES
-(1, '2025-11-24 09:15:00', 'Cash',       150000, 'CUS001', 'EMP006'),
-(2, '2025-11-25 10:20:00', 'Momo',       220000, 'CUS002', 'EMP007'),
-(3, '2025-11-26 11:05:00', 'ZaloPay',    180000, 'CUS003', 'EMP008'),
-(4, '2025-11-27 12:40:00', 'Visa',       300000, 'CUS004', 'EMP009'),
-(5, '2025-11-28 13:25:00', 'Mastercard', 250000, 'CUS005', 'EMP010'),
-(6, '2025-11-29 14:10:00', 'Cash',       170000, 'CUS006', 'EMP011'),
-(7, '2025-11-30 15:50:00', 'Momo',       260000, 'CUS007', 'EMP012'),
-(8, '2025-12-01 16:30:00', 'ZaloPay',    210000, 'CUS008', 'EMP013'),
-(9, '2025-12-02 17:45:00', 'Visa',       320000, 'CUS009', 'EMP014'),
-(10,'2025-12-03 18:05:00', 'Mastercard', 290000, 'CUS010', 'EMP015'),
-(11,'2025-11-24 11:30:00', 'Cash',       200000, 'CUS011', 'EMP016'),
-(12,'2025-11-25 12:50:00', 'Momo',       240000, 'CUS012', 'EMP017'),
-(13,'2025-11-26 14:15:00', 'ZaloPay',    280000, 'CUS013', 'EMP018'),
-(14,'2025-11-27 15:35:00', 'Visa',       330000, 'CUS014', 'EMP019'),
-(15,'2025-11-28 16:25:00', 'Mastercard', 350000, 'CUS015', 'EMP020'),
-(16,'2025-11-29 17:10:00', 'Cash',       190000, 'CUS016', 'EMP021'),
-(17,'2025-11-30 18:20:00', 'Momo',       260000, 'CUS017', 'EMP022'),
-(18,'2025-12-01 19:30:00', 'ZaloPay',    310000, 'CUS018', 'EMP023'),
-(19,'2025-12-02 20:45:00', 'Visa',       270000, 'CUS019', 'EMP024'),
-(20,'2025-12-03 21:05:00', 'Mastercard', 340000, 'CUS020', 'EMP025'),
-(21,'2025-11-24 09:10:00', 'Cash',       180000, 'CUS021', 'EMP026'),
-(22,'2025-11-25 10:40:00', 'Momo',       220000, 'CUS022', 'EMP027'),
-(23,'2025-11-26 12:00:00', 'ZaloPay',    260000, 'CUS023', 'EMP028'),
-(24,'2025-11-27 13:30:00', 'Visa',       300000, 'CUS024', 'EMP029'),
-(25,'2025-11-28 15:00:00', 'Mastercard', 350000, 'CUS025', 'EMP030'),
-(26,'2025-11-29 16:20:00', 'Cash',       200000, 'CUS026', 'EMP002'),
-(27,'2025-11-30 17:35:00', 'Momo',       240000, 'CUS027', 'EMP003'),
-(28,'2025-12-01 18:55:00', 'ZaloPay',    280000, 'CUS028', 'EMP004'),
-(29,'2025-12-02 20:10:00', 'Visa',       320000, 'CUS029', 'EMP005'),
-(30,'2025-12-03 21:45:00', 'Mastercard', 360000, 'CUS030', 'EMP001');
+(1, '2025-11-24T09:15:00', 'Cash',       150000, 'CUS001', 'EMP006'),
+(2, '2025-11-25T10:20:00', 'Momo',       220000, 'CUS002', 'EMP007'),
+(3, '2025-11-26T11:05:00', 'ZaloPay',    180000, 'CUS003', 'EMP008'),
+(4, '2025-11-27T12:40:00', 'Visa',       300000, 'CUS004', 'EMP009'),
+(5, '2025-11-28T13:25:00', 'Mastercard', 250000, 'CUS005', 'EMP010'),
+(6, '2025-11-29T14:10:00', 'Cash',       170000, 'CUS006', 'EMP011'),
+(7, '2025-11-30T15:50:00', 'Momo',       260000, 'CUS007', 'EMP012'),
+(8, '2025-12-01T16:30:00', 'ZaloPay',    210000, 'CUS008', 'EMP013'),
+(9, '2025-12-02T17:45:00', 'Visa',       320000, 'CUS009', 'EMP014'),
+(10,'2025-12-03T18:05:00', 'Mastercard', 290000, 'CUS010', 'EMP015'),
+(11,'2025-11-24T11:30:00', 'Cash',       200000, 'CUS011', 'EMP016'),
+(12,'2025-11-25T12:50:00', 'Momo',       240000, 'CUS012', 'EMP017'),
+(13,'2025-11-26T14:15:00', 'ZaloPay',    280000, 'CUS013', 'EMP018'),
+(14,'2025-11-27T15:35:00', 'Visa',       330000, 'CUS014', 'EMP019'),
+(15,'2025-11-28T16:25:00', 'Mastercard', 350000, 'CUS015', 'EMP020'),
+(16,'2025-11-29T17:10:00', 'Cash',       190000, 'CUS016', 'EMP021'),
+(17,'2025-11-30T18:20:00', 'Momo',       260000, 'CUS017', 'EMP022'),
+(18,'2025-12-01T19:30:00', 'ZaloPay',    310000, 'CUS018', 'EMP023'),
+(19,'2025-12-02T20:45:00', 'Visa',       270000, 'CUS019', 'EMP024'),
+(20,'2025-12-03T21:05:00', 'Mastercard', 340000, 'CUS020', 'EMP025'),
+(21,'2025-11-24T09:10:00', 'Cash',       180000, 'CUS021', 'EMP026'),
+(22,'2025-11-25T10:40:00', 'Momo',       220000, 'CUS022', 'EMP027'),
+(23,'2025-11-26T12:00:00', 'ZaloPay',    260000, 'CUS023', 'EMP028'),
+(24,'2025-11-27T13:30:00', 'Visa',       300000, 'CUS024', 'EMP029'),
+(25,'2025-11-28T15:00:00', 'Mastercard', 350000, 'CUS025', 'EMP030'),
+(26,'2025-11-29T16:20:00', 'Cash',       200000, 'CUS026', 'EMP002'),
+(27,'2025-11-30T17:35:00', 'Momo',       240000, 'CUS027', 'EMP003'),
+(28,'2025-12-01T18:55:00', 'ZaloPay',    280000, 'CUS028', 'EMP004'),
+(29,'2025-12-02T20:10:00', 'Visa',       320000, 'CUS029', 'EMP005'),
+(30,'2025-12-03T21:45:00', 'Mastercard', 360000, 'CUS030', 'EMP001');
 
 INSERT INTO Booking.COUPON (CouponID, StartDate, EndDate, SaleOff, ReleaseNum, AvailNum) VALUES
 (1, '2025-01-01', '2025-02-01', 10, 1000, 800),
@@ -944,6 +942,23 @@ RETURN (
     FROM Movie.MOVIE m JOIN Movie.MOVIEGENRE mg ON m.MovieID = mg.MovieID
     WHERE mg.Genre = @GenreInput
 )
+GO
+
+--Function 3: Tính Rating trung bình của 1 phim
+CREATE FUNCTION Movie.fn_AvgRating (@MovieID INT)
+RETURNS DECIMAL(3,1)
+AS
+BEGIN
+    DECLARE @AvgRating DECIMAL(3,1);
+
+    -- Tính trung bình rating
+    SELECT @AvgRating = AVG(CAST(Rating AS DECIMAL(3,1)))
+    FROM Movie.REVIEW
+    WHERE MovieID = @MovieID;
+
+    -- Nếu không có review, trả về NULL hoặc 0
+    RETURN @AvgRating;
+END;
 GO
 
 --Procedure 1. INSERT(Thêm phim mới)
@@ -1160,18 +1175,18 @@ IF OBJECT_ID('movieList', 'P') IS NOT NULL
 GO
 
 CREATE OR ALTER PROCEDURE movieList(
-	@minReview AS INT = 0,
-	@minRating AS DECIMAL(4, 2) = 0
+    @minReview AS INT = 0,
+    @minRating AS DECIMAL(4, 2) = 0
 )
 AS
 BEGIN
-	SET NOCOUNT ON;
+    SET NOCOUNT ON;
 
-	SELECT 
+    SELECT 
         m.MovieID,
         m.MName,
         COUNT(r.CUserID) AS ReviewCount,
-        AVG(CAST(r.Rating AS DECIMAL(4,2))) AS AvgRating
+        ISNULL(AVG(CAST(r.Rating AS DECIMAL(4,2))), 0) AS AvgRating
     FROM Movie.MOVIE AS m
     LEFT JOIN Movie.REVIEW AS r
         ON m.MovieID = r.MovieID
@@ -1179,12 +1194,13 @@ BEGIN
     GROUP BY m.MovieID, m.MName
     HAVING 
         COUNT(r.CUserID) >= @minReview
-        AND AVG(CAST(r.Rating AS DECIMAL(4,2))) >= @minRating
+        AND ISNULL(AVG(CAST(r.Rating AS DECIMAL(4,2))), 0) >= @minRating
     ORDER BY AvgRating DESC, ReviewCount DESC;
 END;
 GO
 
 EXEC movieList 1, 8;
+
 -- Procedure 6: Thêm Nhân viên mới (Dùng cho API Create Employee)
 -- (Sử dụng số thứ tự tiếp theo sau Procedure 5: movieList)
 GO
