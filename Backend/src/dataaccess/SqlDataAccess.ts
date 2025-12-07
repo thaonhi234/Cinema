@@ -8,7 +8,9 @@ import {
     RoomDetails,
     SeatDetail,
     Showtime,
-    Employee
+    Employee,
+    TopMovie,
+    StatData
 } from '../models/user';
 // Lấy cấu hình từ biến môi trường
 const config = {
@@ -177,6 +179,43 @@ export class SQLDataAccess implements IDataAccess {
             })) 
         };
     }
+    async getDashboardStatsWithComparison(): Promise<StatData> {
+        const db = await getPool();
+
+        // GỌI SP MỚI
+        const result = await db.request().execute('dbo.sp_GetDashboardStatsWithComparison'); 
+        const record = result.recordset[0];
+        
+        // Map kết quả sang StatData
+        return {
+            totalMovies: record.totalMovies,
+            prevTotalMovies: record.prevTotalMovies,
+            activeRooms: record.activeRooms,
+            prevActiveRooms: record.prevActiveRooms,
+            showtimesToday: record.showtimesToday,
+            prevShowtimesYesterday: record.prevShowtimesYesterday,
+            ticketsSold: record.ticketsSold,
+            prevTicketsSold: record.prevTicketsSold,
+        } as StatData;
+    }
+    async getTopMovies(limit: number): Promise<TopMovie[]> {
+        const db = await getPool();
+
+        const result = await db.request()
+            .input('TopN', sql.Int, limit)
+            .execute('Movie.sp_GetTopRatedMovies'); 
+
+        // Map kết quả sang TopMovie[] và thêm Rank
+        return result.recordset.map((record, index) => ({
+            MovieID: record.MovieID,
+            MName: record.MName,
+            AvgRating: parseFloat(record.AvgRating.toFixed(1)),
+            RunTime: record.RunTime,
+            Status: record.Status,
+            Rank: index + 1, // Gán Rank dựa trên thứ tự SQL trả về
+        })) as TopMovie[];
+    }
+
      /////////////////////////
     ////////////////////////
     ///////////////////////

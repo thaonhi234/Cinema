@@ -546,36 +546,36 @@ INSERT INTO Movie.MOVIE (
     MovieID, MName, Descript, RunTime, isDub, isSub,
     releaseDate, closingDate, AgeRating, posterURL
 ) VALUES
-(1, 'Dune: Part Two', 'Epic sci-fi adventure on Arrakis.', 165, 0, 1, '2025-01-15', '2025-04-15', 'T13', NULL),
+(1, 'Dune: Part Two', 'Epic sci-fi adventure on Arrakis.', 165, 0, 1, '2025-11-15', '2025-12-15', 'T13', NULL),
 (2, 'Oppenheimer', 'Story of J. Robert Oppenheimer.', 180, 0, 1, '2025-02-10', '2025-05-20', 'T16', NULL),
-(3, 'Barbie', 'A journey of self-discovery in the real world.', 114, 1, 1, '2025-03-01', '2025-06-10', 'K', NULL),
-(4, 'Godzilla Minus One', 'Japan faces a new monster threat.', 130, 0, 1, '2025-04-05', '2025-07-15', 'T13', NULL),
-(5, 'Spider-Man: Across the Spider-Verse', 'Miles enters new dimensions.', 142, 1, 1, '2025-05-10', '2026-01-05', 'K', NULL),
-(6, 'Inside Out 2', 'Riley faces new emotions.', 100, 1, 1, '2025-06-12', '2025-09-10', 'K', NULL),
-(7, 'The Batman', 'Batman uncovers Gotham corruption.', 176, 0, 1, '2025-01-25', '2025-04-30', 'T13', NULL),
-(8, 'Avatar: The Way of Water', 'Return to Pandora oceans.', 190, 0, 1, '2025-02-20', '2025-05-25', 'T13', NULL),
-(9, 'Wonka', 'The early life of Willy Wonka.', 115, 1, 1, '2025-03-15', '2025-06-28', 'K', NULL),
+(3, 'Barbie', 'A journey of self-discovery in the real world.', 114, 1, 1, '2025-11-21', '2025-12-05', 'K', NULL),
+(4, 'Godzilla Minus One', 'Japan faces a new monster threat.', 130, 0, 1, '2025-06-05', '2025-07-15', 'T13', NULL),
+(5, 'Spider-Man: Across the Spider-Verse', 'Miles enters new dimensions.', 142, 1, 1, '2025-12-10', '2026-01-05', 'K', NULL),
+(6, 'Inside Out 2', 'Riley faces new emotions.', 100, 1, 1, '2025-11-11', '2025-12-06', 'K', NULL),
+(7, 'The Batman', 'Batman uncovers Gotham corruption.', 176, 0, 1, '2025-11-25', '2025-12-30', 'T13', NULL),
+(8, 'Avatar: The Way of Water', 'Return to Pandora oceans.', 190, 0, 1, '2025-12-08', '2026-01-25', 'T13', NULL),
+(9, 'Wonka', 'The early life of Willy Wonka.', 115, 1, 1, '2025-12-15', '2026-01-28', 'K', NULL),
 (10, 'Mission: Impossible – Dead Reckoning', 'Ethan Hunt faces a new threat.', 158, 0, 1, '2025-04-18', '2025-08-01', 'T13', NULL),
-(11, 'John Wick: Chapter 4', 'John Wick returns for revenge.', 169, 0, 1, '2025-01-30', '2025-05-20', 'T16', NULL),
-(12, 'The Marvels', 'Captain Marvel joins new heroes.', 105, 1, 1, '2025-02-28', '2025-06-05', 'T13', NULL),
-(13, 'The Creator', 'AI uprising threatens humanity.', 133, 0, 1, '2025-05-18', '2026-02-10', 'T13', NULL),
-(14, 'Napoleon', 'Epic biography of Napoleon Bonaparte.', 158, 0, 1, '2025-03-30', '2025-07-02', 'T13', NULL),
-(15, 'Kung Fu Panda 4', 'Po trains a new warrior.', 100, 1, 1, '2025-06-10', '2025-09-25', 'K', NULL),
-(16, 'Aquaman and the Lost Kingdom', 'Aquaman protects Atlantis.', 124, 1, 1, '2025-04-01', '2026-03-15', 'T13', NULL),
-(17, 'The Hunger Games: The Ballad of Songbirds & Snakes', 'Prequel to Hunger Games.', 157, 0, 1, '2025-02-20', '2025-06-20', 'T13', NULL),
-(18, 'The Equalizer 3', 'McCall seeks justice in Italy.', 109, 0, 1, '2025-03-18', '2025-06-30', 'T13', NULL),
-(19, 'Indiana Jones and the Dial of Destiny', 'Indiana Jones travels through time.', 142, 0, 1, '2025-05-01', '2025-08-10', 'T13', NULL),
-(20, 'Elemental', 'Fire and water form an unlikely bond.', 102, 1, 1, '2025-02-01', '2026-01-20', 'K', NULL),
-(21, 'The Flash', 'Flash resets the universe.', 144, 0, 1, '2025-03-05', '2025-06-12', 'T13', NULL),
-(22, 'Transformers: Rise of the Beasts', 'Autobots meet the Maximals.', 120, 1, 1, '2025-05-10', '2025-08-18', 'T13', NULL),
-(23, 'Blue Beetle', 'A young hero gains alien armor.', 128, 1, 1, '2025-07-01', '2026-05-10', 'T13', NULL),
-(24, 'The Super Mario Bros. Movie', 'Mario rescues the Mushroom Kingdom.', 92, 1, 1, '2025-01-25', '2025-04-05', 'K', NULL),
-(25, 'The Little Mermaid', 'Live-action remake of classic.', 135, 1, 1, '2025-02-20', '2025-06-10', 'K', NULL),
-(26, 'Guardians of the Galaxy Vol. 3', 'Guardians face their pasts.', 150, 0, 1, '2025-03-12', '2025-07-12', 'T13', NULL),
-(27, 'Creed III', 'Adonis Creed faces a rival.', 116, 0, 1, '2025-04-14', '2025-07-22', 'T13', NULL),
+(11, 'John Wick: Chapter 4', 'John Wick returns for revenge.', 169, 0, 1, '2025-11-30', '2025-12-20', 'T16', NULL),
+(12, 'The Marvels', 'Captain Marvel joins new heroes.', 105, 1, 1, '2025-08-28', '2025-10-05', 'T13', NULL),
+(13, 'The Creator', 'AI uprising threatens humanity.', 133, 0, 1, '2025-12-18', '2026-02-10', 'T13', NULL),
+(14, 'Napoleon', 'Epic biography of Napoleon Bonaparte.', 158, 0, 1, '2025-11-30', '2025-12-07', 'T13', NULL),
+(15, 'Kung Fu Panda 4', 'Po trains a new warrior.', 100, 1, 1, '2025-12-10', '2025-12-25', 'K', NULL),
+(16, 'Aquaman and the Lost Kingdom', 'Aquaman protects Atlantis.', 124, 1, 1, '2025-12-11', '2026-01-15', 'T13', NULL),
+(17, 'The Hunger Games: The Ballad of Songbirds & Snakes', 'Prequel to Hunger Games.', 157, 0, 1, '2025-12-09', '2025-12-20', 'T13', NULL),
+(18, 'The Equalizer 3', 'McCall seeks justice in Italy.', 109, 0, 1, '2025-12-18', '2026-01-30', 'T13', NULL),
+(19, 'Indiana Jones and the Dial of Destiny', 'Indiana Jones travels through time.', 142, 0, 1, '2025-07-01', '2025-10-10', 'T13', NULL),
+(20, 'Elemental', 'Fire and water form an unlikely bond.', 102, 1, 1, '2025-12-01', '2026-01-20', 'K', NULL),
+(21, 'The Flash', 'Flash resets the universe.', 144, 0, 1, '2025-11-05', '2025-12-12', 'T13', NULL),
+(22, 'Transformers: Rise of the Beasts', 'Autobots meet the Maximals.', 120, 1, 1, '2025-10-10', '2025-11-18', 'T13', NULL),
+(23, 'Blue Beetle', 'A young hero gains alien armor.', 128, 1, 1, '2025-12-09', '2026-02-10', 'T13', NULL),
+(24, 'The Super Mario Bros. Movie', 'Mario rescues the Mushroom Kingdom.', 92, 1, 1, '2025-12-08', '2025-12-25', 'K', NULL),
+(25, 'The Little Mermaid', 'Live-action remake of classic.', 135, 1, 1, '2025-12-09', '2025-12-31', 'K', NULL),
+(26, 'Guardians of the Galaxy Vol. 3', 'Guardians face their pasts.', 150, 0, 1, '2025-09-12', '2025-11-12', 'T13', NULL),
+(27, 'Creed III', 'Adonis Creed faces a rival.', 116, 0, 1, '2025-12-01', '2025-12-22', 'T13', NULL),
 (28, 'Top Gun: Maverick (Re-release)', 'Maverick trains new pilots.', 131, 0, 1, '2025-09-01', '2025-12-10', 'T13', NULL),
-(29, 'Smile 2', 'Horror sequel with new curse.', 100, 0, 1, '2025-08-15', '2026-02-28', 'T16', NULL),
-(30, 'Deadpool & Wolverine', 'Deadpool teams up with Wolverine.', 130, 0, 1, '2025-10-01', '2026-04-01', 'T16', NULL);
+(29, 'Smile 2', 'Horror sequel with new curse.', 100, 0, 1, '2025-11-15', '2026-12-28', 'T16', NULL),
+(30, 'Deadpool & Wolverine', 'Deadpool teams up with Wolverine.', 130, 0, 1, '2025-12-13', '2026-02-01', 'T16', NULL);
 
 INSERT INTO Movie.GENRE (Genre) VALUES
 ('Action'), ('Adventure'), ('Sci-Fi'), ('Fantasy'), ('Drama'),
@@ -639,74 +639,74 @@ INSERT INTO Movie.FEATURES (MovieID, FullName) VALUES
 (30, 'Henry Cavill'), (30, 'Gal Gadot');
 
 INSERT INTO Movie.REVIEW (MovieID, CUserID, Rating, RDate, Comment) VALUES
-(1, 'CUS001', 8, '2025-01-16', N'Good movie'),
-(1, 'CUS002', 9, '2025-01-17', N'Great storyline'),
+(1, 'CUS001', 8, '2025-11-16', N'Good movie'),
+(1, 'CUS002', 9, '2025-11-17', N'Great storyline'),
 (2, 'CUS003', 7, '2025-02-11', N'Nice effects'),
 (2, 'CUS004', 8, '2025-02-12', N'Enjoyable'),
-(3, 'CUS005', 9, '2025-03-02', N'Excellent'),
-(3, 'CUS006', 6, '2025-03-03', N'Average'),
-(4, 'CUS007', 8, '2025-04-06', N'Good pacing'),
-(4, 'CUS008', 7, '2025-04-07', N'Solid'),
-(5, 'CUS009', 9, '2025-05-11', N'Awesome'),
-(5, 'CUS010', 8, '2025-05-12', N'Well made'),
-(6, 'CUS011', 7, '2025-06-13', N'Entertaining'),
-(6, 'CUS012', 8, '2025-06-14', N'Fun movie'),
-(7, 'CUS013', 8, '2025-01-26', N'Nice visuals'),
-(7, 'CUS014', 9, '2025-01-27', N'Great cast'),
-(8, 'CUS015', 6, '2025-02-21', N'Okay'),
-(8, 'CUS016', 7, '2025-02-22', N'Not bad'),
-(9, 'CUS017', 9, '2025-03-16', N'Very good'),
-(9, 'CUS018', 8, '2025-03-17', N'Interesting'),
+(3, 'CUS005', 9, '2025-11-22', N'Excellent'),
+(3, 'CUS006', 6, '2025-11-23', N'Average'),
+(4, 'CUS007', 8, '2025-06-06', N'Good pacing'),
+(4, 'CUS008', 7, '2025-06-07', N'Solid'),
+-- (5, 'CUS009', 9, '2025-12-11', N'Awesome'),
+-- (5, 'CUS010', 8, '2025-05-12', N'Well made'),
+(6, 'CUS011', 7, '2025-11-12', N'Entertaining'),
+(6, 'CUS012', 8, '2025-11-13', N'Fun movie'),
+(7, 'CUS013', 8, '2025-11-26', N'Nice visuals'),
+(7, 'CUS014', 9, '2025-11-27', N'Great cast'),
+(8, 'CUS015', 6, '2025-12-09', N'Okay'),
+(8, 'CUS016', 7, '2025-12-09', N'Not bad'),
+-- (9, 'CUS017', 9, '2025-03-16', N'Very good'),
+-- (9, 'CUS018', 8, '2025-03-17', N'Interesting'),
 (10, 'CUS019', 7, '2025-04-19', N'Entertaining'),
 (10, 'CUS020', 8, '2025-04-20', N'Good experience'),
-(11, 'CUS021', 9, '2025-01-31', N'Impressive'),
-(11, 'CUS022', 6, '2025-02-01', N'Fine'),
-(12, 'CUS023', 7, '2025-03-01', N'Enjoyable'),
-(12, 'CUS024', 8, '2025-03-02', N'Good watch'),
-(13, 'CUS025', 8, '2025-05-19', N'Well done'),
-(13, 'CUS026', 7, '2025-05-20', N'Decent'),
-(14, 'CUS027', 9, '2025-03-31', N'Fantastic'),
-(14, 'CUS028', 8, '2025-04-01', N'Worth watching'),
-(15, 'CUS029', 7, '2025-06-11', N'Fine movie'),
-(15, 'CUS030', 8, '2025-06-12', N'Good overall'),
-(16, 'CUS001', 6, '2025-04-02', N'Meh'),
-(16, 'CUS002', 7, '2025-04-03', N'Average+'),
-(17, 'CUS003', 8, '2025-02-21', N'Nice'),
-(17, 'CUS004', 9, '2025-02-22', N'Great film'),
-(18, 'CUS005', 7, '2025-03-19', N'Pretty good'),
-(18, 'CUS006', 6, '2025-03-20', N'Just ok'),
-(19, 'CUS007', 9, '2025-05-02', N'Excellent'),
-(19, 'CUS008', 8, '2025-05-03', N'Good film'),
-(20, 'CUS009', 7, '2025-06-13', N'Solid movie'),
-(20, 'CUS010', 8, '2025-06-14', N'Nice'),
-(21, 'CUS011', 8, '2025-01-17', N'Good pacing'),
-(21, 'CUS012', 7, '2025-01-18', N'Watchable'),
-(22, 'CUS013', 9, '2025-05-11', N'Excellent'),
-(22, 'CUS014', 8, '2025-05-12', N'Enjoyable'),
-(23, 'CUS015', 7, '2025-07-02', N'Not bad'),
-(23, 'CUS016', 8, '2025-07-03', N'Pretty good'),
-(24, 'CUS017', 9, '2025-01-06', N'Great movie'),
-(24, 'CUS018', 7, '2025-01-07', N'Nice'),
-(25, 'CUS019', 8, '2025-02-21', N'Good experience'),
-(25, 'CUS020', 7, '2025-02-22', N'Decent'),
-(26, 'CUS021', 9, '2025-03-13', N'Fantastic'),
-(26, 'CUS022', 8, '2025-03-14', N'Good acting'),
-(27, 'CUS023', 7, '2025-04-15', N'Fine'),
-(27, 'CUS024', 8, '2025-04-16', N'Good'),
+(11, 'CUS021', 9, '2025-12-01', N'Impressive'),
+(11, 'CUS022', 6, '2025-12-02', N'Fine'),
+(12, 'CUS023', 7, '2025-09-01', N'Enjoyable'),
+(12, 'CUS024', 8, '2025-09-02', N'Good watch'),
+-- (13, 'CUS025', 8, '2025-05-19', N'Well done'),
+-- (13, 'CUS026', 7, '2025-05-20', N'Decent'),
+(14, 'CUS027', 9, '2025-12-01', N'Fantastic'),
+(14, 'CUS028', 8, '2025-12-02', N'Worth watching'),
+-- (15, 'CUS029', 7, '2025-06-11', N'Fine movie'),
+-- (15, 'CUS030', 8, '2025-06-12', N'Good overall'),
+-- (16, 'CUS001', 6, '2025-04-02', N'Meh'),
+-- (16, 'CUS002', 7, '2025-04-03', N'Average+'),
+(17, 'CUS003', 8, '2025-12-11', N'Nice'),
+(17, 'CUS004', 9, '2025-12-12', N'Great film'),
+-- (18, 'CUS005', 7, '2025-03-19', N'Pretty good'),
+-- (18, 'CUS006', 6, '2025-03-20', N'Just ok'),
+(19, 'CUS007', 9, '2025-08-02', N'Excellent'),
+(19, 'CUS008', 8, '2025-08-03', N'Good film'),
+(20, 'CUS009', 7, '2025-12-03', N'Solid movie'),
+(20, 'CUS010', 8, '2025-12-04', N'Nice'),
+(21, 'CUS011', 8, '2025-12-09', N'Good pacing'),
+(21, 'CUS012', 7, '2025-12-10', N'Watchable'),
+(22, 'CUS013', 9, '2025-10-11', N'Excellent'),
+(22, 'CUS014', 8, '2025-10-12', N'Enjoyable'),
+(23, 'CUS015', 7, '2026-01-02', N'Not bad'),
+(23, 'CUS016', 8, '2026-01-03', N'Pretty good'),
+(24, 'CUS017', 9, '2025-12-09', N'Great movie'),
+(24, 'CUS018', 7, '2025-12-08', N'Nice'),
+(25, 'CUS019', 8, '2025-12-09', N'Good experience'),
+(25, 'CUS020', 7, '2025-12-09', N'Decent'),
+-- (26, 'CUS021', 9, '2025-03-13', N'Fantastic'),
+-- (26, 'CUS022', 8, '2025-03-14', N'Good acting'),
+(27, 'CUS023', 7, '2025-12-05', N'Fine'),
+(27, 'CUS024', 8, '2025-12-06', N'Good'),
 (28, 'CUS025', 9, '2025-09-02', N'Amazing'),
 (28, 'CUS026', 8, '2025-09-03', N'Nice'),
-(29, 'CUS027', 7, '2025-08-16', N'Average'),
-(29, 'CUS028', 8, '2025-08-17', N'Enjoyable'),
-(30, 'CUS029', 9, '2025-10-02', N'Great ending'),
-(30, 'CUS030', 8, '2025-10-03', N'Good movie');
+(29, 'CUS027', 7, '2025-11-16', N'Average'),
+(29, 'CUS028', 8, '2025-11-17', N'Enjoyable');
+-- (30, 'CUS029', 9, '2025-10-02', N'Great ending'),
+-- (30, 'CUS030', 8, '2025-10-03', N'Good movie');
 
 INSERT INTO Booking.ORDERS (OrderID, OrderTime, PaymentMethod, Total, CUserID, EUserID) VALUES
-(1, '2025-11-24T09:15:00', 'Cash',       150000, 'CUS001', 'EMP006'),
-(2, '2025-11-25T10:20:00', 'Momo',       220000, 'CUS002', 'EMP007'),
-(3, '2025-11-26T11:05:00', 'ZaloPay',    180000, 'CUS003', 'EMP008'),
-(4, '2025-11-27T12:40:00', 'Visa',       300000, 'CUS004', 'EMP009'),
-(5, '2025-11-28T13:25:00', 'Mastercard', 250000, 'CUS005', 'EMP010'),
-(6, '2025-11-29T14:10:00', 'Cash',       170000, 'CUS006', 'EMP011'),
+(1, '2025-12-08T05:15:00', 'Cash',       150000, 'CUS001', 'EMP006'),
+(2, '2025-12-08T05:20:00', 'Momo',       220000, 'CUS002', 'EMP007'),
+(3, '2025-12-09T11:05:00', 'ZaloPay',    180000, 'CUS003', 'EMP008'),
+(4, '2025-12-10T12:40:00', 'Visa',       300000, 'CUS004', 'EMP006'),
+(5, '2025-12-11T13:25:00', 'Mastercard', 250000, 'CUS005', 'EMP007'),
+(6, '2025-12-12T14:10:00', 'Cash',       170000, 'CUS006', 'EMP008'),
 (7, '2025-11-30T15:50:00', 'Momo',       260000, 'CUS007', 'EMP012'),
 (8, '2025-12-01T16:30:00', 'ZaloPay',    210000, 'CUS008', 'EMP013'),
 (9, '2025-12-02T17:45:00', 'Visa',       320000, 'CUS009', 'EMP014'),
@@ -793,56 +793,66 @@ INSERT INTO Booking.COUPONUSAGE (CouponID, OrderID, CUserID, UseDate) VALUES
 (9, 14, 'CUS015', '2024-03-15');
 
 INSERT INTO Screening.TIME (TimeID, Day, StartTime, EndTime, FName, MovieID, RoomID, BranchID) VALUES
-(1, '2025-01-15', '10:00', '12:30', 'IMAX', 1, 2, 1),
-(2, '2025-02-10', '13:00', '15:30', 'IMAX', 2, 2, 1),
-(3, '2025-03-01', '16:00', '18:30', 'Standard', 3, 1, 1),
-(4, '2025-04-05', '19:00', '21:30', '4DX', 4, 3, 1),
-(5, '2025-05-10', '21:30', '00:00', 'IMAX', 5, 2, 1),
-(6, '2025-06-12', '10:00', '12:30', 'Standard', 6, 1, 2),
-(7, '2025-01-25', '13:00', '15:30', 'IMAX', 7, 2, 2),
-(8, '2025-02-20', '16:00', '18:30', 'Standard', 8, 1, 2),
-(9, '2025-03-15', '19:00', '21:30', '4DX', 9, 3, 2),
-(10, '2025-04-18', '21:30', '00:00', 'IMAX', 10, 2, 2),
-(11, '2025-01-30', '10:00', '12:30', 'Standard', 11, 2, 3),
-(12, '2025-02-28', '13:00', '15:30', 'Standard', 12, 2, 3),
-(13, '2025-05-18', '16:00', '18:30', 'Standard', 13, 2, 3),
-(14, '2025-03-30', '19:00', '21:30', 'Standard', 14, 2, 3),
-(15, '2025-06-10', '21:30', '00:00', 'Standard', 15, 2, 3),
-(16, '2025-04-01', '10:00', '12:30', 'IMAX', 16, 3, 4),
-(17, '2025-02-20', '13:00', '15:30', '4DX', 17, 2, 4),
-(18, '2025-03-18', '16:00', '18:30', 'Standard', 18, 1, 4),
-(19, '2025-05-01', '19:00', '21:30', 'Standard', 19, 1, 4),
-(20, '2025-02-01', '21:30', '00:00', '4DX', 20, 2, 4),
-(21, '2025-03-05', '10:00', '12:30', 'Standard', 21, 1, 5),
-(22, '2025-05-10', '13:00', '15:30', 'Standard', 22, 2, 5),
-(23, '2025-07-01', '16:00', '18:30', '4DX', 23, 3, 5),
-(24, '2025-01-25', '19:00', '21:30', 'Standard', 24, 1, 5),
-(25, '2025-02-20', '21:30', '00:00', 'Standard', 25, 2, 5),
-(26, '2025-03-12', '10:00', '12:30', 'IMAX', 26, 2, 1),
-(27, '2025-04-14', '13:00', '15:30', 'Standard', 27, 1, 1),
-(28, '2025-09-01', '16:00', '18:30', 'Standard', 28, 1, 1),
-(29, '2025-08-15', '19:00', '21:30', 'Standard', 29, 1, 1),
-(30, '2025-10-01', '21:30', '00:00', 'Standard', 30, 1, 1),
-(31, '2025-03-12', '10:00', '12:30', 'IMAX', 26, 2, 2),
-(32, '2025-04-14', '13:00', '15:30', 'Standard', 27, 1, 2),
-(33, '2025-09-01', '16:00', '18:30', 'Standard', 28, 1, 2),
-(34, '2025-08-15', '19:00', '21:30', 'Standard', 29, 1, 2),
-(35, '2025-10-01', '21:30', '00:00', 'Standard', 30, 1, 2),
-(36, '2025-01-15', '10:00', '12:30', 'IMAX', 1, 2, 3),
-(37, '2025-02-10', '13:00', '15:30', 'IMAX', 2, 2, 3),
-(38, '2025-03-01', '16:00', '18:30', 'Standard', 3, 2, 3),
-(39, '2025-04-05', '19:00', '21:30', '4DX', 4, 1, 3),
-(40, '2025-05-10', '21:30', '00:00', 'IMAX', 5, 3, 3),
-(41, '2025-06-12', '10:00', '12:30', 'Standard', 6, 1, 4),
-(42, '2025-01-25', '13:00', '15:30', 'IMAX', 7, 3, 4),
-(43, '2025-02-20', '16:00', '18:30', 'Standard', 8, 1, 4),
-(44, '2025-03-15', '19:00', '21:30', '4DX', 9, 2, 4),
-(45, '2025-04-18', '21:30', '00:00', 'IMAX', 10, 3, 4),
-(46, '2025-01-30', '10:00', '12:30', 'Standard', 11, 1, 5),
-(47, '2025-02-28', '13:00', '15:30', 'Standard', 12, 2, 5),
-(48, '2025-05-18', '16:00', '18:30', 'Standard', 13, 1, 5),
-(49, '2025-03-30', '19:00', '21:30', 'Standard', 14, 1, 5),
-(50, '2025-06-10', '21:30', '00:00', 'Standard', 15, 2, 5);
+(1,  '2025-12-08', '10:00', '12:30', 'IMAX',     1, 2, 1),
+(2,  '2025-12-15', '13:00', '15:30', 'IMAX',     2, 2, 1),
+(3,  '2025-12-09', '16:00', '18:30', 'Standard', 3, 1, 1),
+(4,  '2025-12-09', '19:00', '21:30', '4DX',      4, 3, 1),
+(5,  '2025-12-08', '21:30', '00:00', 'IMAX',     5, 2, 1),
+
+(6,  '2025-12-10', '10:00', '12:30', 'Standard', 6, 1, 1),
+(7,  '2025-12-11', '13:00', '15:30', 'IMAX',     7, 2, 1),
+(8,  '2025-12-12', '16:00', '18:30', 'Standard', 8, 1, 1),
+(9,  '2025-12-13', '19:00', '21:30', '4DX',      9, 3, 1),
+(10, '2025-12-14', '21:30', '00:00', 'IMAX',    10, 2, 1),
+
+(11, '2025-12-01', '10:00', '12:30', 'Standard', 11, 2, 3),
+(12, '2025-09-15', '13:00', '15:30', 'Standard', 12, 2, 3),
+(13, '2025-12-22', '16:00', '18:30', 'Standard', 13, 2, 3),
+(14, '2025-12-01', '19:00', '21:30', 'Standard', 14, 2, 3),
+(15, '2025-12-12', '21:30', '00:00', 'Standard', 15, 2, 3),
+
+(16, '2025-12-11', '10:00', '12:30', 'IMAX',     16, 3, 4),
+(17, '2025-12-10', '13:00', '15:30', '4DX',      17, 2, 4),
+(18, '2025-12-20', '16:00', '18:30', 'Standard', 18, 1, 4),
+(19, '2025-09-20', '19:00', '21:30', 'Standard', 19, 1, 4),
+(20, '2025-12-15', '21:30', '00:00', '4DX',      20, 2, 4),
+
+(21, '2025-12-08', '10:00', '12:30', 'Standard', 21, 1, 5),
+(22, '2025-10-20', '13:00', '15:30', 'Standard', 22, 2, 5),
+(23, '2025-12-20', '16:00', '18:30', '4DX',      23, 3, 5),
+(24, '2025-12-15', '19:00', '21:30', 'Standard', 24, 1, 5),
+(25, '2025-12-20', '21:30', '00:00', 'Standard', 25, 2, 5),
+
+(26, '2025-09-20', '10:00', '12:30', 'IMAX',     26, 2, 1),
+(27, '2025-12-04', '13:00', '15:30', 'Standard', 27, 1, 1),
+(28, '2025-09-05', '16:00', '18:30', 'Standard', 28, 1, 1),
+(29, '2025-12-05', '19:00', '21:30', 'Standard', 29, 1, 1),
+(30, '2025-12-20', '21:30', '00:00', 'Standard', 30, 1, 1),
+
+-- Bản copy Branch 2–5
+(31, '2025-09-20', '10:00', '12:30', 'IMAX',     26, 2, 2),
+(32, '2025-12-04', '13:00', '15:30', 'Standard', 27, 1, 2),
+(33, '2025-09-05', '16:00', '18:30', 'Standard', 28, 1, 2),
+(34, '2025-12-05', '19:00', '21:30', 'Standard', 29, 1, 2),
+(35, '2025-12-20', '21:30', '00:00', 'Standard', 30, 1, 2),
+
+(36, '2025-11-20', '10:00', '12:30', 'IMAX',      1, 2, 3),
+(37, '2025-02-15', '13:00', '15:30', 'IMAX',      2, 2, 3),
+(38, '2025-11-22', '16:00', '18:30', 'Standard',  3, 2, 3),
+(39, '2025-06-10', '19:00', '21:30', '4DX',       4, 1, 3),
+(40, '2025-12-12', '21:30', '00:00', 'IMAX',      5, 3, 3),
+
+(41, '2025-11-20', '10:00', '12:30', 'Standard',  6, 1, 4),
+(42, '2025-11-27', '13:00', '15:30', 'IMAX',      7, 3, 4),
+(43, '2025-12-09', '16:00', '18:30', 'Standard',  8, 1, 4),
+(44, '2025-12-20', '19:00', '21:30', '4DX',       9, 2, 4),
+(45, '2025-04-18', '21:30', '00:00', 'IMAX',     10, 3, 4),
+
+(46, '2025-12-01', '10:00', '12:30', 'Standard', 11, 1, 5),
+(47, '2025-09-15', '13:00', '15:30', 'Standard', 12, 2, 5),
+(48, '2025-12-22', '16:00', '18:30', 'Standard', 13, 1, 5),
+(49, '2025-12-01', '19:00', '21:30', 'Standard', 14, 1, 5),
+(50, '2025-12-12', '21:30', '00:00', 'Standard', 15, 2, 5);
 
 -- script sinh vé
 BEGIN
@@ -859,6 +869,7 @@ WITH SeatList AS (
         s.SColumn,
         t.TimeID,
         o.OrderID,
+        o.OrderTime,
         ROW_NUMBER() OVER(ORDER BY s.BranchID, s.RoomID, s.SRow, s.SColumn) AS rn
     FROM Cinema.SEAT s
     JOIN Screening.TIME t 
@@ -870,7 +881,7 @@ WITH SeatList AS (
 INSERT INTO Screening.TICKETS (TicketID, DaySold, TimeID, OrderID, BranchID, RoomID, SRow, SColumn)
 SELECT 
     ROW_NUMBER() OVER(ORDER BY BranchID, RoomID, SRow, SColumn) AS TicketID,
-    GETDATE() AS DaySold,
+    CAST(OrderTime AS DATE) AS DaySold,
     TimeID,
     OrderID,
     BranchID,
@@ -1156,7 +1167,7 @@ END;
 GO
 
 -- Test
-EXEC deleteMovie 15;
+EXEC deleteMovie 26;
 
 
 --Procedure 4. Danh sách và số lượng nhân viên trong 1 chi nhánh
@@ -1378,6 +1389,121 @@ BEGIN
     GROUP BY DATENAME(dw, T.DaySold), DATEPART(dw, T.DaySold)
     ORDER BY DayOrder;
 
+END
+GO
+
+-- Procedure Bổ sung: Lấy top N phim theo Rating
+GO
+CREATE OR ALTER PROCEDURE Movie.sp_GetTopRatedMovies
+    @TopN INT = 5
+AS
+BEGIN
+    SET NOCOUNT ON;
+    DECLARE @Today DATE = CAST(GETDATE() AS DATE);
+
+    SELECT TOP (@TopN)
+        M.MovieID,
+        M.MName,
+        M.RunTime,
+        ISNULL(AVG(CAST(R.Rating AS DECIMAL(3, 1))), 0.0) AS AvgRating,
+        CASE
+            WHEN @Today < M.releaseDate THEN 'Coming Soon'
+            WHEN @Today >= M.releaseDate AND @Today <= M.closingDate THEN 'Now Showing'
+            ELSE 'Ended'
+        END AS Status
+    FROM 
+        Movie.MOVIE M
+    LEFT JOIN 
+        Movie.REVIEW R ON M.MovieID = R.MovieID
+    GROUP BY 
+        M.MovieID, M.MName, M.RunTime, M.releaseDate, M.closingDate
+    HAVING
+        ISNULL(AVG(CAST(R.Rating AS DECIMAL(3, 1))), 0.0) > 0 -- Chỉ lấy phim đã có rating
+    ORDER BY 
+        AvgRating DESC, M.releaseDate DESC;
+END
+GO
+-- Procedure Bổ sung: Lấy số liệu Dashboard và số liệu so sánh
+GO
+CREATE OR ALTER PROCEDURE dbo.sp_GetDashboardStatsWithComparison
+AS
+BEGIN
+    SET NOCOUNT ON;
+    
+    -- Khai báo biến ngày
+    DECLARE @Today DATE = CAST(GETDATE() AS DATE);
+    DECLARE @Yesterday DATE = DATEADD(day, -1, @Today);
+    
+    -- Tính toán tuần hiện tại
+    DECLARE @StartOfWeek DATE = DATEADD(wk, DATEDIFF(wk, 0, GETDATE()), 0); 
+    DECLARE @EndOfWeek DATE = DATEADD(wk, DATEDIFF(wk, 0, GETDATE()), 6);
+    
+    -- Tính toán tuần trước
+    DECLARE @PrevStartOfWeek DATE = DATEADD(wk, -1, @StartOfWeek);
+    DECLARE @PrevEndOfWeek DATE = DATEADD(wk, -1, @EndOfWeek);
+
+    -- ==========================================================
+    -- 1. FILMS RUNNING (PHIM CÓ LỊCH CHIẾU RƠI VÀO TUẦN)
+    -- So sánh Phim có closingDate >= StartOfWeek VÀ releaseDate <= EndOfWeek
+    -- ==========================================================
+    
+    -- Tuần Hiện Tại
+    DECLARE @CurrentRunningFilms INT = (
+        SELECT COUNT(MovieID) 
+        FROM Movie.MOVIE M
+        WHERE M.releaseDate <= @EndOfWeek 
+          AND M.closingDate >= @StartOfWeek
+    );
+    
+    -- Tuần Trước
+    DECLARE @PrevRunningFilms INT = (
+        SELECT COUNT(MovieID) 
+        FROM Movie.MOVIE M
+        WHERE M.releaseDate <= @PrevEndOfWeek 
+          AND M.closingDate >= @PrevStartOfWeek
+    );
+    
+    -- ==========================================================
+    -- 2. ACTIVE ROOMS (Tạm thời sử dụng tổng số phòng, giả định so sánh -1)
+    -- LƯU Ý: Nếu muốn so sánh chính xác, cần bảng lịch sử phòng
+    -- ==========================================================
+    DECLARE @ActiveRooms INT = (SELECT COUNT(*) FROM Cinema.SCREENROOM);
+    DECLARE @PrevActiveRooms INT = @ActiveRooms - 1; -- Giả định tuần trước có ít hơn 1 phòng
+
+    -- ==========================================================
+    -- 3. SHOWTIMES (Hôm nay vs Hôm qua)
+    -- ==========================================================
+    DECLARE @ShowtimesToday INT = (SELECT COUNT(*) FROM Screening.TIME WHERE Day = @Today);
+    DECLARE @ShowtimesYesterday INT = (SELECT COUNT(*) FROM Screening.TIME WHERE Day = @Yesterday);
+
+    -- ==========================================================
+    -- 4. TICKETS SOLD (Tuần này vs Tuần trước)
+    -- ==========================================================
+    DECLARE @TicketsSoldCurrentWeek INT = (
+        SELECT COUNT(T.TicketID) 
+        FROM Screening.TICKETS T 
+        WHERE T.DaySold >= @StartOfWeek
+    );
+    DECLARE @TicketsSoldPrevWeek INT = (
+        SELECT COUNT(T.TicketID) 
+        FROM Screening.TICKETS T 
+        WHERE T.DaySold >= @PrevStartOfWeek AND T.DaySold < @StartOfWeek
+    );
+
+
+    -- TRẢ VỀ KẾT QUẢ (Sử dụng Running Films thay vì TotalMovies)
+    SELECT 
+        @CurrentRunningFilms AS totalMovies,      -- Phim đang chiếu/sắp chiếu trong tuần này
+        @PrevRunningFilms AS prevTotalMovies,    -- Phim chiếu/sắp chiếu trong tuần trước
+        
+        @ActiveRooms AS activeRooms,
+        @PrevActiveRooms AS prevActiveRooms,
+        
+        @ShowtimesToday AS showtimesToday,
+        @ShowtimesYesterday AS prevShowtimesYesterday,
+        
+        @TicketsSoldCurrentWeek AS ticketsSold,
+        @TicketsSoldPrevWeek AS prevTicketsSold;
 END
 GO
 -- Procedure 10: Lấy toàn bộ danh sách Phim, bao gồm Rating, Genres và Status (Dùng cho API GET /api/movies)

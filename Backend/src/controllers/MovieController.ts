@@ -88,4 +88,19 @@ getMovieById = async (req: Request, res: Response) => {
             return res.status(400).json({ message: (error as any).originalError.info.message });
         }
     }
+    async getTopMovies(req: Request, res: Response) {
+        // Lấy tham số 'limit' từ query string (VD: ?limit=5)
+        const limit = parseInt(req.query.limit as string) || 5; 
+
+        try {
+            // Gọi phương thức Data Access đã được định nghĩa trong SQLDataAccess
+            const movies = await dataAccess.getTopMovies(limit);
+            
+            // Trả về danh sách phim
+            return res.status(200).json(movies);
+        } catch (error) {
+            console.error(`Lỗi khi lấy Top ${limit} Movies:`, error);
+            return res.status(500).json({ message: 'Lỗi server khi lấy danh sách phim xếp hạng cao nhất.' });
+        }
+    }
 }

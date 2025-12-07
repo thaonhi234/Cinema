@@ -5,12 +5,13 @@ import {
 } from "@mui/material";
 
 // Định nghĩa kiểu dữ liệu cho một bộ phim trong danh sách Top 5
+// THAY ĐỔI: Thêm trạng thái 'Ended'
 type TopMovieCardProps = {
     rank: number;
     title: string;
     rating: number;
     runtime: number; // Đơn vị phút
-    status: 'Now' | 'Soon';
+    status: 'Now' | 'Soon' | 'Ended'; // ĐÃ SỬA: Thêm 'Ended'
 };
 
 // Hàm định nghĩa màu nền và màu chữ cho Rank Badge
@@ -25,6 +26,25 @@ const getRankColor = (rank: number) => {
 
 export default function TopMovieCard({ rank, title, rating, runtime, status }: TopMovieCardProps) {
     const rankColors = getRankColor(rank);
+
+    // Xác định màu và nền cho Status
+    let bgColor, textColor;
+
+    if (status === 'Now') {
+        bgColor = '#D1FAE5'; // Green light
+        textColor = '#059669'; // Green dark
+    } else if (status === 'Soon') {
+        bgColor = '#E0F2FE'; // Blue light
+        textColor = '#3B82F6'; // Blue dark
+    } else if (status === 'Ended') {
+        // Màu cho trạng thái Ended (Ví dụ: nền xám, chữ đỏ)
+        bgColor = '#FEE2E2'; // Red light
+        textColor = '#DC2626'; // Red dark
+    } else {
+        bgColor = '#E5E7EB'; // Default gray
+        textColor = '#6B7280';
+    }
+
 
     return (
         <>
@@ -83,8 +103,9 @@ export default function TopMovieCard({ rank, title, rating, runtime, status }: T
                         px: 1,
                         py: 0.5,
                         borderRadius: 999,
-                        bgcolor: status === 'Now' ? '#D1FAE5' : '#E0F2FE',
-                        color: status === 'Now' ? '#059669' : '#3B82F6',
+                        // ĐÃ SỬA: Áp dụng biến màu
+                        bgcolor: bgColor, 
+                        color: textColor,
                         fontSize: 12,
                         fontWeight: 600,
                         whiteSpace: 'nowrap',

@@ -14,9 +14,10 @@ type StatCardProps = {
     value: string;
     label: string;
     change: string;
+    changeColor: string;
 };
 
-export default function StatCard({ color, icon, value, label, change }: StatCardProps) {
+export default function StatCard({ color, icon, value, label, change, changeColor }: StatCardProps) {
     return (
         <Paper
             elevation={0}
@@ -57,10 +58,10 @@ export default function StatCard({ color, icon, value, label, change }: StatCard
                         alignItems: "center",
                     }}
                 >
-                    <TrendingUpIcon sx={{ color: "#16A34A", fontWeight: 500, whiteSpace: "nowrap" }}/> 
+                    <TrendingUpIcon sx={{ color: changeColor, fontWeight: 500, whiteSpace: "nowrap" }}/> 
                     <Typography
                         variant="body2"
-                        sx={{ color: "#16A34A", fontWeight: 500, whiteSpace: "nowrap" }}
+                        sx={{ color: changeColor, fontWeight: 500, whiteSpace: "nowrap" }}
                     >
                         {change}
                     </Typography>

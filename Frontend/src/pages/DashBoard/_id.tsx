@@ -4,6 +4,8 @@ import {
     Paper,
     Typography,
     Divider,
+    CircularProgress,
+    TextField
 } from "@mui/material";
 
 import MeetingRoomOutlinedIcon from "@mui/icons-material/MeetingRoomOutlined";
@@ -24,12 +26,17 @@ import TopMovieCard from "./TopMovieCard"; // <--- Import component mới
 // -----------------------
 import { useState, useEffect } from "react";
 import dashboardApi from "../../api/dashboardApi";
-
+import moviesApi from "../../api/movieApi";
+import DailyRevenueChart from "./DailyRevenueChart";
 type StatData = {
     totalMovies: number;
+    prevTotalMovies: number; // So sánh tuần trước
     activeRooms: number;
+    prevActiveRooms: number; // So sánh tuần trước
     showtimesToday: number;
+    prevShowtimesYesterday: number; // So sánh hôm trước
     ticketsSold: number;
+    prevTicketsSold: number; // So sánh tuần trước
 };
 
 type RevenueData = {
@@ -43,17 +50,35 @@ type RevenueData = {
         Revenue: number 
     }[];
 };
-const mockTopMovies = [
-    { rank: 1, title: 'The Last Symphony', rating: 9.1, runtime: 132, status: 'Now' as 'Now' | 'Soon' },
-    { rank: 2, title: 'Echoes of Tomorrow', rating: 8.8, runtime: 142, status: 'Soon' as 'Now' | 'Soon' },
-    { rank: 3, title: 'Stellar Odyssey', rating: 8.5, runtime: 148, status: 'Now' as 'Now' | 'Soon' },
-    { rank: 4, title: 'Midnight Garden', rating: 8.2, runtime: 118, status: 'Now' as 'Now' | 'Soon' },
-    { rank: 5, title: 'Quantum Leap', rating: 8.0, runtime: 105, status: 'Soon' as 'Now' | 'Soon' },
-];
+type TopMovie = {
+    MovieID: number;
+    MName: string;
+    AvgRating: number;
+    RunTime: number;
+    Status: 'Now Showing' | 'Coming Soon' | 'Ended' | string;
+    Rank: number; 
+};
+    const formatValue = (num: number) => num.toLocaleString();
+    const formatCurrency = (num: number) => `$${num.toLocaleString()}`;
+    const formatPercentage = (num: number) => `${num > 0 ? '+' : ''}${num.toFixed(1)}%`;
+    const calculateChange = (current: number, previous: number): { value: string, color: string } => {
+    if (previous === 0) {
+        return { value: current > 0 ? "+∞%" : "0%", color: current > 0 ? '#16A34A' : '#6B7280' };
+    }
+    const change = ((current - previous) / previous) * 100;
+    const sign = change >= 0 ? '+' : '';
+    const color = change >= 0 ? '#16A34A' : '#EF4444'; // Xanh lá nếu tăng, Đỏ nếu giảm
+
+    return {
+        value: `${sign}${change.toFixed(1)}%`,
+        color: color
+    };
+};
 export default function DashBoard() {
     // 1. STATE ĐỂ LƯU TRỮ DỮ LIỆU
     const [stats, setStats] = useState<StatData | null>(null);
     const [revenue, setRevenue] = useState<RevenueData | null>(null);
+    const [topMovies, setTopMovies] = useState<TopMovie[]>([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState<string | null>(null);
     // 2. HÀM GỌI API
@@ -61,14 +86,19 @@ export default function DashBoard() {
         const fetchDashboardData = async () => {
             try {
                 // Sử dụng Promise.all để gọi 2 API song song
-                const [statsRes, revenueRes] = await Promise.all([
+                const [statsRes, revenueRes, topMoviesRes] = await Promise.all([
                     dashboardApi.getStats(),
                     dashboardApi.getWeeklyRevenue(),
+                    moviesApi.getTopMovies(5),
                 ]);
 
                 setStats(statsRes.data);
                 setRevenue(revenueRes.data);
-                
+                const rankedMovies = topMoviesRes.data.map((movie: TopMovie, index: number) => ({
+                    ...movie,
+                    Rank: index + 1
+                }));
+                setTopMovies(rankedMovies);
             } catch (err: any) {
                 // Xử lý lỗi (ví dụ: token hết hạn, lỗi server)
                 console.error("Lỗi khi lấy dữ liệu Dashboard:", err);
@@ -86,10 +116,10 @@ export default function DashBoard() {
     if (!stats || !revenue) return <Typography sx={{ p: 4 }}>Không có dữ liệu.</Typography>; // Fallback
 
     // Hàm format tiền tệ (vd: 1234 -> 1,234)
-    const formatValue = (num: number) => num.toLocaleString();
-    const formatCurrency = (num: number) => `$${num.toLocaleString()}`;
-    const formatPercentage = (num: number) => `${num > 0 ? '+' : ''}${num.toFixed(1)}%`;
-
+    const movieChange = calculateChange(stats.totalMovies, stats.prevTotalMovies);
+    const roomsChange = calculateChange(stats.activeRooms, stats.prevActiveRooms);
+    const showtimesChange = calculateChange(stats.showtimesToday, stats.prevShowtimesYesterday);
+    const ticketsChange = calculateChange(stats.ticketsSold, stats.prevTicketsSold);
     return (
         <Box
             sx={{
@@ -154,7 +184,8 @@ export default function DashBoard() {
                             icon={<MovieFilterOutlinedIcon />}
                             value={formatValue(stats.totalMovies)} // Dùng dữ liệu thật
                             label="Total Movies"
-                            change="+12%"
+                            change={movieChange.value}
+                            changeColor={movieChange.color}
                         />
                     </Grid>
                     <Grid size={{ xs: 12, md: 3 }}>
@@ -163,7 +194,8 @@ export default function DashBoard() {
                             icon={<MeetingRoomOutlinedIcon />}
                             value={formatValue(stats.activeRooms)}
                             label="Active Rooms"
-                            change="+2"
+                            change={roomsChange.value}
+                            changeColor={roomsChange.color}
                         />
                     </Grid>
                     <Grid size={{ xs: 12, md: 3 }}>
@@ -172,7 +204,8 @@ export default function DashBoard() {
                             icon={<EventOutlinedIcon />}
                             value={formatValue(stats.showtimesToday)}
                             label="Showtimes Today"
-                            change="+8%"
+                            change={showtimesChange.value} // So sánh hôm trước
+                            changeColor={showtimesChange.color}
                         />
                     </Grid>
                     <Grid size={{ xs: 12, md: 3 }}>
@@ -181,7 +214,8 @@ export default function DashBoard() {
                             icon={<LocalActivityIcon />}
                             value={formatValue(stats.ticketsSold)}
                             label="Tickets Sold"
-                            change="+23%"
+                            change={ticketsChange.value}
+                            changeColor={ticketsChange.color}
                         />
                     </Grid>
                 </Grid>
@@ -197,7 +231,7 @@ export default function DashBoard() {
                                 borderRadius: 4,
                                 bgcolor: "#ffffff",
                                 border: "1px solid #f0f0f0",
-                                height: 280,
+                                height: 450,
                                 display: "flex",
                                 flexDirection: "column",
                             }}
@@ -217,12 +251,13 @@ export default function DashBoard() {
                                         display: "flex",
                                         flexDirection: "row",
                                         alignItems: "center",
+                                        justifyContent: "flex-end", 
                                     }}
                                     >
-                                        <TrendingUpIcon sx={{ color: "#16A34A" }}/>
+                                        <TrendingUpIcon sx={{color: revenue.summary.GrowthRate >= 0 ? "#16A34A" : "#EF4444" }}/>
                                         <Typography
                                             variant="body2"
-                                            sx={{ color: "#16A34A", fontWeight: 500 }}
+                                            sx={{ color: revenue.summary.GrowthRate >= 0 ? "#16A34A" : "#EF4444", fontWeight: 500 }}
                                         >
                                             {formatPercentage(revenue.summary.GrowthRate)}
                                         </Typography>
@@ -234,33 +269,19 @@ export default function DashBoard() {
                             <Box
                                 sx={{
                                     flexGrow: 1,
-                                    mt: 4,
+                                    mt: 2, // Giảm margin top để tận dụng không gian
                                     borderRadius: 3,
-                                    border: "1px dashed #e0e0e0",
+                                    // Xóa border dashed và các style căn giữa
                                     display: "flex",
-                                    alignItems: "center",
-                                    justifyContent: "center",
-                                    color: "text.secondary",
-                                    fontSize: 14,
+                                    minHeight: "200px" // Đảm bảo có đủ chiều cao cho biểu đồ
                                 }}
                             >
-                                (Chart component here)
+                                {/* THAY THẾ BẰNG COMPONENT BIỂU ĐỒ THỰC TẾ */}
+                                <DailyRevenueChart data={revenue.dailyRevenue} /> 
+                                {/*  */}
                             </Box>
 
-                            {/* Days row */}
-                            <Box
-                                sx={{
-                                    display: "flex",
-                                    justifyContent: "space-between",
-                                    mt: 3,
-                                    color: "text.secondary",
-                                    fontSize: 12,
-                                }}
-                            >
-                                {revenue.dailyRevenue.map((d) => ( // Dùng dailyRevenue
-                                    <span key={d.DayName}>{d.DayName}</span>
-                                ))}
-                            </Box>
+                            
                         </Paper>
                     </Grid>
 
@@ -274,7 +295,7 @@ export default function DashBoard() {
                             bgcolor: "#ffffff",
                             border: "1px solid #f0f0f0",
                             // Đặt chiều cao tương đương với Weekly Revenue Card (280 + 32)
-                            height: 450, 
+                            height: 500, 
                             display: "flex",
                             flexDirection: "column",
                         }}
@@ -283,31 +304,28 @@ export default function DashBoard() {
                             <Typography variant="h6">
                                 Top 5 Movies by Rating
                             </Typography>
-                            <Typography 
-                                variant="body2" 
-                                color="primary" 
-                                sx={{ 
-                                    fontWeight: 600, 
-                                    cursor: 'pointer',
-                                    whiteSpace: 'nowrap'
-                                }}
-                            >
-                                View All
-                            </Typography>
+                            
                         </Box>
                         
                         {/* HIỂN THỊ DANH SÁCH TOP 5 MOVIES (Hardcode) */}
                         <Box sx={{ flexGrow: 1, mt: 1 }}>
-                            {mockTopMovies.map((movie) => (
+                            {topMovies.length > 0 ? (
+                            topMovies.map((movie) => (
                                 <TopMovieCard
-                                    key={movie.rank}
-                                    rank={movie.rank}
-                                    title={movie.title}
-                                    rating={movie.rating}
-                                    runtime={movie.runtime}
-                                    status={movie.status}
+                                    key={movie.MovieID}
+                                        rank={movie.Rank}
+                                        title={movie.MName}
+                                        rating={movie.AvgRating}
+                                        runtime={movie.RunTime}
+                                        status={movie.Status === 'Now Showing' ? 'Now' : 'Soon'} //
                                 />
-                            ))}
+                            ))
+                            ) : (
+                                <Typography color="text.secondary" sx={{ mt: 2 }}>
+                                    No top movies available (rating data missing or API error).
+                                </Typography>
+                            )
+                            }
                         </Box>
                         
                     </Paper>

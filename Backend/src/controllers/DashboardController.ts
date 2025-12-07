@@ -9,7 +9,7 @@ export class DashboardController {
     // Lấy 4 số liệu tổng quan
     async getDashboardStats(req: Request, res: Response) {
         try {
-            const stats = await dataAccess.getDashboardStats();
+            const stats = await dataAccess.getDashboardStatsWithComparison();
             return res.status(200).json(stats);
         } catch (error) {
             console.error('Lỗi khi lấy Dashboard Stats:', error);
@@ -49,4 +49,5 @@ export class DashboardController {
             return res.status(500).json({ message: 'Lỗi server khi lấy dữ liệu doanh thu.' });
         }
     }
+    
 }

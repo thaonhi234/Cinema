@@ -35,6 +35,24 @@ export interface DailyRevenue {
     DayName: string;
     DailyRevenue: number;
 }
+export interface TopMovie {
+    MovieID: number;
+    MName: string;
+    AvgRating: number;
+    RunTime: number;
+    Status: 'Now Showing' | 'Coming Soon' | 'Ended';
+    Rank: number;
+}
+export interface StatData {
+    totalMovies: number;
+    prevTotalMovies: number;
+    activeRooms: number;
+    prevActiveRooms: number;
+    showtimesToday: number;
+    prevShowtimesYesterday: number;
+    ticketsSold: number;
+    prevTicketsSold: number;
+}
 export interface Movie {
     MovieID: number;
     MName: string;
@@ -97,7 +115,8 @@ export interface IDataAccess {
     // THÊM CÁC PHƯƠNG THỨC MỚI CHO DASHBOARD
     getDashboardStats(): Promise<DashboardStats>;
     getWeeklyRevenueData(branchID: number): Promise<{ summary: WeeklyRevenue, daily: DailyRevenue[] }>;
-    
+    getDashboardStatsWithComparison(): Promise<StatData>;
+    getTopMovies(limit: number): Promise<TopMovie[]>;
     // --- PHƯƠNG THỨC MỚI CHO MOVIE ---
     getAllMovies(): Promise<Movie[]>;
     getMovieById(movieId: number): Promise<Movie | null>;

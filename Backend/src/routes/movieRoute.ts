@@ -14,6 +14,7 @@ router.get('/', movieController.getAllMovies); // READ
 router.post('/', movieController.createMovie); // CREATE
 router.put('/:id', movieController.updateMovie); // UPDATE
 router.delete('/:id', movieController.deleteMovie); // DELETE
+router.get('/top-rated', movieController.getTopMovies);
 router.get('/:id', movieController.getMovieById); // READ theo ID
 
 export default router;
