@@ -36,7 +36,19 @@ const initialFormState = {
     MName: '', Descript: '', RunTime: 120, isDub: false, isSub: false,
     releaseDate: '', closingDate: '', AgeRating: '13+'
 };
-
+const parseDateString = (dateString: string): string => {
+    // Kiểm tra nếu chuỗi rỗng hoặc đã là định dạng YYYY-MM-DD (dạng ISO chuẩn)
+    if (!dateString || dateString.includes('-')) {
+        return dateString; // Giữ nguyên (nếu dùng type="date" thì nó đã là YYYY-MM-DD)
+    }
+    // Giả định chuỗi là DD/MM/YYYY
+    const parts = dateString.split('/');
+    if (parts.length === 3) {
+        // Trả về YYYY-MM-DD
+        return `${parts[2]}-${parts[1].padStart(2, '0')}-${parts[0].padStart(2, '0')}`;
+    }
+    return dateString;
+};
 export default function MovieFormModal({ modalState, onClose, onSave }: MovieFormModalProps) {
     const [formData, setFormData] = useState(initialFormState);
     const [selectedGenres, setSelectedGenres] = useState<string[]>([]);
@@ -92,16 +104,18 @@ export default function MovieFormModal({ modalState, onClose, onSave }: MovieFor
         if (
     !formData.MName ||
     selectedGenres.length === 0 ||
-    formData.RunTime <= 0 ||
-    
-    formData.Descript.trim().length === 0
+    formData.RunTime <= 0 
 ) {
-    alert("Vui lòng điền đủ Tên, Ngày, và chọn ít nhất một Thể loại.");
+    alert("Vui lòng điền đủ Tên và chọn ít nhất một Thể loại.");
     return;
 }
 
-        const start = new Date(formData.releaseDate);
-    const end = new Date(formData.closingDate);
+       const releaseDateISO = parseDateString(formData.releaseDate);
+    const closingDateISO = parseDateString(formData.closingDate);
+    
+    // 2. Tạo Date Object và thêm 'T00:00:00' để tránh lỗi múi giờ cục bộ
+    const start = new Date(releaseDateISO + 'T00:00:00');
+    const end = new Date(closingDateISO + 'T00:00:00');
     if (isNaN(start.getTime()) || isNaN(end.getTime())) {
         alert("Ngày công chiếu hoặc ngày kết thúc không hợp lệ!");
         return;
@@ -113,19 +127,19 @@ export default function MovieFormModal({ modalState, onClose, onSave }: MovieFor
         alert("Ngày khởi chiếu phải nhỏ hơn ngày kết thúc!");
         return;
     }
-    const formatDate = (date: Date) => date.toISOString().split('T')[0]; // YYYY-MM-DD
+    //const formatDate = (date: Date) => date.toISOString().split('T')[0]; // YYYY-MM-DD
 
         // Gọi hàm onSave trong MoviesPage, hàm này sẽ gọi API
         onSave({
-        ...formData,releaseDate: formatDate(start),
-        closingDate: formatDate(end),
+        ...formData,releaseDate: start,
+        closingDate: end,
     }, selectedGenres);
     };
 
     return (
         <Dialog open={modalState.isOpen} onClose={onClose} fullWidth maxWidth="sm">
-            <DialogTitle>{isEdit ? `Sửa Phim: ${modalState.currentMovie?.MName}` : "Thêm Phim Mới"}</DialogTitle>
-            <DialogContent dividers>
+            <DialogTitle>{isEdit ? `Update: ${modalState.currentMovie?.MName}` : "Create Movie"}</DialogTitle>
+            <DialogContent dividers sx={{ overflowY: 'auto',maxHeight: '80vh' }}>
                 <Grid container spacing={2}>
                     
                     {/* Tên Phim */}
@@ -148,11 +162,12 @@ export default function MovieFormModal({ modalState, onClose, onSave }: MovieFor
                             type="number"
                             value={formData.RunTime} 
                             onChange={handleChange} 
+                            
                             fullWidth 
                         />
                     </Grid>
                     <Grid item xs={6}>
-                    <Typography variant="subtitle2" gutterBottom>Thể loại (Genres)</Typography>
+                    <Typography variant="subtitle2" gutterBottom>Genres</Typography>
                     <Stack direction="row" spacing={1} flexWrap="wrap">
                         {availableGenres.map(genre => (
                             <Chip
@@ -176,6 +191,7 @@ export default function MovieFormModal({ modalState, onClose, onSave }: MovieFor
                             onChange={handleChange} 
                             fullWidth 
                             InputLabelProps={{ shrink: true }}
+                            required
                         />
                     </Grid>
                 
@@ -193,7 +209,7 @@ export default function MovieFormModal({ modalState, onClose, onSave }: MovieFor
                         {ageRatings.map(rating => <MenuItem key={rating} value={rating}>{rating}</MenuItem>)}
                     </TextField>
                 </Grid>
-                    <Grid item xs={6}>
+                    <Grid item xs={12}>
                     <TextField 
                         label="Closing Date" 
                         name="closingDate" 
@@ -202,6 +218,7 @@ export default function MovieFormModal({ modalState, onClose, onSave }: MovieFor
                         onChange={handleChange} 
                         fullWidth 
                         InputLabelProps={{ shrink: true }}
+                        required
                     />
                 </Grid>
                 {/* Description (Trường bắt buộc cho Backend) */}
@@ -212,9 +229,10 @@ export default function MovieFormModal({ modalState, onClose, onSave }: MovieFor
                         value={formData.Descript} 
                         onChange={handleChange} 
                         fullWidth 
-                        multiline
+                         multiline
                         rows={3}
                         required 
+                        
                     />
                 </Grid>
                     {/* Checkboxes */}
@@ -222,23 +240,36 @@ export default function MovieFormModal({ modalState, onClose, onSave }: MovieFor
                 <Grid item xs={6}>
                     <FormControlLabel
                         control={<Checkbox checked={formData.isDub} onChange={handleChange} name="isDub" />}
-                        label="Lồng tiếng (Dub)"
+                        label="Dub"
                     />
                 </Grid>
                 <Grid item xs={6}>
                     <FormControlLabel
                         control={<Checkbox checked={formData.isSub} onChange={handleChange} name="isSub" />}
-                        label="Phụ đề (Sub)"
+                        label="Sub"
                     />
                 </Grid>
                 </Grid>
             </DialogContent>
             
-            <DialogActions>
-                <Button onClick={onClose} color="error">Hủy</Button>
-                <Button onClick={handleSubmit} variant="contained" color="primary">
-                    {isEdit ? "Lưu Thay Đổi" : "Thêm Phim"}
-                </Button>
+            <DialogActions style={{ padding: '0 24px 24px 24px' }}>
+                <div style={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>
+                    <Button onClick={onClose} color="inherit" style={{ color: '#000' }}>
+                        Cancel
+                    </Button>
+                    <Button 
+                        onClick={handleSubmit} 
+                        variant="contained" 
+                        style={{ 
+                            background: 'linear-gradient(to right, #6A5ACD, #BA55D3, #FF8C00)',
+                            color: 'white',
+                            textTransform: 'none',
+                            padding: '8px 24px'
+                        }}
+                    >
+                        {isEdit ? "Lưu Thay Đổi" : "Save Movie"}
+                    </Button>
+                </div>
             </DialogActions>
         </Dialog>
     );

@@ -373,7 +373,7 @@ INSERT INTO Customer.MEMBERSHIP (MemberID, Point, MemberRank, CUserID) VALUES
 -- Insert Employee (Tự sinh EMPxxx)
 INSERT INTO Staff.EMPLOYEE 
 (EName, Sex, PhoneNumber, Email, EPassword, Salary, UserType, ManageID, BranchID) VALUES 
-('Tran Van A', 'M', '0901111001', 'a1@cgv.vn', 'emp001', 7000, 'staff', NULL, 1),
+('Tran Van A', 'M', '0901111001', 'a1@cgv.vn', 'emp001', 7000, 'manager', NULL, 1),
 ('Nguyen Thi B', 'F', '0901111002', 'b2@cgv.vn', 'emp002', 7500, 'staff', NULL, 2),
 ('Le Van C', 'M', '0901111003', 'c3@cgv.vn', 'emp003', 6800, 'staff', NULL, 3),
 ('Pham Thi D', 'F', '0901111004', 'd4@cgv.vn', 'emp004', 7200, 'staff', NULL, 4),
@@ -1320,7 +1320,7 @@ BEGIN
     DECLARE @PrevEndOfWeek DATE = DATEADD(wk, -1, @EndOfWeek);
 
     -- Bảng tạm chứa doanh thu tuần hiện tại
-    DECLARE @CurrentWeekRevenue DECIMAL(10, 2);
+    DECLARE @CurrentWeekRevenue DECIMAL(18, 2);
     
     -- SỬA LỖI: Dùng DaySold từ TICKETS để lọc ngày, sau đó SUM Total từ ORDERS
     SELECT @CurrentWeekRevenue = ISNULL(SUM(O.Total), 0)
@@ -1329,7 +1329,7 @@ BEGIN
     WHERE T.DaySold BETWEEN @StartOfWeek AND @EndOfWeek AND T.BranchID = @BranchID; -- Lọc theo DaySold (DATE)
 
     -- Bảng tạm chứa doanh thu tuần trước
-    DECLARE @PreviousWeekRevenue DECIMAL(10, 2);
+    DECLARE @PreviousWeekRevenue DECIMAL(18, 2);
     
     -- SỬA LỖI: Tương tự cho tuần trước
     SELECT @PreviousWeekRevenue = ISNULL(SUM(O.Total), 0)
@@ -1343,7 +1343,10 @@ BEGIN
         @PreviousWeekRevenue AS PreviousWeekRevenue,
         CASE
             WHEN @PreviousWeekRevenue = 0 THEN 0 -- Tránh chia cho 0
-            ELSE CAST(((@CurrentWeekRevenue - @PreviousWeekRevenue) / @PreviousWeekRevenue) * 100 AS DECIMAL(5, 2))
+            ELSE CAST(
+                     ((@CurrentWeekRevenue - @PreviousWeekRevenue) * 100) / 
+                     CAST(@PreviousWeekRevenue AS DECIMAL(18, 2)) -- Ép kiểu mẫu số sang 18,2 để đảm bảo độ chính xác và tránh overflow
+                 AS DECIMAL(10, 2))
         END AS GrowthRate; -- Thêm dấu chấm phẩy
 
     
@@ -1769,11 +1772,11 @@ GO
 
 --Procedure 22: Cập nhật poster cho phim
 CREATE OR ALTER PROCEDURE Movie.sp_AddPoster
-    @MovieID INT
+    @MovieID INT,
     @posterURL VARCHAR(MAX)
 AS
 BEGIN
-    IF NOT EXISTS (SELECT 1 FROM Movie.MOVIE WHERE MovieID = @id)
+    IF NOT EXISTS (SELECT 1 FROM Movie.MOVIE WHERE MovieID = @MovieID)
     BEGIN
         THROW 50001, 'Movie does not exist.', 1;
     END
@@ -1785,7 +1788,37 @@ BEGIN
     PRINT'Poster uploaded successfull!';
 
 END;
-    
+GO
+-- Procedure 23: Lấy toàn bộ danh sách Nhân viên (Bổ sung)
+GO
+CREATE OR ALTER PROCEDURE Staff.sp_GetAllEmployees
+    @BranchID AS INT,
+    @SearchTerm AS NVARCHAR(50) = NULL
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    SELECT
+        E.EUserID AS EmployeeID,
+        E.EName AS FullName,
+        E.Email,
+        E.PhoneNumber,
+        E.Salary,
+        E.UserType AS Role,
+        E.BranchID,
+        B.BName AS BranchName,
+        E.Sex
+    FROM
+        Staff.EMPLOYEE E
+    JOIN
+        Cinema.BRANCH B ON E.BranchID = B.BranchID
+    WHERE
+        E.BranchID = @BranchID
+        AND (@SearchTerm IS NULL OR E.EName LIKE '%' + @SearchTerm + '%' OR E.Email LIKE '%' + @SearchTerm + '%')
+    ORDER BY
+        E.EName;
+END
+GO
 -----------------------------------------------------------
 -- PHẦN 5: BẢO MẬT - TẠO USER (PART 3) - PHIÊN BẢN CLEAN INSTALL
 -----------------------------------------------------------

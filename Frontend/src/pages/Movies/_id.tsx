@@ -14,6 +14,8 @@ import {
   TableCell,
   TableBody,
   CircularProgress,
+  TableSortLabel,
+  TextField
 } from "@mui/material";
 
 import AddIcon from "@mui/icons-material/Add";
@@ -61,6 +63,61 @@ export default function MoviesPage() {
         isEdit: false,
         currentMovie: null,
     });
+    const [searchTerm, setSearchTerm] = useState(''); // << STATE MỚI: Từ khóa tìm kiếm
+    const [sortBy, setSortBy] = useState<keyof Movie>('MName'); // << STATE MỚI: Cột sắp xếp (Mặc định theo tên)
+    const [sortOrder, setSortOrder] = useState<'asc' | 'desc'>('asc'); // << STATE MỚI: Thứ tự sắp xếp
+    
+    const formatToYYYYMMDD = (date: Date) => {
+    // Sử dụng date-fns hoặc thủ công để lấy YYYY-MM-DD
+    const yyyy = date.getFullYear();
+    const mm = String(date.getMonth() + 1).padStart(2, '0');
+    const dd = String(date.getDate()).padStart(2, '0');
+    return `${yyyy}-${mm}-${dd}`;
+    };
+    
+    const filteredAndSortedMovies = movies
+        .filter(movie => {
+            const term = searchTerm.toLowerCase();
+        const matchName = movie.MName.toLowerCase().includes(term);
+        const matchGenres = movie.Genres.some(genre => 
+            genre.toLowerCase().includes(term)
+        );
+        return matchName || matchGenres;
+        })
+        .sort((a, b) => {
+            const isAsc = sortOrder === 'asc';
+            let comparison = 0;
+            
+            // Xử lý so sánh cho từng loại dữ liệu
+            const aValue = a[sortBy];
+            const bValue = b[sortBy];
+
+            if (sortBy === 'Genres') {
+            // Sắp xếp theo tên thể loại đầu tiên
+            const aGenre = a.Genres[0] || '';
+            const bGenre = b.Genres[0] || '';
+            comparison = aGenre.localeCompare(bGenre);
+        } else if (typeof aValue === 'number' && typeof bValue === 'number') {
+            // Sắp xếp theo số (Rating, Duration)
+            comparison = aValue > bValue ? 1 : -1;
+        } else if (typeof aValue === 'string' && typeof bValue === 'string') {
+            // Sắp xếp theo chuỗi (Movie Name, Status, Date)
+            comparison = aValue.localeCompare(bValue);
+        } else {
+            comparison = 0; 
+        }
+
+            return isAsc ? comparison : -comparison;
+        });
+        
+   const headCells: { id: keyof Movie; label: string }[] = [
+    { id: 'MName', label: 'Movie' },
+    { id: 'AvgRating', label: 'Rating' },
+    { id: 'RunTime', label: 'Duration' },
+    { id: 'Genres', label: 'Genres' },
+    { id: 'Status', label: 'Status' },
+    ];
+    
     const handleOpenCreateModal = () => {
         setModalState({ isOpen: true, isEdit: false, currentMovie: null });
     };
@@ -82,11 +139,12 @@ export default function MoviesPage() {
         alert(`Xóa thất bại: ${err.response?.data?.message || 'Lỗi server.'}`);
     }
     };
+
     const handleSaveMovie = async (data: any, genres: string[]) => {
     try {
         // 1. Chuyển sang Date object
-        const releaseDateObj = new Date(data.releaseDate);
-        const closingDateObj = new Date(data.closingDate);
+        const releaseDateObj : Date = data.releaseDate;
+        const closingDateObj : Date = data.closingDate;
 
         // 2. Kiểm tra hợp lệ
         if (isNaN(releaseDateObj.getTime())) {
@@ -103,8 +161,8 @@ export default function MoviesPage() {
             MName: data.MName,
             Descript: data.Descript || "Đang cập nhật mô tả.",
             RunTime: Number(data.RunTime),
-            releaseDate: releaseDateObj,  // gửi Date object
-            closingDate: closingDateObj,  // gửi Date object
+            releaseDate: formatToYYYYMMDD(releaseDateObj),  // gửi Date object
+            closingDate: formatToYYYYMMDD(closingDateObj),  // gửi Date object
             AgeRating: data.AgeRating,
             isDub: data.isDub ?? false,
             isSub: data.isSub ?? true,
@@ -131,7 +189,11 @@ export default function MoviesPage() {
         alert(`Thao tác thất bại: ${err.response?.data?.message || err.message || 'Lỗi server.'}`);
     }
 };
-
+    const handleRequestSort = (property: keyof Movie) => {
+        const isAsc = sortBy === property && sortOrder === 'asc';
+        setSortOrder(isAsc ? 'desc' : 'asc');
+        setSortBy(property);
+    };
     // 1. FETCH DATA TỪ BACKEND
     const fetchMovies = async () => {
         try {
@@ -237,7 +299,16 @@ export default function MoviesPage() {
             Add New Movie
           </Button>
         </Box>
-
+        <Box sx={{ mb: 3 }}>
+          <TextField
+            label="Search Movies"
+            variant="outlined"
+            fullWidth
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            sx={{ maxWidth: 400 }}
+          />
+        </Box>
         {/* TABLE CARD */}
         <Paper
           elevation={0}
@@ -261,18 +332,37 @@ export default function MoviesPage() {
                   },
                 }}
               >
-                <TableCell sx={{ width: "40%" }}>Movie</TableCell>
-                <TableCell>Rating</TableCell>
-                <TableCell>Duration</TableCell>
-                <TableCell>Genres</TableCell>
-                <TableCell>Status</TableCell>
-                <TableCell align="center">Actions</TableCell>
+                {headCells.map((headCell) => (
+            <TableCell
+                key={headCell.id}
+                sortDirection={sortBy === headCell.id ? sortOrder : false}
+                sx={{
+                    // ...
+                    width: headCell.id === 'MName' ? '40%' : 'auto', // Giữ nguyên độ rộng cột Movie
+                }}
+            >
+                <TableSortLabel
+                    active={sortBy === headCell.id}
+                    direction={sortBy === headCell.id ? sortOrder : 'asc'}
+                    onClick={() => handleRequestSort(headCell.id)}
+                    // sx={{
+                    //     // Xóa icon sắp xếp cho cột Genres và Status nếu không muốn sắp xếp
+                    //     '& .MuiTableSortLabel-icon': {
+                    //         display: (headCell.id === 'Genres' || headCell.id === 'Status') ? 'none' : 'block',
+                    //     }
+                    // }}
+                >
+                    {headCell.label}
+                </TableSortLabel>
+            </TableCell>
+        ))}
+        <TableCell align="center">Actions</TableCell> {/* Cột Actions giữ nguyên */}
               </TableRow>
             </TableHead>
 
             {/* TABLE BODY */}
             <TableBody>
-              {movies.map((movie) => (
+              {filteredAndSortedMovies.map((movie) => (
                 <TableRow
                   key={movie.MovieID}
                   hover

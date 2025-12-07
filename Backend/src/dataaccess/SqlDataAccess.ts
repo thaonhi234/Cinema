@@ -108,6 +108,9 @@ export class SQLDataAccess implements IDataAccess {
 
         return null; // Không tìm thấy người dùng
     }
+    /////////////////////////
+    ////////////////////////
+    ///////////////////////
     async getDashboardStats(): Promise<DashboardStats> {
         const db = await getPool();
         const today = new Date().toISOString().slice(0, 10); // Lấy ngày hôm nay (YYYY-MM-DD)
@@ -174,6 +177,9 @@ export class SQLDataAccess implements IDataAccess {
             })) 
         };
     }
+     /////////////////////////
+    ////////////////////////
+    ///////////////////////
     async getAllMovies(): Promise<Movie[]> {
         // ... (SQL query để JOIN, GROUP BY, và tính AvgRating, Genres)
         // ... (Logic đã được cung cấp trước đó)
