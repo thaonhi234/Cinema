@@ -269,6 +269,7 @@ CREATE TABLE Screening.TICKETS (
     OrderID INT NOT NULL,
     BranchID INT NOT NULL,
     RoomID INT NOT NULL,
+    TPrice DECIMAL(10, 2), 
     SRow TINYINT NOT NULL, 
     SColumn TINYINT NOT NULL,
     CONSTRAINT fk_tkt_seat FOREIGN KEY (BranchID, RoomID, SRow, SColumn) REFERENCES Cinema.SEAT(BranchID, RoomID, SRow, SColumn),
@@ -546,36 +547,36 @@ INSERT INTO Movie.MOVIE (
     MovieID, MName, Descript, RunTime, isDub, isSub,
     releaseDate, closingDate, AgeRating, posterURL
 ) VALUES
-(1, 'Dune: Part Two', 'Epic sci-fi adventure on Arrakis.', 165, 0, 1, '2025-11-15', '2025-12-15', 'T13', NULL),
-(2, 'Oppenheimer', 'Story of J. Robert Oppenheimer.', 180, 0, 1, '2025-02-10', '2025-05-20', 'T16', NULL),
-(3, 'Barbie', 'A journey of self-discovery in the real world.', 114, 1, 1, '2025-11-21', '2025-12-05', 'K', NULL),
-(4, 'Godzilla Minus One', 'Japan faces a new monster threat.', 130, 0, 1, '2025-06-05', '2025-07-15', 'T13', NULL),
-(5, 'Spider-Man: Across the Spider-Verse', 'Miles enters new dimensions.', 142, 1, 1, '2025-12-10', '2026-01-05', 'K', NULL),
-(6, 'Inside Out 2', 'Riley faces new emotions.', 100, 1, 1, '2025-11-11', '2025-12-06', 'K', NULL),
-(7, 'The Batman', 'Batman uncovers Gotham corruption.', 176, 0, 1, '2025-11-25', '2025-12-30', 'T13', NULL),
-(8, 'Avatar: The Way of Water', 'Return to Pandora oceans.', 190, 0, 1, '2025-12-08', '2026-01-25', 'T13', NULL),
-(9, 'Wonka', 'The early life of Willy Wonka.', 115, 1, 1, '2025-12-15', '2026-01-28', 'K', NULL),
-(10, 'Mission: Impossible – Dead Reckoning', 'Ethan Hunt faces a new threat.', 158, 0, 1, '2025-04-18', '2025-08-01', 'T13', NULL),
+(1, 'Dune: Part Two', 'Epic sci-fi adventure on Arrakis.', 165, 0, 1, '2025-11-15', '2025-12-06', 'T13', NULL),
+(2, 'Oppenheimer', 'Story of J. Robert Oppenheimer.', 180, 0, 1, '2025-11-18', '2025-12-10', 'T16', NULL),
+(3, 'Barbie', 'A journey of self-discovery in the real world.', 114, 1, 1, '2025-11-20', '2025-12-05', 'K', NULL),
+(4, 'Godzilla Minus One', 'Japan faces a new monster threat.', 130, 0, 1, '2025-11-22', '2025-12-12', 'T13', NULL),
+(5, 'Spider-Man: Across the Spider-Verse', 'Miles enters new dimensions.', 142, 1, 1, '2025-12-01', '2025-12-22', 'K', NULL),
+(6, 'Inside Out 2', 'Riley faces new emotions.', 100, 1, 1, '2025-11-25', '2025-12-15', 'K', NULL),
+(7, 'The Batman', 'Batman uncovers Gotham corruption.', 176, 0, 1, '2025-11-28', '2025-12-20', 'T13', NULL),
+(8, 'Avatar: The Way of Water', 'Return to Pandora oceans.', 190, 0, 1, '2025-12-10', '2025-12-31', 'T13', NULL),
+(9, 'Wonka', 'The early life of Willy Wonka.', 115, 1, 1, '2025-12-15', '2026-01-05', 'K', NULL),
+(10, 'Mission: Impossible – Dead Reckoning', 'Ethan Hunt faces a new threat.', 158, 0, 1, '2025-11-18', '2025-12-05', 'T13', NULL),
 (11, 'John Wick: Chapter 4', 'John Wick returns for revenge.', 169, 0, 1, '2025-11-30', '2025-12-20', 'T16', NULL),
-(12, 'The Marvels', 'Captain Marvel joins new heroes.', 105, 1, 1, '2025-08-28', '2025-10-05', 'T13', NULL),
-(13, 'The Creator', 'AI uprising threatens humanity.', 133, 0, 1, '2025-12-18', '2026-02-10', 'T13', NULL),
-(14, 'Napoleon', 'Epic biography of Napoleon Bonaparte.', 158, 0, 1, '2025-11-30', '2025-12-07', 'T13', NULL),
-(15, 'Kung Fu Panda 4', 'Po trains a new warrior.', 100, 1, 1, '2025-12-10', '2025-12-25', 'K', NULL),
-(16, 'Aquaman and the Lost Kingdom', 'Aquaman protects Atlantis.', 124, 1, 1, '2025-12-11', '2026-01-15', 'T13', NULL),
-(17, 'The Hunger Games: The Ballad of Songbirds & Snakes', 'Prequel to Hunger Games.', 157, 0, 1, '2025-12-09', '2025-12-20', 'T13', NULL),
-(18, 'The Equalizer 3', 'McCall seeks justice in Italy.', 109, 0, 1, '2025-12-18', '2026-01-30', 'T13', NULL),
-(19, 'Indiana Jones and the Dial of Destiny', 'Indiana Jones travels through time.', 142, 0, 1, '2025-07-01', '2025-10-10', 'T13', NULL),
-(20, 'Elemental', 'Fire and water form an unlikely bond.', 102, 1, 1, '2025-12-01', '2026-01-20', 'K', NULL),
-(21, 'The Flash', 'Flash resets the universe.', 144, 0, 1, '2025-11-05', '2025-12-12', 'T13', NULL),
-(22, 'Transformers: Rise of the Beasts', 'Autobots meet the Maximals.', 120, 1, 1, '2025-10-10', '2025-11-18', 'T13', NULL),
-(23, 'Blue Beetle', 'A young hero gains alien armor.', 128, 1, 1, '2025-12-09', '2026-02-10', 'T13', NULL),
-(24, 'The Super Mario Bros. Movie', 'Mario rescues the Mushroom Kingdom.', 92, 1, 1, '2025-12-08', '2025-12-25', 'K', NULL),
+(12, 'The Marvels', 'Captain Marvel joins new heroes.', 105, 1, 1, '2025-11-17', '2025-12-04', 'T13', NULL),
+(13, 'The Creator', 'AI uprising threatens humanity.', 133, 0, 1, '2025-12-18', '2026-01-08', 'T13', NULL),
+(14, 'Napoleon', 'Epic biography of Napoleon Bonaparte.', 158, 0, 1, '2025-11-28', '2025-12-14', 'T13', NULL),
+(15, 'Kung Fu Panda 4', 'Po trains a new warrior.', 100, 1, 1, '2025-12-05', '2025-12-25', 'K', NULL),
+(16, 'Aquaman and the Lost Kingdom', 'Aquaman protects Atlantis.', 124, 1, 1, '2025-12-12', '2026-01-02', 'T13', NULL),
+(17, 'The Hunger Games: The Ballad of Songbirds & Snakes', 'A prequel exploring the early days of the Hunger Games.', 157, 0, 1, '2025-12-09', '2025-12-28', 'T13', NULL),
+(18, 'The Equalizer 3', 'McCall seeks justice in Italy.', 109, 0, 1, '2025-12-18', '2026-01-08', 'T13', NULL),
+(19, 'Indiana Jones and the Dial of Destiny', 'Indiana Jones travels through time.', 142, 0, 1, '2025-11-16', '2025-12-03', 'T13', NULL),
+(20, 'Elemental', 'Fire and water form an unlikely bond.', 102, 1, 1, '2025-12-01', '2025-12-22', 'K', NULL),
+(21, 'The Flash', 'Flash resets the universe.', 144, 0, 1, '2025-11-25', '2025-12-12', 'T13', NULL),
+(22, 'Transformers: Rise of the Beasts', 'Autobots meet the Maximals.', 120, 1, 1, '2025-11-20', '2025-12-08', 'T13', NULL),
+(23, 'Blue Beetle', 'A young hero gains alien armor.', 128, 1, 1, '2025-12-09', '2025-12-30', 'T13', NULL),
+(24, 'The Super Mario Bros. Movie', 'Mario rescues the Mushroom Kingdom.', 92, 1, 1, '2025-12-08', '2025-12-28', 'K', NULL),
 (25, 'The Little Mermaid', 'Live-action remake of classic.', 135, 1, 1, '2025-12-09', '2025-12-31', 'K', NULL),
-(26, 'Guardians of the Galaxy Vol. 3', 'Guardians face their pasts.', 150, 0, 1, '2025-09-12', '2025-11-12', 'T13', NULL),
+(26, 'Guardians of the Galaxy Vol. 3', 'Guardians face their pasts.', 150, 0, 1, '2025-11-15', '2025-12-05', 'T13', NULL),
 (27, 'Creed III', 'Adonis Creed faces a rival.', 116, 0, 1, '2025-12-01', '2025-12-22', 'T13', NULL),
-(28, 'Top Gun: Maverick (Re-release)', 'Maverick trains new pilots.', 131, 0, 1, '2025-09-01', '2025-12-10', 'T13', NULL),
-(29, 'Smile 2', 'Horror sequel with new curse.', 100, 0, 1, '2025-11-15', '2026-12-28', 'T16', NULL),
-(30, 'Deadpool & Wolverine', 'Deadpool teams up with Wolverine.', 130, 0, 1, '2025-12-13', '2026-02-01', 'T16', NULL);
+(28, 'Top Gun: Maverick (Re-release)', 'Maverick trains new pilots.', 131, 0, 1, '2025-11-20', '2025-12-10', 'T13', NULL),
+(29, 'Smile 2', 'Horror sequel with new curse.', 100, 0, 1, '2025-12-15', '2026-01-05', 'T16', NULL),
+(30, 'Deadpool & Wolverine', 'Deadpool teams up with Wolverine.', 130, 0, 1, '2025-12-13', '2026-01-03', 'T16', NULL);
 
 INSERT INTO Movie.GENRE (Genre) VALUES
 ('Action'), ('Adventure'), ('Sci-Fi'), ('Fantasy'), ('Drama'),
@@ -700,37 +701,38 @@ INSERT INTO Movie.REVIEW (MovieID, CUserID, Rating, RDate, Comment) VALUES
 -- (30, 'CUS029', 9, '2025-10-02', N'Great ending'),
 -- (30, 'CUS030', 8, '2025-10-03', N'Good movie');
 
-INSERT INTO Booking.ORDERS (OrderID, OrderTime, PaymentMethod, Total, CUserID, EUserID) VALUES
-(1, '2025-12-08T05:15:00', 'Cash',       150000, 'CUS001', 'EMP006'),
-(2, '2025-12-08T05:20:00', 'Momo',       220000, 'CUS002', 'EMP007'),
-(3, '2025-12-09T11:05:00', 'ZaloPay',    180000, 'CUS003', 'EMP008'),
-(4, '2025-12-10T12:40:00', 'Visa',       300000, 'CUS004', 'EMP006'),
-(5, '2025-12-11T13:25:00', 'Mastercard', 250000, 'CUS005', 'EMP007'),
-(6, '2025-12-12T14:10:00', 'Cash',       170000, 'CUS006', 'EMP008'),
-(7, '2025-11-30T15:50:00', 'Momo',       260000, 'CUS007', 'EMP012'),
-(8, '2025-12-01T16:30:00', 'ZaloPay',    210000, 'CUS008', 'EMP013'),
-(9, '2025-12-02T17:45:00', 'Visa',       320000, 'CUS009', 'EMP014'),
-(10,'2025-12-03T18:05:00', 'Mastercard', 290000, 'CUS010', 'EMP015'),
-(11,'2025-11-24T11:30:00', 'Cash',       200000, 'CUS011', 'EMP016'),
-(12,'2025-11-25T12:50:00', 'Momo',       240000, 'CUS012', 'EMP017'),
-(13,'2025-11-26T14:15:00', 'ZaloPay',    280000, 'CUS013', 'EMP018'),
-(14,'2025-11-27T15:35:00', 'Visa',       330000, 'CUS014', 'EMP019'),
-(15,'2025-11-28T16:25:00', 'Mastercard', 350000, 'CUS015', 'EMP020'),
-(16,'2025-11-29T17:10:00', 'Cash',       190000, 'CUS016', 'EMP021'),
-(17,'2025-11-30T18:20:00', 'Momo',       260000, 'CUS017', 'EMP022'),
-(18,'2025-12-01T19:30:00', 'ZaloPay',    310000, 'CUS018', 'EMP023'),
-(19,'2025-12-02T20:45:00', 'Visa',       270000, 'CUS019', 'EMP024'),
-(20,'2025-12-03T21:05:00', 'Mastercard', 340000, 'CUS020', 'EMP025'),
-(21,'2025-11-24T09:10:00', 'Cash',       180000, 'CUS021', 'EMP026'),
-(22,'2025-11-25T10:40:00', 'Momo',       220000, 'CUS022', 'EMP027'),
-(23,'2025-11-26T12:00:00', 'ZaloPay',    260000, 'CUS023', 'EMP028'),
-(24,'2025-11-27T13:30:00', 'Visa',       300000, 'CUS024', 'EMP029'),
-(25,'2025-11-28T15:00:00', 'Mastercard', 350000, 'CUS025', 'EMP030'),
-(26,'2025-11-29T16:20:00', 'Cash',       200000, 'CUS026', 'EMP002'),
-(27,'2025-11-30T17:35:00', 'Momo',       240000, 'CUS027', 'EMP003'),
-(28,'2025-12-01T18:55:00', 'ZaloPay',    280000, 'CUS028', 'EMP004'),
-(29,'2025-12-02T20:10:00', 'Visa',       320000, 'CUS029', 'EMP005'),
-(30,'2025-12-03T21:45:00', 'Mastercard', 360000, 'CUS030', 'EMP001');
+INSERT INTO Booking.ORDERS 
+(OrderID, OrderTime, PaymentMethod, Total, CUserID, EUserID) VALUES
+(1, '2025-12-01T08:15:00', 'Cash',        5, 'CUS001', 'EMP006'),
+(2, '2025-12-01T08:20:00', 'Momo',       7, 'CUS002', 'EMP007'),
+(3, '2025-12-02T11:05:00', 'ZaloPay',    6, 'CUS003', 'EMP008'),
+(4, '2025-12-02T12:40:00', 'Visa',       9, 'CUS004', 'EMP009'),
+(5, '2025-12-02T13:25:00', 'Mastercard', 8, 'CUS005', 'EMP010'),
+(6, '2025-12-03T09:10:00', 'Cash',       4, 'CUS006', 'EMP006'),
+(7, '2025-12-03T10:20:00', 'Momo',       9, 'CUS007', 'EMP007'),
+(8, '2025-12-03T10:45:00', 'ZaloPay',    3, 'CUS008', 'EMP008'),
+(9, '2025-12-03T11:10:00', 'Visa',       5, 'CUS009', 'EMP009'),
+(10,'2025-12-03T11:55:00', 'Mastercard', 6, 'CUS010', 'EMP010'),
+(11,'2025-12-04T12:20:00', 'Cash',       4, 'CUS011', 'EMP006'),
+(12,'2025-12-04T12:50:00', 'Momo',       7, 'CUS012', 'EMP007'),
+(13,'2025-12-04T13:30:00', 'ZaloPay',    8, 'CUS013', 'EMP008'),
+(14,'2025-12-04T14:10:00', 'Visa',       5, 'CUS014', 'EMP009'),
+(15,'2025-12-04T15:00:00', 'Mastercard', 6, 'CUS015', 'EMP010'),
+(16,'2025-12-05T09:15:00', 'Cash',       7, 'CUS016', 'EMP006'),
+(17,'2025-12-05T10:45:00', 'Momo',       3, 'CUS017', 'EMP007'),
+(18,'2025-12-05T11:30:00', 'ZaloPay',    6, 'CUS018', 'EMP008'),
+(19,'2025-12-05T12:50:00', 'Visa',       4, 'CUS019', 'EMP009'),
+(20,'2025-12-05T13:25:00', 'Mastercard', 9, 'CUS020', 'EMP010'),
+(21,'2025-12-06T14:40:00', 'Cash',       5, 'CUS021', 'EMP011'),
+(22,'2025-12-06T15:10:00', 'Momo',       6, 'CUS022', 'EMP014'),
+(23,'2025-12-06T16:00:00', 'ZaloPay',    7, 'CUS023', 'EMP018'),
+(24,'2025-12-06T16:55:00', 'Visa',       4, 'CUS024', 'EMP022'),
+(25,'2025-12-06T17:40:00', 'Mastercard', 9, 'CUS025', 'EMP026'),
+(26,'2025-12-07T09:45:00', 'Cash',       5, 'CUS026', 'EMP006'),
+(27,'2025-12-07T10:55:00', 'Momo',       7, 'CUS027', 'EMP007'),
+(28,'2025-12-08T12:15:00', 'ZaloPay',    6, 'CUS028', 'EMP008'),
+(29,'2025-12-08T13:30:00', 'Visa',       8, 'CUS029', 'EMP009'),
+(30,'2025-12-09T14:50:00', 'Mastercard', 9, 'CUS030', 'EMP010');
 
 INSERT INTO Booking.COUPON (CouponID, StartDate, EndDate, SaleOff, ReleaseNum, AvailNum) VALUES
 (1, '2025-01-01', '2025-02-01', 10, 1000, 800),
@@ -742,7 +744,7 @@ INSERT INTO Booking.COUPON (CouponID, StartDate, EndDate, SaleOff, ReleaseNum, A
 (7, '2025-07-15', '2025-08-15', 40, 150, 120),
 (8, '2025-08-01', '2025-08-20', 50, 80, 40),
 (9, '2025-09-01', '2025-09-30', 5, 2000, 1990),
-(10, '2025-10-01', '2025-12-31', 12, 100, 90);
+(10,'2025-10-01', '2025-12-31', 12, 100, 90);
 
 INSERT INTO Booking.OWN (CUserID, CouponID, isUsed) VALUES
 ('CUS001', 1, 0), ('CUS001', 2, 1),
@@ -777,131 +779,198 @@ INSERT INTO Booking.OWN (CUserID, CouponID, isUsed) VALUES
 ('CUS030', 9, 1), ('CUS030', 10, 0);
 
 INSERT INTO Booking.COUPONUSAGE (CouponID, OrderID, CUserID, UseDate) VALUES
-(2, 1, 'CUS001', '2024-01-12'),
-(1, 2, 'CUS002', '2024-01-15'),
-(4, 3, 'CUS003', '2024-01-18'),
-(3, 4, 'CUS004', '2024-01-21'),
-(4, 5, 'CUS005', '2024-02-01'),
-(7, 6, 'CUS006', '2024-02-05'),
-(6, 7, 'CUS007', '2024-02-10'),
-(9, 8, 'CUS008', '2024-02-12'),
-(8, 9, 'CUS009', '2024-02-20'),
-(2, 10, 'CUS011', '2024-03-01'),
-(5, 11, 'CUS011', '2024-03-02'),
-(6, 12, 'CUS012', '2024-03-05'),
-(5, 13, 'CUS014', '2024-03-10'),
-(9, 14, 'CUS015', '2024-03-15');
+(2, 1, 'CUS001', '2025-12-01'),
+(1, 2, 'CUS002', '2025-12-01'),
+(4, 3, 'CUS003', '2025-12-02'),
+(3, 4, 'CUS004', '2025-12-02'),
+(4, 5, 'CUS005', '2025-12-02'),
+(7, 6, 'CUS006', '2025-12-03'),
+(6, 7, 'CUS007', '2025-12-03'),
+(9, 8, 'CUS008', '2025-12-03'),
+(8, 9, 'CUS009', '2025-12-03'),
+(2,10, 'CUS011', '2025-12-04'),
+(5,11, 'CUS011', '2025-12-04'),
+(6,12, 'CUS012', '2025-12-04'),
+(5,13, 'CUS014', '2025-12-04');
 
 INSERT INTO Screening.TIME (TimeID, Day, StartTime, EndTime, FName, MovieID, RoomID, BranchID) VALUES
-(1,  '2025-12-08', '10:00', '12:30', 'IMAX',     1, 2, 1),
-(2,  '2025-12-15', '13:00', '15:30', 'IMAX',     2, 2, 1),
-(3,  '2025-12-09', '16:00', '18:30', 'Standard', 3, 1, 1),
-(4,  '2025-12-09', '19:00', '21:30', '4DX',      4, 3, 1),
-(5,  '2025-12-08', '21:30', '00:00', 'IMAX',     5, 2, 1),
-
-(6,  '2025-12-10', '10:00', '12:30', 'Standard', 6, 1, 1),
-(7,  '2025-12-11', '13:00', '15:30', 'IMAX',     7, 2, 1),
-(8,  '2025-12-12', '16:00', '18:30', 'Standard', 8, 1, 1),
-(9,  '2025-12-13', '19:00', '21:30', '4DX',      9, 3, 1),
-(10, '2025-12-14', '21:30', '00:00', 'IMAX',    10, 2, 1),
-
-(11, '2025-12-01', '10:00', '12:30', 'Standard', 11, 2, 3),
-(12, '2025-09-15', '13:00', '15:30', 'Standard', 12, 2, 3),
-(13, '2025-12-22', '16:00', '18:30', 'Standard', 13, 2, 3),
-(14, '2025-12-01', '19:00', '21:30', 'Standard', 14, 2, 3),
-(15, '2025-12-12', '21:30', '00:00', 'Standard', 15, 2, 3),
-
-(16, '2025-12-11', '10:00', '12:30', 'IMAX',     16, 3, 4),
-(17, '2025-12-10', '13:00', '15:30', '4DX',      17, 2, 4),
-(18, '2025-12-20', '16:00', '18:30', 'Standard', 18, 1, 4),
-(19, '2025-09-20', '19:00', '21:30', 'Standard', 19, 1, 4),
-(20, '2025-12-15', '21:30', '00:00', '4DX',      20, 2, 4),
-
-(21, '2025-12-08', '10:00', '12:30', 'Standard', 21, 1, 5),
-(22, '2025-10-20', '13:00', '15:30', 'Standard', 22, 2, 5),
-(23, '2025-12-20', '16:00', '18:30', '4DX',      23, 3, 5),
-(24, '2025-12-15', '19:00', '21:30', 'Standard', 24, 1, 5),
-(25, '2025-12-20', '21:30', '00:00', 'Standard', 25, 2, 5),
-
-(26, '2025-09-20', '10:00', '12:30', 'IMAX',     26, 2, 1),
-(27, '2025-12-04', '13:00', '15:30', 'Standard', 27, 1, 1),
-(28, '2025-09-05', '16:00', '18:30', 'Standard', 28, 1, 1),
-(29, '2025-12-05', '19:00', '21:30', 'Standard', 29, 1, 1),
-(30, '2025-12-20', '21:30', '00:00', 'Standard', 30, 1, 1),
-
--- Bản copy Branch 2–5
-(31, '2025-09-20', '10:00', '12:30', 'IMAX',     26, 2, 2),
-(32, '2025-12-04', '13:00', '15:30', 'Standard', 27, 1, 2),
-(33, '2025-09-05', '16:00', '18:30', 'Standard', 28, 1, 2),
-(34, '2025-12-05', '19:00', '21:30', 'Standard', 29, 1, 2),
-(35, '2025-12-20', '21:30', '00:00', 'Standard', 30, 1, 2),
-
-(36, '2025-11-20', '10:00', '12:30', 'IMAX',      1, 2, 3),
-(37, '2025-02-15', '13:00', '15:30', 'IMAX',      2, 2, 3),
-(38, '2025-11-22', '16:00', '18:30', 'Standard',  3, 2, 3),
-(39, '2025-06-10', '19:00', '21:30', '4DX',       4, 1, 3),
-(40, '2025-12-12', '21:30', '00:00', 'IMAX',      5, 3, 3),
-
-(41, '2025-11-20', '10:00', '12:30', 'Standard',  6, 1, 4),
-(42, '2025-11-27', '13:00', '15:30', 'IMAX',      7, 3, 4),
-(43, '2025-12-09', '16:00', '18:30', 'Standard',  8, 1, 4),
-(44, '2025-12-20', '19:00', '21:30', '4DX',       9, 2, 4),
-(45, '2025-04-18', '21:30', '00:00', 'IMAX',     10, 3, 4),
-
-(46, '2025-12-01', '10:00', '12:30', 'Standard', 11, 1, 5),
-(47, '2025-09-15', '13:00', '15:30', 'Standard', 12, 2, 5),
-(48, '2025-12-22', '16:00', '18:30', 'Standard', 13, 1, 5),
-(49, '2025-12-01', '19:00', '21:30', 'Standard', 14, 1, 5),
-(50, '2025-12-12', '21:30', '00:00', 'Standard', 15, 2, 5);
+(1, '2025-12-07', '07:00', '09:30', 'Standard', 28, 1, 1),
+(2, '2025-12-07', '09:30', '12:00', 'IMAX', 1, 2, 1),
+(3, '2025-12-07', '12:00', '14:30', '4DX', 9, 3, 1),
+(4, '2025-12-07', '14:30', '17:00', 'Standard', 29, 1, 1),
+(5, '2025-12-07', '17:00', '19:30', 'IMAX', 10, 2, 1),
+(6, '2025-12-07', '19:30', '22:00', '4DX', 4, 3, 1),
+(7, '2025-12-07', '22:00', '00:30', 'Standard', 27, 1, 1),
+(8, '2025-12-07', '07:00', '09:30', 'Standard', 30, 1, 2),
+(9, '2025-12-07', '09:30', '12:00', 'IMAX', 26, 2, 2),
+(10, '2025-12-07', '12:00', '14:30', 'Standard', 13, 3, 2),
+(11, '2025-12-07', '14:30', '17:00', 'Standard', 25, 1, 2),
+(12, '2025-12-07', '17:00', '19:30', 'IMAX', 2, 2, 2),
+(13, '2025-12-07', '19:30', '22:00', 'Standard', 21, 3, 2),
+(14, '2025-12-07', '22:00', '00:30', 'Standard', 14, 1, 2),
+(15, '2025-12-07', '07:00', '09:30', '4DX', 17, 1, 3),
+(16, '2025-12-07', '09:30', '12:00', 'Standard', 19, 2, 3),
+(17, '2025-12-07', '12:00', '14:30', 'IMAX', 3, 3, 3),
+(18, '2025-12-07', '14:30', '17:00', 'Standard', 6, 1, 3),
+(19, '2025-12-07', '17:00', '19:30', 'Standard', 11, 2, 3),
+(20, '2025-12-07', '19:30', '22:00', 'IMAX', 16, 3, 3),
+(21, '2025-12-07', '22:00', '00:30', 'Standard', 24, 1, 3),
+(22, '2025-12-07', '07:00', '09:30', 'Standard', 8, 1, 4),
+(23, '2025-12-07', '09:30', '12:00', '4DX', 23, 2, 4),
+(24, '2025-12-07', '12:00', '14:30', 'IMAX', 7, 3, 4),
+(25, '2025-12-07', '14:30', '17:00', 'Standard', 15, 1, 4),
+(26, '2025-12-07', '17:00', '19:30', '4DX', 20, 2, 4),
+(27, '2025-12-07', '19:30', '22:00', 'IMAX', 26, 3, 4),
+(28, '2025-12-07', '22:00', '00:30', 'Standard', 18, 1, 4),
+(29, '2025-12-07', '07:00', '09:30', 'Standard', 29, 1, 5),
+(30, '2025-12-07', '09:30', '12:00', 'Standard', 12, 2, 5),
+(31, '2025-12-07', '12:00', '14:30', '4DX', 9, 3, 5),
+(32, '2025-12-07', '14:30', '17:00', 'Standard', 19, 1, 5),
+(33, '2025-12-07', '17:00', '19:30', 'Standard', 21, 2, 5),
+(34, '2025-12-07', '19:30', '22:00', '4DX', 23, 3, 5),
+(35, '2025-12-07', '22:00', '00:30', 'Standard', 13, 1, 5),
+(36, '2025-12-08', '07:00', '09:30', 'Standard', 28, 1, 1),
+(37, '2025-12-08', '09:30', '12:00', 'IMAX', 1, 2, 1),
+(38, '2025-12-08', '12:00', '14:30', '4DX', 9, 3, 1),
+(39, '2025-12-08', '14:30', '17:00', 'Standard', 29, 1, 1),
+(40, '2025-12-08', '17:00', '19:30', 'IMAX', 10, 2, 1),
+(41, '2025-12-08', '19:30', '22:00', '4DX', 4, 3, 1),
+(42, '2025-12-08', '22:00', '00:30', 'Standard', 27, 1, 1),
+(43, '2025-12-08', '07:00', '09:30', 'Standard', 30, 1, 2),
+(44, '2025-12-08', '09:30', '12:00', 'IMAX', 26, 2, 2),
+(45, '2025-12-08', '12:00', '14:30', 'Standard', 13, 3, 2),
+(46, '2025-12-08', '14:30', '17:00', 'Standard', 25, 1, 2),
+(47, '2025-12-08', '17:00', '19:30', 'IMAX', 2, 2, 2),
+(48, '2025-12-08', '19:30', '22:00', 'Standard', 21, 3, 2),
+(49, '2025-12-08', '22:00', '00:30', 'Standard', 14, 1, 2),
+(50, '2025-12-08', '07:00', '09:30', '4DX', 17, 1, 3),
+(51, '2025-12-08', '09:30', '12:00', 'Standard', 19, 2, 3),
+(52, '2025-12-08', '12:00', '14:30', 'IMAX', 3, 3, 3),
+(53, '2025-12-08', '14:30', '17:00', 'Standard', 6, 1, 3),
+(54, '2025-12-08', '17:00', '19:30', 'Standard', 11, 2, 3),
+(55, '2025-12-08', '19:00', '22:00', 'IMAX', 16, 3, 3),
+(56, '2025-12-08', '22:00', '00:30', 'Standard', 24, 1, 3),
+(57, '2025-12-08', '07:00', '09:30', 'Standard', 8, 1, 4),
+(58, '2025-12-08', '09:30', '12:00', '4DX', 23, 2, 4),
+(59, '2025-12-08', '12:00', '14:30', 'IMAX', 7, 3, 4),
+(60, '2025-12-08', '14:30', '17:00', 'Standard', 15, 1, 4),
+(61, '2025-12-08', '17:00', '19:30', '4DX', 20, 2, 4),
+(62, '2025-12-08', '19:30', '22:00', 'IMAX', 26, 3, 4),
+(63, '2025-12-08', '22:00', '00:30', 'Standard', 18, 1, 4),
+(64, '2025-12-08', '07:00', '09:30', 'Standard', 29, 1, 5),
+(65, '2025-12-08', '09:30', '12:00', 'Standard', 12, 2, 5),
+(66, '2025-12-08', '12:00', '14:30', '4DX', 9, 3, 5),
+(67, '2025-12-08', '14:30', '17:00', 'Standard', 19, 1, 5),
+(68, '2025-12-08', '17:00', '19:30', 'Standard', 21, 2, 5),
+(69, '2025-12-08', '19:30', '22:00', '4DX', 23, 3, 5),
+(70, '2025-12-08', '22:00', '00:30', 'Standard', 13, 1, 5),
+(71, '2025-12-09', '07:00', '09:30', 'Standard', 28, 1, 1),
+(72, '2025-12-09', '09:30', '12:00', 'IMAX', 1, 2, 1),
+(73, '2025-12-09', '12:00', '14:30', '4DX', 9, 3, 1),
+(74, '2025-12-09', '14:30', '17:00', 'Standard', 29, 1, 1),
+(75, '2025-12-09', '17:00', '19:30', 'IMAX', 10, 2, 1),
+(76, '2025-12-09', '19:30', '22:00', '4DX', 4, 3, 1),
+(77, '2025-12-09', '22:00', '00:30', 'Standard', 27, 1, 1),
+(78, '2025-12-09', '07:00', '09:30', 'Standard', 30, 1, 2),
+(79, '2025-12-09', '09:30', '12:00', 'IMAX', 26, 2, 2),
+(80, '2025-12-09', '12:00', '14:30', 'Standard', 13, 3, 2),
+(81, '2025-12-09', '14:30', '17:00', 'Standard', 25, 1, 2),
+(82, '2025-12-09', '17:00', '19:30', 'IMAX', 2, 2, 2),
+(83, '2025-12-09', '19:30', '22:00', 'Standard', 21, 3, 2),
+(84, '2025-12-09', '22:00', '00:30', 'Standard', 14, 1, 2);
 
 -- script sinh vé
 BEGIN
 
 SET NOCOUNT ON;
 
-DECLARE @TicketID INT = 1;
-
-WITH SeatList AS (
+WITH TimeList AS (
     SELECT 
+        t.TimeID, t.Day, t.BranchID, t.RoomID, s.RCapacity
+    FROM Screening.TIME t
+    JOIN Cinema.SCREENROOM s 
+        ON t.BranchID = s.BranchID 
+       AND t.RoomID = s.RoomID
+    WHERE t.Day BETWEEN '2025-12-07' AND '2025-12-09'
+), SeatPick AS (
+    SELECT 
+        tl.TimeID, tl.Day, tl.BranchID, tl.RoomID, tl.RCapacity,
+        s.SRow, s.SColumn,
+        ROW_NUMBER() OVER (
+            PARTITION BY tl.TimeID 
+            ORDER BY NEWID()
+        ) AS rn
+    FROM TimeList tl
+    JOIN Cinema.SEAT s 
+        ON s.BranchID = tl.BranchID 
+       AND s.RoomID = tl.RoomID
+       AND s.SStatus = 1
+), Selected AS (
+    SELECT 
+        sp.TimeID, sp.Day, sp.BranchID, sp.RoomID,
+        sp.SRow, sp.SColumn, sp.RCapacity
+    FROM SeatPick sp
+    WHERE sp.rn <= FLOOR(sp.RCapacity / 2.0)
+), Assigned AS (
+    SELECT 
+        ROW_NUMBER() OVER (
+            ORDER BY s.TimeID, s.BranchID, s.RoomID, s.SRow, s.SColumn
+        ) AS TicketID,
+        COALESCE(
+            CAST(o1.OrderTime AS DATE),
+            CAST(o2.OrderTime AS DATE)
+        ) AS DaySold,
+        s.TimeID,
+        COALESCE(o1.OrderID, o2.OrderID) AS OrderID,
         s.BranchID,
         s.RoomID,
+        CASE 
+            WHEN s.SColumn >= 8 
+                THEN CAST(4.00 AS DECIMAL(10,2))
+                ELSE CAST(2.00 AS DECIMAL(10,2))
+        END AS TPrice,
         s.SRow,
-        s.SColumn,
-        t.TimeID,
-        o.OrderID,
-        o.OrderTime,
-        ROW_NUMBER() OVER(ORDER BY s.BranchID, s.RoomID, s.SRow, s.SColumn) AS rn
-    FROM Cinema.SEAT s
-    JOIN Screening.TIME t 
-        ON t.BranchID = s.BranchID AND t.RoomID = s.RoomID
-    JOIN Booking.ORDERS o 
-        ON o.CUserID IN (SELECT CUserID FROM Customer.CUSTOMER)
-    WHERE s.SStatus = 1
+        s.SColumn
+    FROM Selected s
+    OUTER APPLY (
+        SELECT TOP (1) o.OrderID, o.OrderTime
+        FROM Booking.ORDERS o
+        WHERE CAST(o.OrderTime AS DATE) = s.Day
+        ORDER BY NEWID()
+    ) o1
+    OUTER APPLY (
+        SELECT TOP (1) o.OrderID, o.OrderTime 
+        FROM Booking.ORDERS o
+        ORDER BY NEWID()
+    ) o2
 )
-INSERT INTO Screening.TICKETS (TicketID, DaySold, TimeID, OrderID, BranchID, RoomID, SRow, SColumn)
-SELECT 
-    ROW_NUMBER() OVER(ORDER BY BranchID, RoomID, SRow, SColumn) AS TicketID,
-    CAST(OrderTime AS DATE) AS DaySold,
-    TimeID,
-    OrderID,
-    BranchID,
-    RoomID,
-    SRow,
-    SColumn
-FROM SeatList;
+INSERT INTO Screening.TICKETS
+        (TicketID, DaySold, TimeID, OrderID, BranchID, RoomID, TPrice, SRow, SColumn)
+SELECT  TicketID, DaySold, TimeID, OrderID, BranchID, RoomID, TPrice, SRow, SColumn
+FROM Assigned;
 END;
 
 INSERT INTO Products.ADDONITEM (ProductID, Price, ItemType, OrderID) VALUES
-(1, 50.00, 'Food', 1), (2, 35.00, 'Drink', 1),
-(3, 45.00, 'Food', 2), (4, 40.00, 'Drink', 2),
-(5, 60.00, 'Food', 3), (6, 30.00, 'Drink', 3),
-(7, 55.00, 'Food', 4), (8, 38.00, 'Drink', 4),
-(9, 50.00, 'Food', 5), (10, 32.00, 'Drink', 5),
-(11, 65.00, 'Food', 6), (12, 40.00, 'Drink', 6),
-(13, 70.00, 'Food', 7), (14, 35.00, 'Drink', 7),
-(15, 55.00, 'Food', 8), (16, 30.00, 'Drink', 8),
-(17, 60.00, 'Food', 9), (18, 38.00, 'Drink', 9),
-(19, 50.00, 'Food', 10), (20, 32.00, 'Drink', 10);
+(1,  2, 'Food', 1),
+(2,  2, 'Drink', 1),
+(3,  2, 'Food', 2),
+(4,  2, 'Drink', 2),
+(5,  3, 'Food', 3),
+(6,  2, 'Drink', 3),
+(7,  3, 'Food', 4),
+(8,  2, 'Drink', 4),
+(9,  2, 'Food', 5),
+(10, 2, 'Drink', 5),
+(11, 3, 'Merchandise', 6),
+(12, 2, 'Merchandise', 6),
+(13, 3, 'Merchandise', 7),
+(14, 2, 'Merchandise', 7),
+(15, 3, 'Merchandise', 8),
+(16, 2, 'Merchandise', 8),
+(17, 3, 'Merchandise', 9),
+(18, 2, 'Merchandise', 9),
+(19, 2, 'Merchandise', 10),
+(20, 2, 'Merchandise', 10);
 
 INSERT INTO Products.FOODDRINK (ProductID, PType, PName, Quantity) VALUES
 (1, 'Popcorn', 'Caramel Popcorn', 100),
