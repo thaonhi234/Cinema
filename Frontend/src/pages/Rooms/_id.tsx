@@ -92,20 +92,36 @@ export default function RoomsPage() {
         }
     };
 
-    // 3. Xử lý Delete
+    // 3. Xử lý Delete (CẬP NHẬT MỚI)
     const handleDeleteRoom = async (roomItemProps: any) => {
-        // Logic xóa (đã có sẵn ở backend)
+        // roomItemProps nhận từ RoomListItem gồm: { id, BranchID, name, ... }
+        const { id, BranchID, name } = roomItemProps;
+
         try {
-             await roomsApi.deleteRoom(roomItemProps.BranchID, roomItemProps.id);
-             // Sau khi xóa thành công thì load lại danh sách
-             await fetchRooms();
-             // Nếu xóa đúng phòng đang chọn, reset selection
-             if (selectedRoomId === roomItemProps.id) {
-                 setSelectedRoomId(null);
-             }
-        } catch (error) {
+            // 1. Gọi API Xóa
+            await roomsApi.deleteRoom(BranchID, id);
+
+            // 2. Cập nhật State: Loại bỏ phòng vừa xóa khỏi danh sách hiện tại
+            const remainingRooms = rooms.filter((r) => r.RoomID !== id);
+            setRooms(remainingRooms);
+
+            // 3. Xử lý lựa chọn (Selection):
+            // Nếu phòng bị xóa là phòng đang được chọn, hãy chuyển sang phòng khác (nếu còn)
+            if (selectedRoomId === id) {
+                if (remainingRooms.length > 0) {
+                    setSelectedRoomId(remainingRooms[0].RoomID);
+                } else {
+                    setSelectedRoomId(null);
+                }
+            }
+
+            // (Tùy chọn) Thông báo thành công nhỏ nếu cần, hoặc dựa vào alert của RoomListItem
+            // console.log(`Deleted room ${name} successfully`);
+
+        } catch (error: any) {
             console.error("Lỗi xóa phòng:", error);
-            alert("Không thể xóa phòng này.");
+            const msg = error.response?.data?.message || "Không thể xóa phòng này (có thể do ràng buộc dữ liệu).";
+            alert(msg);
         }
     };
 
