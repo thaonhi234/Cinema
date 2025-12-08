@@ -7,7 +7,7 @@ import {
     Button, TextField, Stack, Grid, FormControlLabel,
     Checkbox, MenuItem, Typography, Chip 
 } from '@mui/material';
-
+import moviesApi from '../../api/movieApi';
 // --- Imports Types từ MoviesPage ---
 interface ModalState {
     isOpen: boolean; isEdit: boolean; currentMovie: Movie | null;
@@ -30,11 +30,19 @@ interface MovieFormModalProps {
     // Hàm gọi API Save, nhận data form và danh sách genres
     onSave: (data: any, genres: string[]) => void; 
 }
-
+const handlePosterUpdate = async (movieId: number, url: string) => {
+    try {
+        await moviesApi.updatePoster(movieId, url);
+        alert('Poster đã được cập nhật thành công!');
+        // Cần fetch lại dữ liệu movie để component hiển thị ảnh mới
+    } catch (error) {
+        alert('Cập nhật thất bại.');
+    }
+};
 // Khởi tạo trạng thái form trống
 const initialFormState = {
     MName: '', Descript: '', RunTime: 120, isDub: false, isSub: false,
-    releaseDate: '', closingDate: '', AgeRating: '13+'
+    releaseDate: '', closingDate: '', AgeRating: '13+',posterURL: '',
 };
 const parseDateString = (dateString: string): string => {
     // Kiểm tra nếu chuỗi rỗng hoặc đã là định dạng YYYY-MM-DD (dạng ISO chuẩn)
@@ -74,6 +82,7 @@ export default function MovieFormModal({ modalState, onClose, onSave }: MovieFor
                 releaseDate: formatDate(movie.releaseDate), 
                 closingDate: formatDate(movie.closingDate),
                 AgeRating: movie.AgeRating,
+                posterURL: movie.poster || '',
             });
             setSelectedGenres(movie.Genres || []);
         } else if (!modalState.isEdit) {
@@ -237,6 +246,16 @@ export default function MovieFormModal({ modalState, onClose, onSave }: MovieFor
                             required 
                         />
                     </Grid>
+                    <Grid item xs={12}>
+                        <TextField 
+                            label="Poster URL" 
+                            name="posterURL" 
+                            value={formData.posterURL} 
+                            onChange={handleChange} 
+                            fullWidth 
+                            helperText="Đường dẫn ảnh poster (Chỉ cập nhật khi chỉnh sửa phim hoặc ngay sau khi tạo)."
+                        />
+                    </Grid>
                     {/* Checkboxes */}
                     {/* Checkboxes Dub/Sub (Giữ nguyên) */}
                     <Grid item xs={6}>
@@ -253,7 +272,7 @@ export default function MovieFormModal({ modalState, onClose, onSave }: MovieFor
                     </Grid>
                     </Grid>
             </DialogContent>
-                   
+            
             
             <DialogActions style={{ padding: '0 24px 24px 24px' }}>
                 <div style={{ flexGrow: 1, display: 'flex', justifyContent: 'flex-end', gap: '8px' }}>

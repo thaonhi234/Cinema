@@ -126,6 +126,7 @@ export interface IDataAccess {
     updateMovie(movie: any, genres: string[]): Promise<void>; 
     // Sử dụng SP để Delete
     deleteMovie(movieId: number): Promise<void>;
+    updateMoviePoster(movieId: number, posterUrl: string): Promise<void>;
 
     // --- PHƯƠNG THỨC MỚI CHO ROOMS ---
     getAllRooms(branchID: number): Promise<RoomDetails[]>;

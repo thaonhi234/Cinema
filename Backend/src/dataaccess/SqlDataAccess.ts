@@ -241,6 +241,7 @@ export class SQLDataAccess implements IDataAccess {
     AvgRating: record.AvgRating ? parseFloat(record.AvgRating.toFixed(1)) : 0,
     Genres: record.GenresList ? record.GenresList.split(',').map((g: string) => g.trim()) : [],
     Status: record.Status,
+    poster: record.posterURL,
 }));
 return movies;
     }
@@ -269,6 +270,7 @@ if (isNaN(closing.getTime())) {
         .input('closing', sql.Date, closing)
             .input('agerating', sql.VarChar(30), movie.AgeRating)
             // Tham số cuối cùng: Genres
+            .input('posterURL', sql.VarChar(sql.MAX), movie.posterURL || null)
             .input('Genres', sql.NVarChar(sql.MAX), genres.join(',')) 
             .execute('Movie.sp_InsertNewMovie');
     }
@@ -287,6 +289,7 @@ if (isNaN(closing.getTime())) {
             .input('closing', sql.Date, movie.closingDate)
             .input('agerating', sql.VarChar(30), movie.AgeRating)
             // Tham số cuối cùng: Genres
+            .input('posterURL', sql.VarChar(sql.MAX), movie.posterURL || null)
             .input('Genres', sql.NVarChar(sql.MAX), genres.join(',')) 
             .execute('Movie.sp_UpdateMovie');
     }
@@ -324,6 +327,15 @@ if (isNaN(closing.getTime())) {
         Status: record.Status,
     };
     // ĐỌC DANH SÁCH PHÒNG
+    }
+    async updateMoviePoster(movieId: number, posterUrl: string): Promise<void> {
+    const db = await getPool(); // Lấy Connection Pool
+    
+    // GỌI SP Movie.sp_AddPoster
+    await db.request()
+        .input('MovieID', sql.Int, movieId)
+        .input('posterURL', sql.VarChar(sql.MAX), posterUrl)
+        .execute('Movie.sp_AddPoster');
     }
     async getAllRooms(branchID: number): Promise<RoomDetails[]> {
         const db = await getPool();

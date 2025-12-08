@@ -168,18 +168,28 @@ export default function MoviesPage() {
             isSub: data.isSub ?? true,
             AvgRating: data.AvgRating ?? 0,
             Genres: genres,
+            posterURL: data.posterURL || null,
         };
-
+        const newPosterURL = data.posterURL;
+        let newId: number | undefined;
         console.log("Payload gửi lên backend:", payload);
 
         if (modalState.isEdit && modalState.currentMovie) {
             // Cập nhật
             await moviesApi.update(modalState.currentMovie.MovieID, payload);
+            if (newPosterURL && newPosterURL !== modalState.currentMovie.poster) {
+                await moviesApi.updatePoster(modalState.currentMovie.MovieID, newPosterURL); // <<< GỌI API MỚI
+            }
             alert("Cập nhật phim thành công!");
         } else {
             // Thêm mới
-            await moviesApi.create(payload);
+            const creationResponse = await moviesApi.create(payload);
+            newId = creationResponse.data.MovieID;
+            //await moviesApi.create(payload);
             alert("Thêm phim mới thành công!");
+            if (newId && newPosterURL) {
+                await moviesApi.updatePoster(newId, newPosterURL);
+            }
         }
 
         handleCloseModal(); // đóng modal
