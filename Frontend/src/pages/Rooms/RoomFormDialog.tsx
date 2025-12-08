@@ -31,41 +31,56 @@ export default function RoomFormDialog({
   onClose,
   onSubmit,
 }: RoomFormDialogProps) {
-  const [values, setValues] = React.useState<RoomFormValues>(
-    initialValues || { RType: "", TotalRows: 10, MaxColumns: 12 }
-  );
+  // Default values
+  const defaultValues = { RType: "", TotalRows: 10, MaxColumns: 12 };
 
+  const [values, setValues] = React.useState<RoomFormValues>(defaultValues);
+
+  // Reset form khi mở dialog hoặc thay đổi initialValues
   React.useEffect(() => {
-    if (initialValues) setValues(initialValues);
-    else setValues({ RType: "", TotalRows: 10, MaxColumns: 12 });
+    if (open) {
+      setValues(initialValues || defaultValues);
+    }
   }, [initialValues, open]);
 
   const handleChange =
     (field: keyof RoomFormValues) =>
-    (e: React.ChangeEvent<HTMLInputElement>) => {
-      const value =
-        field === "RType" ? e.target.value : Number(e.target.value || 0);
-      setValues((prev) => ({ ...prev, [field]: value }));
-    };
+      (e: React.ChangeEvent<HTMLInputElement>) => {
+        let value: string | number = e.target.value;
+
+        // Convert number inputs
+        if (field === "TotalRows" || field === "MaxColumns") {
+          value = Number(value);
+        }
+
+        setValues((prev) => ({ ...prev, [field]: value }));
+      };
 
   const handleSubmit = async () => {
+    // Validate cơ bản
+    if (!values.RType || values.TotalRows < 1 || values.MaxColumns < 1) {
+      alert("Vui lòng nhập tên phòng và số lượng ghế hợp lệ.");
+      return;
+    }
     await onSubmit(values);
   };
 
   return (
     <Dialog open={open} onClose={onClose} maxWidth="xs" fullWidth>
-      <DialogTitle>{title}</DialogTitle>
+      <DialogTitle sx={{ fontWeight: 600 }}>{title}</DialogTitle>
       <DialogContent>
         <Stack spacing={2} sx={{ mt: 1 }}>
           <TextField
-            label="Room type / name"
+            autoFocus
+            label="Room Name / Type"
+            placeholder="e.g., Premium Hall D"
             value={values.RType}
             onChange={handleChange("RType")}
             fullWidth
             size="small"
           />
           <TextField
-            label="Rows"
+            label="Number of Rows"
             type="number"
             value={values.TotalRows}
             onChange={handleChange("TotalRows")}
@@ -74,7 +89,7 @@ export default function RoomFormDialog({
             inputProps={{ min: 1 }}
           />
           <TextField
-            label="Seats per row"
+            label="Seats per Row"
             type="number"
             value={values.MaxColumns}
             onChange={handleChange("MaxColumns")}
@@ -84,10 +99,17 @@ export default function RoomFormDialog({
           />
         </Stack>
       </DialogContent>
-      <DialogActions>
-        <Button onClick={onClose}>Cancel</Button>
-        <Button variant="contained" onClick={handleSubmit}>
-          Save
+      <DialogActions sx={{ p: 2, pt: 0 }}>
+        <Button onClick={onClose} color="inherit">Cancel</Button>
+        <Button
+          variant="contained"
+          onClick={handleSubmit}
+          sx={{
+            background: "linear-gradient(135deg,#A855F7,#F97316)",
+            fontWeight: 600
+          }}
+        >
+          Save Room
         </Button>
       </DialogActions>
     </Dialog>

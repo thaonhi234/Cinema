@@ -1,266 +1,272 @@
+// src/pages/rooms/_id.tsx
 import * as React from "react";
+import { useState, useEffect } from "react";
+import { useNavigate } from "react-router-dom";
 import {
-  Box,
-  Paper,
-  Typography,
-  Button,
-  Grid,
-  Stack,
-  Chip,
+    Box,
+    Paper,
+    Typography,
+    Button,
+    Grid,
+    Stack,
+    Chip,
+    CircularProgress
 } from "@mui/material";
 
 import AddIcon from "@mui/icons-material/Add";
 import AppsIcon from "@mui/icons-material/Apps";
 import LeftMenuBar from "../../components/LeftMenuBar";
 
-// Imort components:
+// Import components:
 import SeatingMap from "./SeatingMap";
 import RoomListItem from "./RoomListItem"
 import SummaryItem from "./SummaryItem";
+import RoomFormDialog  from "./RoomFormDialog";
+import type { RoomFormValues }  from "./RoomFormDialog";
 
-import { getTotalSeats } from "../utils/roomUtils";
-import roomsApi from "../../api/roomsApi"; // Import API service
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-interface Room {
-    BranchID: number;
-    RoomID: number; // Dùng làm ID chính
-    BranchName: string; // Tên chi nhánh
-    RType: string; // Loại phòng (IMAX, 2D, 3D,...)
-    TotalCapacity: number;
-    TotalRows: number; // Số hàng
-    MaxColumns: number; // Số ghế mỗi hàng
-}
-/* ================== TYPES & MOCK DATA ================== */
+import roomsApi from "../../api/roomsApi"; // Import API
+import type { RoomResponse } from "../../api/roomsApi"; // Import API
 
-/* ================== MAIN PAGE ================== */
+// Sử dụng kiểu dữ liệu từ API hoặc định nghĩa khớp với Response
+type Room = RoomResponse;
 
 export default function RoomsPage() {
-  const [rooms, setRooms] = useState<Room[]>([]);
-  const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
-  const [loading, setLoading] = useState<boolean>(true);
-  const [error, setError] = useState<string | null>(null);
-  const navigate = useNavigate();
- // Tìm phòng đang được chọn
-  const selectedRoom =
-    rooms.find((room) => room.RoomID === selectedRoomId) ?? rooms[0];
-  
-  // Lấy BranchID từ phòng đang chọn
-  const branchId = rooms[0]?.BranchID; // Lấy BranchID của phòng đầu tiên (hoặc của user nếu cần)
+    // --- State ---
+    const [rooms, setRooms] = useState<Room[]>([]);
+    const [selectedRoomId, setSelectedRoomId] = useState<number | null>(null);
+    const [loading, setLoading] = useState<boolean>(true);
+    const [error, setError] = useState<string | null>(null);
+    
+    // State cho Dialog
+    const [dialogOpen, setDialogOpen] = useState(false);
+    const [editingRoom, setEditingRoom] = useState<Room | null>(null);
 
-  // 1. Fetch Rooms Data
-  useEffect(() => {
+    const navigate = useNavigate();
+
+    // --- Computed Values ---
+    const selectedRoom = rooms.find((room) => room.RoomID === selectedRoomId);
+    
+    // Lấy BranchID hiện tại (ưu tiên từ room list, hoặc lấy từ localStorage nếu list rỗng)
+    // Lưu ý: Logic này giả định User Manager chỉ quản lý 1 Branch.
+    const currentBranchId = rooms.length > 0 ? rooms[0].BranchID : Number(localStorage.getItem('BranchID') || 1); 
+
+    // --- Effects ---
     const fetchRooms = async () => {
         try {
-            // Lấy BranchID từ token (Giả định Manager đang login)
-            const token = localStorage.getItem('token');
-            if (!token) {
-                navigate("/"); // Nếu không có token, chuyển về Login
-                return;
-            }
-            
-            // Hàm roomsApi.getAllRooms() đã được bảo vệ và sẽ tự động lọc theo BranchID
+            setLoading(true);
             const res = await roomsApi.getAllRooms();
-            const fetchedRooms: Room[] = res.data;
-            
+            // res.data là mảng Room (do axiosClient cấu hình trả về data)
+            // hoặc res là mảng nếu axiosClient dùng interceptor trả về response.data
+            const fetchedRooms: Room[] = Array.isArray(res) ? res : (res as any).data;
+
             setRooms(fetchedRooms);
-            
-            // Chọn phòng đầu tiên làm mặc định nếu có dữ liệu
+
+            // Auto select room đầu tiên
             if (fetchedRooms.length > 0 && selectedRoomId === null) {
                 setSelectedRoomId(fetchedRooms[0].RoomID);
             }
-            
         } catch (err: any) {
-            console.error("Lỗi khi tải Rooms:", err);
-            setError(err.response?.data?.message || "Không thể tải danh sách phòng.");
+            console.error("Lỗi tải Rooms:", err);
+            setError("Không thể kết nối đến máy chủ.");
         } finally {
             setLoading(false);
         }
     };
-    fetchRooms();
-  }, [navigate, selectedRoomId]);
 
-  // Handle Loading/Error States
-  if (loading) return <Typography sx={{ p: 4 }}>Đang tải danh sách phòng...</Typography>;
-  if (error) return <Typography color="error" sx={{ p: 4 }}>Lỗi: {error}</Typography>;
-  if (rooms.length === 0) return <Typography sx={{ p: 4 }}>Không có phòng chiếu nào trong chi nhánh này.</Typography>;
+    useEffect(() => {
+        fetchRooms();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
 
+    // --- Handlers ---
 
-  // Dùng tên phòng kết hợp loại phòng cho Title (ví dụ: Royal Hall A - 2D)
-  const roomTitle = `${selectedRoom.RType} ${selectedRoom.RoomID} (${selectedRoom.BranchName})`;
-  return (
-    <Box
-      sx={{
-        display: "flex",
-        minHeight: "100vh",
-        bgcolor: "#f6f7fb",
-      }}
-    >
-      {/* Sidebar */}
-      <LeftMenuBar />
+    // 1. Mở Dialog Thêm mới
+    const handleAddNew = () => {
+        setEditingRoom(null); // Reset mode edit
+        setDialogOpen(true);
+    };
 
-      {/* Main content */}
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          px: 4,
-          py: 4,
-        }}
-      >
-        {/* HEADER */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: { xs: "flex-start", md: "center" },
-            mb: 3,
-            mt: 1,
-          }}
-        >
-          <Box>
-            <Typography variant="h4" sx={{ fontWeight: 700 }}>
-              Room Management
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Configure theater rooms and seating layouts
-            </Typography>
-          </Box>
+    // 2. Mở Dialog Edit (Placeholder)
+    const handleEditRoom = (roomData: any) => {
+        // Cần map lại dữ liệu từ RoomListItem sang Room object nếu cần
+        const roomToEdit = rooms.find(r => r.RoomID === roomData.id);
+        if(roomToEdit) {
+            setEditingRoom(roomToEdit);
+            setDialogOpen(true);
+        }
+    };
 
-          <Button
-            variant="contained"
-            startIcon={<AddIcon />}
-            sx={{
-              borderRadius: 999,
-              textTransform: "none",
-              px: 3,
-              py: 1,
-              fontWeight: 600,
-              fontSize: 14,
-              background: "linear-gradient(135deg,#A855F7,#F97316)",
-              boxShadow: "0 10px 25px rgba(168,85,247,0.35)",
-            }}
-          >
-            Add New Room
-          </Button>
+    // 3. Xử lý Submit (Create/Update)
+    const handleDialogSubmit = async (values: RoomFormValues) => {
+        try {
+            if (editingRoom) {
+                // --- Logic Update (Sẽ làm sau nếu cần) ---
+                console.log("Update functionality not fully implemented yet");
+                // await roomsApi.updateRoom(...)
+            } else {
+                // --- Logic Create ---
+                
+                // 1. Tự sinh RoomID: Tìm max ID hiện có + 1
+                const maxId = rooms.length > 0 
+                    ? Math.max(...rooms.map(r => r.RoomID)) 
+                    : 0;
+                const newRoomId = maxId + 1;
+
+                // 2. Chuẩn bị payload khớp với Controller Backend
+                const payload = {
+                    BranchID: currentBranchId,
+                    RoomID: newRoomId,
+                    RType: values.RType,
+                    TotalRows: values.TotalRows,
+                    SeatsPerRow: values.MaxColumns, // Mapping: UI(MaxColumns) -> API(SeatsPerRow)
+                    RCapacity: values.TotalRows * values.MaxColumns
+                };
+
+                console.log("Submitting New Room:", payload);
+
+                // 3. Gọi API
+                await roomsApi.createRoom(payload);
+                
+                // 4. Reload data & Close dialog
+                await fetchRooms(); // Tải lại danh sách để cập nhật UI
+                
+                // Nếu muốn auto-select phòng mới tạo:
+                setSelectedRoomId(newRoomId);
+            }
+            setDialogOpen(false);
+        } catch (err: any) {
+            console.error("Lỗi khi lưu phòng:", err);
+            alert(err.response?.data?.message || "Có lỗi xảy ra khi lưu phòng.");
+        }
+    };
+    
+    // --- Render ---
+
+    if (loading && rooms.length === 0) return (
+        <Box sx={{ display: 'flex', justifyContent: 'center', mt: 10 }}>
+            <CircularProgress />
         </Box>
+    );
 
-        {/* CONTENT 2 CỘT */}
-        <Grid container spacing={3}>
-          {/* LEFT: ROOM LIST */}
-          <Grid sx={{ xs: 12, mb: 4}}>
-            <Paper
-              elevation={0}
-              sx={{
-                borderRadius: 4,
-                border: "1px solid #f0f0f0",
-                bgcolor: "#ffffff",
-                p: 3,
-              }}
-            >
-              <Typography
-                variant="subtitle1"
-                sx={{ fontWeight: 600, mb: 2 }}
-              >
-                Theater Rooms
-              </Typography>
+    return (
+        <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f6f7fb" }}>
+            <LeftMenuBar />
 
-              <Stack spacing={2}>
-                {rooms.map((room) => (
-                  <RoomListItem
-                    key={room.RoomID}
-                    // Truyền các prop theo tên mới
-                    room={{
-                        id: room.RoomID,
-                        name: `${room.RType} ${room.RoomID}`,
-                        BranchName: room.BranchName,
-                        rows: room.TotalRows,
-                        seatsPerRow: room.MaxColumns,
-                        BranchID: room.BranchID, // Truyền BranchID để dùng cho các Actions
-                    }}
-                    isActive={room.RoomID === selectedRoomId}
-                    onClick={() => setSelectedRoomId(room.RoomID)}
-                    onEdit={() => set}
-                  />
-                ))}
-              </Stack>
-            </Paper>
-          </Grid>
+            <Box component="main" sx={{ flexGrow: 1, px: 4, py: 4 }}>
+                {/* HEADER */}
+                <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 3, mt: 1 }}>
+                    <Box>
+                        <Typography variant="h4" sx={{ fontWeight: 700 }}>
+                            Room Management
+                        </Typography>
+                        <Typography variant="body2" color="text.secondary">
+                            Configure theater rooms and seating layouts
+                        </Typography>
+                    </Box>
 
-          {/* RIGHT: ROOM DETAIL + SEATING MAP */}
-          <Grid sx={{ xs: 12, mb: 8}}>
-            <Paper
-              elevation={0}
-              sx={{
-                borderRadius: 4,
-                border: "1px solid #f0f0f0",
-                bgcolor: "#ffffff",
-                p: 3,
-                display: "flex",
-                flexDirection: "column",
-                minHeight: 420,
-              }}
-            >
-              {/* TOP TITLE & LAYOUT SIZE */}
-              <Box
-                sx={{
-                  display: "flex",
-                  justifyContent: "space-between",
-                  alignItems: "center",
-                  mb: 2,
-                }}
-              >
-                <Box>
-                  <Typography variant="h6" sx={{ fontWeight: 600 }}>
-                    {roomTitle}
-                  </Typography>
-                  <Typography
-                    variant="body2"
-                    color="text.secondary"
-                  >{`Seating capacity: ${selectedRoom.TotalCapacity} seats`}</Typography>
+                    <Button
+                        variant="contained"
+                        startIcon={<AddIcon />}
+                        onClick={handleAddNew} // Kích hoạt dialog
+                        sx={{
+                            borderRadius: 999,
+                            textTransform: "none",
+                            px: 3, py: 1,
+                            fontWeight: 600,
+                            background: "linear-gradient(135deg,#A855F7,#F97316)",
+                            boxShadow: "0 10px 25px rgba(168,85,247,0.35)",
+                        }}
+                    >
+                        Add New Room
+                    </Button>
                 </Box>
 
-                <Chip
-                  icon={<AppsIcon />}
-                  label={`${selectedRoom.TotalRows}x${selectedRoom.MaxColumns}`}
-                  sx={{
-                    borderRadius: 999,
-                    bgcolor: "#f3f4ff",
-                    fontWeight: 500,
-                  }}
-                />
-              </Box>
+                {/* CONTENT */}
+                {rooms.length === 0 && !loading ? (
+                     <Typography sx={{ p: 4, textAlign: 'center' }}>Không có phòng chiếu nào. Hãy tạo mới.</Typography>
+                ) : (
+                    <Grid container spacing={3}>
+                        {/* LEFT: ROOM LIST */}
+                        <Grid size={{xs:12, md:4}}>
+                            <Paper elevation={0} sx={{ borderRadius: 4, border: "1px solid #f0f0f0", bgcolor: "#ffffff", p: 3 }}>
+                                <Typography variant="subtitle1" sx={{ fontWeight: 600, mb: 2 }}>
+                                    Theater Rooms
+                                </Typography>
+                                <Stack spacing={2}>
+                                    {rooms.map((room) => (
+                                        <RoomListItem
+                                            key={room.RoomID}
+                                            room={{
+                                                id: room.RoomID,
+                                                name: room.RType, // Sử dụng RType làm tên hiển thị
+                                                BranchName: room.BranchName || "Chi nhánh",
+                                                rows: room.TotalRows,
+                                                seatsPerRow: room.MaxColumns, // API trả về MaxColumns
+                                                BranchID: room.BranchID,
+                                            }}
+                                            isActive={room.RoomID === selectedRoomId}
+                                            onClick={() => setSelectedRoomId(room.RoomID)}
+                                            onEdit={handleEditRoom}
+                                            onDelete={() => console.log("Delete logic here")}
+                                        />
+                                    ))}
+                                </Stack>
+                            </Paper>
+                        </Grid>
 
-              {/* SEATING MAP */}
-              <SeatingMap
-                rows={selectedRoom.TotalRows} // Dùng TotalRows
-                seatsPerRow={selectedRoom.MaxColumns}
-              />
+                        {/* RIGHT: ROOM DETAIL */}
+                        <Grid size={{xs:12, md:8}}>
+                            {selectedRoom && (
+                                <Paper elevation={0} sx={{ borderRadius: 4, border: "1px solid #f0f0f0", bgcolor: "#ffffff", p: 3, display: "flex", flexDirection: "column", minHeight: 420 }}>
+                                    <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 2 }}>
+                                        <Box>
+                                            <Typography variant="h6" sx={{ fontWeight: 600 }}>
+                                                {selectedRoom.RType} {selectedRoom.RoomID}
+                                            </Typography>
+                                            <Typography variant="body2" color="text.secondary">
+                                                {`Seating capacity: ${selectedRoom.TotalCapacity} seats`}
+                                            </Typography>
+                                        </Box>
+                                        <Chip
+                                            icon={<AppsIcon />}
+                                            label={`${selectedRoom.TotalRows} rows x ${selectedRoom.MaxColumns} seats`}
+                                            sx={{ borderRadius: 999, bgcolor: "#f3f4ff", fontWeight: 500 }}
+                                        />
+                                    </Box>
 
-              {/* SUMMARY NUMBERS */}
-              <Box
-                sx={{
-                  mt: "auto",
-                  pt: 4,
-                  display: "flex",
-                  justifyContent: "space-evenly",
-                  borderTop: "1px solid #f3f4f6",
-                }}
-              >
-                <SummaryItem label="Rows" value={selectedRoom.TotalRows} />
-                <SummaryItem
-                  label="Seats per Row"
-                  value={selectedRoom.MaxColumns}
+                                    <SeatingMap
+                                        rows={selectedRoom.TotalRows}
+                                        seatsPerRow={selectedRoom.MaxColumns}
+                                    />
+
+                                    <Box sx={{ mt: "auto", pt: 4, display: "flex", justifyContent: "space-evenly", borderTop: "1px solid #f3f4f6" }}>
+                                        <SummaryItem label="Rows" value={selectedRoom.TotalRows} />
+                                        <SummaryItem label="Seats per Row" value={selectedRoom.MaxColumns} />
+                                        <SummaryItem label="Total Seats" value={selectedRoom.TotalCapacity} />
+                                    </Box>
+                                </Paper>
+                            )}
+                        </Grid>
+                    </Grid>
+                )}
+
+                {/* DIALOG COMPONENT */}
+                <RoomFormDialog
+                    open={dialogOpen}
+                    title={editingRoom ? "Edit Room" : "Add New Room"}
+                    onClose={() => setDialogOpen(false)}
+                    initialValues={
+                        editingRoom
+                            ? {
+                                RType: editingRoom.RType,
+                                TotalRows: editingRoom.TotalRows,
+                                MaxColumns: editingRoom.MaxColumns,
+                              }
+                            : undefined
+                    }
+                    onSubmit={handleDialogSubmit}
                 />
-                <SummaryItem
-                  label="Total Seats"
-                  value={selectedRoom.TotalCapacity}
-                />
-              </Box>
-            </Paper>
-          </Grid>
-        </Grid>
-      </Box>
-    </Box>
-  );
+            </Box>
+        </Box>
+    );
 }
