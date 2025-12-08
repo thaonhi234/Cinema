@@ -180,6 +180,7 @@ export default function RoomsPage() {
                     }}
                     isActive={room.RoomID === selectedRoomId}
                     onClick={() => setSelectedRoomId(room.RoomID)}
+                    onEdit={() => set}
                   />
                 ))}
               </Stack>
