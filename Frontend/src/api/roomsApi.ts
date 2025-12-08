@@ -43,7 +43,8 @@ const roomsApi = {
     // 1. READ: Lấy danh sách tất cả phòng trong chi nhánh của người dùng
     // GET /api/rooms (BranchID được lấy từ Token)
     getAllRooms: () => {
-        return axiosClient.get('/rooms');
+        // return axiosClient.get('/rooms');
+        return axiosClient.get(`/rooms?t=${new Date().getTime()}`);
     },
 
     // 2. READ: Lấy sơ đồ ghế chi tiết của một phòng

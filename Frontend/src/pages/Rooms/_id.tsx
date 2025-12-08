@@ -1,4 +1,3 @@
-// src/pages/rooms/_id.tsx
 import * as React from "react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
@@ -27,7 +26,7 @@ import type { RoomFormValues }  from "./RoomFormDialog";
 import roomsApi from "../../api/roomsApi"; // Import API
 import type { RoomResponse } from "../../api/roomsApi"; // Import API
 
-// Sử dụng kiểu dữ liệu từ API hoặc định nghĩa khớp với Response
+// Sử dụng kiểu dữ liệu từ API trả về
 type Room = RoomResponse;
 
 export default function RoomsPage() {
@@ -37,7 +36,7 @@ export default function RoomsPage() {
     const [loading, setLoading] = useState<boolean>(true);
     const [error, setError] = useState<string | null>(null);
     
-    // State cho Dialog
+    // State cho Dialog (Create/Edit)
     const [dialogOpen, setDialogOpen] = useState(false);
     const [editingRoom, setEditingRoom] = useState<Room | null>(null);
 
@@ -46,22 +45,19 @@ export default function RoomsPage() {
     // --- Computed Values ---
     const selectedRoom = rooms.find((room) => room.RoomID === selectedRoomId);
     
-    // Lấy BranchID hiện tại (ưu tiên từ room list, hoặc lấy từ localStorage nếu list rỗng)
-    // Lưu ý: Logic này giả định User Manager chỉ quản lý 1 Branch.
+    // Lấy BranchID hiện tại (giả định lấy từ phòng đầu tiên hoặc localStorage)
     const currentBranchId = rooms.length > 0 ? rooms[0].BranchID : Number(localStorage.getItem('BranchID') || 1); 
 
-    // --- Effects ---
+    // --- Effects: Fetch Data ---
     const fetchRooms = async () => {
         try {
-            setLoading(true);
+            // setLoading(true); // Có thể comment dòng này nếu không muốn hiện loading spinner mỗi lần refresh nhẹ
             const res = await roomsApi.getAllRooms();
-            // res.data là mảng Room (do axiosClient cấu hình trả về data)
-            // hoặc res là mảng nếu axiosClient dùng interceptor trả về response.data
             const fetchedRooms: Room[] = Array.isArray(res) ? res : (res as any).data;
 
             setRooms(fetchedRooms);
 
-            // Auto select room đầu tiên
+            // Nếu chưa chọn phòng nào, chọn phòng đầu tiên
             if (fetchedRooms.length > 0 && selectedRoomId === null) {
                 setSelectedRoomId(fetchedRooms[0].RoomID);
             }
@@ -82,61 +78,104 @@ export default function RoomsPage() {
 
     // 1. Mở Dialog Thêm mới
     const handleAddNew = () => {
-        setEditingRoom(null); // Reset mode edit
+        setEditingRoom(null); // Reset mode edit -> create mode
         setDialogOpen(true);
     };
 
-    // 2. Mở Dialog Edit (Placeholder)
-    const handleEditRoom = (roomData: any) => {
-        // Cần map lại dữ liệu từ RoomListItem sang Room object nếu cần
-        const roomToEdit = rooms.find(r => r.RoomID === roomData.id);
-        if(roomToEdit) {
-            setEditingRoom(roomToEdit);
+    // 2. Mở Dialog Edit
+    const handleEditRoom = (roomItemProps: any) => {
+        // Tìm object Room đầy đủ từ state dựa trên ID được click
+        const roomToEdit = rooms.find(r => r.RoomID === roomItemProps.id);
+        if (roomToEdit) {
+            setEditingRoom(roomToEdit); // Set mode edit
             setDialogOpen(true);
         }
     };
 
-    // 3. Xử lý Submit (Create/Update)
+    // 3. Xử lý Delete
+    const handleDeleteRoom = async (roomItemProps: any) => {
+        // Logic xóa (đã có sẵn ở backend)
+        try {
+             await roomsApi.deleteRoom(roomItemProps.BranchID, roomItemProps.id);
+             // Sau khi xóa thành công thì load lại danh sách
+             await fetchRooms();
+             // Nếu xóa đúng phòng đang chọn, reset selection
+             if (selectedRoomId === roomItemProps.id) {
+                 setSelectedRoomId(null);
+             }
+        } catch (error) {
+            console.error("Lỗi xóa phòng:", error);
+            alert("Không thể xóa phòng này.");
+        }
+    };
+
+    // 4. Xử lý Submit Dialog (Create & Update)
     const handleDialogSubmit = async (values: RoomFormValues) => {
         try {
+            // Tính toán sức chứa
+            const capacity = values.TotalRows * values.MaxColumns;
+
             if (editingRoom) {
-                // --- Logic Update (Sẽ làm sau nếu cần) ---
-                console.log("Update functionality not fully implemented yet");
-                // await roomsApi.updateRoom(...)
-            } else {
-                // --- Logic Create ---
+                // === UPDATE EXISTING ROOM ===
+                const payload = {
+                    RType: values.RType,
+                    TotalRows: values.TotalRows,
+                    SeatsPerRow: values.MaxColumns, // API Controller dùng tên này
+                    RCapacity: capacity
+                };
+
+                // 1. Gọi API Update
+                await roomsApi.updateRoom(editingRoom.BranchID, editingRoom.RoomID, payload);
                 
-                // 1. Tự sinh RoomID: Tìm max ID hiện có + 1
-                const maxId = rooms.length > 0 
-                    ? Math.max(...rooms.map(r => r.RoomID)) 
-                    : 0;
+                // 2. KHẮC PHỤC: Cập nhật trực tiếp State 'rooms' tại frontend
+                // Giúp giao diện thay đổi ngay lập tức mà không lo vấn đề Cache hay độ trễ Server
+                setRooms((prevRooms) => 
+                    prevRooms.map((room) => {
+                        if (room.RoomID === editingRoom.RoomID) {
+                            return {
+                                ...room,
+                                // Ghi đè các thông tin mới sửa
+                                RType: values.RType,
+                                TotalRows: values.TotalRows,
+                                MaxColumns: values.MaxColumns, // Map đúng tên biến hiển thị ở FE
+                                TotalCapacity: capacity
+                            };
+                        }
+                        return room;
+                    })
+                );
+
+                // (Tùy chọn) Vẫn có thể gọi fetchRooms để đồng bộ ngầm, nhưng không bắt buộc await để chặn UI
+                fetchRooms(); 
+                
+            } else {
+                // === CREATE NEW ROOM ===
+                const maxId = rooms.length > 0 ? Math.max(...rooms.map(r => r.RoomID)) : 0;
                 const newRoomId = maxId + 1;
 
-                // 2. Chuẩn bị payload khớp với Controller Backend
                 const payload = {
                     BranchID: currentBranchId,
                     RoomID: newRoomId,
                     RType: values.RType,
                     TotalRows: values.TotalRows,
-                    SeatsPerRow: values.MaxColumns, // Mapping: UI(MaxColumns) -> API(SeatsPerRow)
-                    RCapacity: values.TotalRows * values.MaxColumns
+                    SeatsPerRow: values.MaxColumns, 
+                    RCapacity: capacity
                 };
 
-                console.log("Submitting New Room:", payload);
-
-                // 3. Gọi API
                 await roomsApi.createRoom(payload);
                 
-                // 4. Reload data & Close dialog
-                await fetchRooms(); // Tải lại danh sách để cập nhật UI
-                
-                // Nếu muốn auto-select phòng mới tạo:
+                // Với Create, ta nên fetch lại vì cần chắc chắn dữ liệu đồng bộ
+                await fetchRooms();
                 setSelectedRoomId(newRoomId);
             }
+
+            // Đóng dialog sau khi thành công
             setDialogOpen(false);
+
         } catch (err: any) {
             console.error("Lỗi khi lưu phòng:", err);
-            alert(err.response?.data?.message || "Có lỗi xảy ra khi lưu phòng.");
+            const msg = err.response?.data?.message || "Có lỗi xảy ra.";
+            alert(`Thao tác thất bại: ${msg}`);
         }
     };
     
@@ -167,7 +206,7 @@ export default function RoomsPage() {
                     <Button
                         variant="contained"
                         startIcon={<AddIcon />}
-                        onClick={handleAddNew} // Kích hoạt dialog
+                        onClick={handleAddNew}
                         sx={{
                             borderRadius: 999,
                             textTransform: "none",
@@ -183,7 +222,7 @@ export default function RoomsPage() {
 
                 {/* CONTENT */}
                 {rooms.length === 0 && !loading ? (
-                     <Typography sx={{ p: 4, textAlign: 'center' }}>Không có phòng chiếu nào. Hãy tạo mới.</Typography>
+                     <Typography sx={{ p: 4, textAlign: 'center' }}>Chưa có dữ liệu phòng.</Typography>
                 ) : (
                     <Grid container spacing={3}>
                         {/* LEFT: ROOM LIST */}
@@ -198,16 +237,16 @@ export default function RoomsPage() {
                                             key={room.RoomID}
                                             room={{
                                                 id: room.RoomID,
-                                                name: room.RType, // Sử dụng RType làm tên hiển thị
+                                                name: room.RType, 
                                                 BranchName: room.BranchName || "Chi nhánh",
                                                 rows: room.TotalRows,
-                                                seatsPerRow: room.MaxColumns, // API trả về MaxColumns
+                                                seatsPerRow: room.MaxColumns,
                                                 BranchID: room.BranchID,
                                             }}
                                             isActive={room.RoomID === selectedRoomId}
                                             onClick={() => setSelectedRoomId(room.RoomID)}
-                                            onEdit={handleEditRoom}
-                                            onDelete={() => console.log("Delete logic here")}
+                                            onEdit={handleEditRoom}   // Truyền hàm Edit
+                                            onDelete={handleDeleteRoom} // Truyền hàm Delete
                                         />
                                     ))}
                                 </Stack>
@@ -234,6 +273,7 @@ export default function RoomsPage() {
                                         />
                                     </Box>
 
+                                    {/* Component vẽ sơ đồ ghế */}
                                     <SeatingMap
                                         rows={selectedRoom.TotalRows}
                                         seatsPerRow={selectedRoom.MaxColumns}
@@ -250,10 +290,10 @@ export default function RoomsPage() {
                     </Grid>
                 )}
 
-                {/* DIALOG COMPONENT */}
+                {/* DIALOG: Dùng chung cho Create và Edit */}
                 <RoomFormDialog
                     open={dialogOpen}
-                    title={editingRoom ? "Edit Room" : "Add New Room"}
+                    title={editingRoom ? `Edit Room: ${editingRoom.RType}` : "Add New Room"}
                     onClose={() => setDialogOpen(false)}
                     initialValues={
                         editingRoom
