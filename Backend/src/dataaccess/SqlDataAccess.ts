@@ -382,6 +382,8 @@ if (isNaN(closing.getTime())) {
             .input('RoomID', sql.Int, room.RoomID)
             .input('RType', sql.VarChar(20), room.RType)
             .input('RCapacity', sql.SmallInt, room.RCapacity)
+            .input('TotalRows', sql.SmallInt, room.TotalRows)
+            .input('SeatsPerRow', sql.SmallInt, room.SeatsPerRow)
             .execute('Cinema.sp_UpdateScreenRoom');
     }
     async getSeatLayout(branchId: number, roomId: number): Promise<SeatDetail[]> {

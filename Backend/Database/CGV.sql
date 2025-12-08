@@ -375,10 +375,10 @@ INSERT INTO Customer.MEMBERSHIP (MemberID, Point, MemberRank, CUserID) VALUES
 INSERT INTO Staff.EMPLOYEE 
 (EName, Sex, PhoneNumber, Email, EPassword, Salary, UserType, ManageID, BranchID) VALUES 
 ('Tran Van A', 'M', '0901111001', 'a1@cgv.vn', 'emp001', 7000, 'manager', NULL, 1),
-('Nguyen Thi B', 'F', '0901111002', 'b2@cgv.vn', 'emp002', 7500, 'staff', NULL, 2),
-('Le Van C', 'M', '0901111003', 'c3@cgv.vn', 'emp003', 6800, 'staff', NULL, 3),
-('Pham Thi D', 'F', '0901111004', 'd4@cgv.vn', 'emp004', 7200, 'staff', NULL, 4),
-('Do Van E', 'M', '0901111005', 'e5@cgv.vn', 'emp005', 6900, 'staff', NULL, 5);
+('Nguyen Thi B', 'F', '0901111002', 'b2@cgv.vn', 'emp002', 7500, 'manager', NULL, 2),
+('Le Van C', 'M', '0901111003', 'c3@cgv.vn', 'emp003', 6800, 'manager', NULL, 3),
+('Pham Thi D', 'F', '0901111004', 'd4@cgv.vn', 'emp004', 7200, 'manager', NULL, 4),
+('Do Van E', 'M', '0901111005', 'e5@cgv.vn', 'emp005', 6900, 'manager', NULL, 5);
 
 INSERT INTO Staff.EMPLOYEE 
 (EName, Sex, PhoneNumber, Email, EPassword, Salary, UserType, ManageID, BranchID) VALUES
@@ -1759,34 +1759,86 @@ BEGIN
 END
 GO
 -- Procedure 15: Cập nhật thông tin cơ bản của phòng chiếu
+
+-- TRONG CGV.sql: Thay thế Procedure 15
+
+-- TRONG CGV.sql: Sửa Procedure 15 (Cinema.sp_UpdateRoomAndLayout)
+
+-- TRONG CGV.sql: Sửa Procedure 15 (Cinema.sp_UpdateRoomAndLayout)
+
 CREATE OR ALTER PROCEDURE Cinema.sp_UpdateScreenRoom
     @BranchID INT,
     @RoomID INT,
     @RType VARCHAR(20),
-    @RCapacity SMALLINT -- Sức chứa mới
+    @RCapacity SMALLINT,
+    @TotalRows SMALLINT,
+    @SeatsPerRow SMALLINT
 AS
 BEGIN
     SET NOCOUNT ON;
 
-    -- Kiểm tra phòng có tồn tại không
-    IF NOT EXISTS (SELECT 1 FROM Cinema.SCREENROOM WHERE BranchID = @BranchID AND RoomID = @RoomID)
+    -- 1. Kiểm tra phòng tồn tại
+    IF NOT EXISTS (
+        SELECT 1 
+        FROM Cinema.SCREENROOM 
+        WHERE BranchID = @BranchID AND RoomID = @RoomID
+    )
     BEGIN
         RAISERROR('Room does not exist in this branch.', 16, 1);
         RETURN;
     END
 
-    -- 1. Cập nhật bảng SCREENROOM
+    -----------------------------------------------------
+    -- 2. Kiểm tra phòng đã có vé bán hay chưa
+    -----------------------------------------------------
+    IF EXISTS (
+        SELECT 1 
+        FROM Screening.TICKETS t
+        WHERE t.BranchID = @BranchID
+        AND t.RoomID = @RoomID
+    )
+    BEGIN
+        RAISERROR('Cannot update room because one or more seats already have sold tickets.', 16, 1);
+        RETURN;
+    END
+
+    -----------------------------------------------------
+    -- 3. Cập nhật thông tin phòng
+    -----------------------------------------------------
     UPDATE Cinema.SCREENROOM
-    SET
+    SET 
         RType = @RType,
         RCapacity = @RCapacity
     WHERE BranchID = @BranchID AND RoomID = @RoomID;
 
-    -- LƯU Ý: SP này không cập nhật cấu hình ghế (SEAT). 
-    -- Việc thay đổi số hàng/số cột cần được xử lý riêng hoặc qua một SP khác phức tạp hơn.
-    
+    -----------------------------------------------------
+    -- 4. Tạo lại danh sách ghế
+    -----------------------------------------------------
+    DELETE FROM Cinema.SEAT
+    WHERE BranchID = @BranchID AND RoomID = @RoomID;
+
+    DECLARE @Row INT = 1;
+    DECLARE @Col INT;
+    DECLARE @Count INT = 0;
+
+    WHILE @Row <= @TotalRows AND @Count < @RCapacity
+    BEGIN
+        SET @Col = 1;
+
+        WHILE @Col <= @SeatsPerRow AND @Count < @RCapacity
+        BEGIN
+            INSERT INTO Cinema.SEAT (BranchID, RoomID, SRow, SColumn, SType, SStatus)
+            VALUES (@BranchID, @RoomID, @Row, @Col, 0, 1);
+
+            SET @Count += 1;
+            SET @Col += 1;
+        END
+
+        SET @Row += 1;
+    END
 END
 GO
+
 -- Procedure 17: Lấy ma trận ghế chi tiết của một phòng chiếu
 CREATE OR ALTER PROCEDURE Cinema.sp_GetSeatLayout
     @BranchID AS INT, -- THAM SỐ BẮT BUỘC
