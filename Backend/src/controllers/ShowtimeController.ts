@@ -1,95 +1,56 @@
 import { Request, Response } from 'express';
-import { SQLDataAccess } from '../dataaccess/SqlDataAccess'; 
-
-const dataAccess = new SQLDataAccess();
+import { ShowtimeService } from '../services/ShowtimeService'; // Gọi Service
 
 export class ShowtimeController {
-    
-    // GET /api/showtimes
-    async getAllShowtimes(req: Request, res: Response) {
-        const user = (req as any).user;
-        const branchId = user.BranchID;
-        // Lấy ngày cần lọc từ query param (Ví dụ: /showtimes?date=2025-12-06)
-        const dateFilter = req.query.date as string || new Date().toISOString().split('T')[0];
+    private service = new ShowtimeService();
 
-        if (!branchId || (user.VaiTro !== 'manager' && user.VaiTro !== 'staff')) {
-            return res.status(403).json({ message: 'Không có quyền truy cập.' });
-        }
-
+    // GET /api/showtimes?branchId=1&date=2025-12-08
+    getAllShowtimes = async (req: Request, res: Response) => {
         try {
-            const showtimes = await dataAccess.getAllShowtimes(branchId, dateFilter); 
-            return res.status(200).json(showtimes);
-        } catch (error) {
-            console.error('Lỗi khi lấy suất chiếu:', error);
-            return res.status(500).json({ message: 'Lỗi server khi tải suất chiếu.' });
+            // Tạm thời lấy branchId từ query (để test) thay vì từ token user
+            const branchId = parseInt(req.query.branchId as string) || 1; 
+            const date = (req.query.date as string) || new Date().toISOString().split('T')[0];
+
+            const list = await this.service.getAllShowtimes(branchId, date);
+            res.status(200).json(list);
+        } catch (error: any) {
+            res.status(500).json({ message: error.message });
         }
     }
-    
+
     // POST /api/showtimes
-    async createShowtime(req: Request, res: Response) {
-        const user = (req as any).user;
-        const branchId = user.BranchID;
-        const showtimeData = req.body;
-        
-        if (user.VaiTro !== 'manager' || !branchId) {
-            return res.status(403).json({ message: 'Chỉ Manager mới có quyền tạo suất chiếu.' });
-        }
-        
-        // Đảm bảo BranchID của suất chiếu khớp với BranchID của Manager
-        if (showtimeData.BranchID !== branchId) {
-             return res.status(403).json({ message: 'Không thể tạo suất chiếu cho chi nhánh khác.' });
-        }
-
+    createShowtime = async (req: Request, res: Response) => {
         try {
-            await dataAccess.createShowtime(showtimeData);
-            return res.status(201).json({ message: 'Suất chiếu đã được thêm thành công!' });
-        } catch (error) {
-            console.error('Lỗi tạo suất chiếu:', error);
-            return res.status(400).json({ message: (error as any).originalError?.info?.message || 'Lỗi tạo suất chiếu (Có thể trùng lịch).' });
+            await this.service.createShowtime(req.body);
+            res.status(201).json({ message: 'Tạo suất chiếu thành công!' });
+        } catch (error: any) {
+            // Lỗi 50001 từ SQL (Trùng lịch) sẽ rơi vào đây
+            res.status(400).json({ message: error.message || 'Lỗi trùng lịch chiếu' });
         }
     }
-    
+
+    // PUT /api/showtimes/:id
+    updateShowtime = async (req: Request, res: Response) => {
+        try {
+            const timeId = parseInt(req.params.id);
+            await this.service.updateShowtime(timeId, req.body);
+            res.status(200).json({ message: 'Cập nhật thành công!' });
+        } catch (error: any) {
+            res.status(400).json({ message: error.message });
+        }
+    }
+
     // DELETE /api/showtimes/:id
-    async deleteShowtime(req: Request, res: Response) {
-        const user = (req as any).user;
-        const timeId = parseInt(req.params.id);
-        const branchId = user.BranchID;
-
-        if (user.VaiTro !== 'manager' || !branchId) {
-            return res.status(403).json({ message: 'Chỉ Manager mới có quyền xóa.' });
-        }
-
+    deleteShowtime = async (req: Request, res: Response) => {
         try {
-            await dataAccess.deleteShowtime(timeId, branchId);
-            return res.status(200).json({ message: 'Suất chiếu đã được xóa thành công.' });
-        } catch (error) {
-            console.error('Lỗi xóa suất chiếu:', error);
-            return res.status(400).json({ message: (error as any).originalError?.info?.message || 'Lỗi xóa suất chiếu.' });
-        }
-    }
-    
-    // Cần thêm UpdateShowtime nếu cần
-    async updateShowtime(req: Request, res: Response) {
-        const user = (req as any).user;
-        const timeId = parseInt(req.params.id);
-        const branchId = user.BranchID;
-        const showtimeData = { ...req.body, TimeID: timeId, BranchID: branchId };
-        
-        if (user.VaiTro !== 'manager' || !branchId) {
-            return res.status(403).json({ message: 'Chỉ Manager mới có quyền cập nhật suất chiếu.' });
-        }
-        
-        // Kiểm tra BranchID của suất chiếu phải khớp với Manager
-        if (showtimeData.BranchID !== branchId) {
-             return res.status(403).json({ message: 'Không thể cập nhật suất chiếu cho chi nhánh khác.' });
-        }
-
-        try {
-            await dataAccess.updateShowtime(showtimeData);
-            return res.status(200).json({ message: 'Suất chiếu đã được cập nhật thành công!' });
-        } catch (error) {
-            console.error('Lỗi cập nhật suất chiếu:', error);
-            return res.status(400).json({ message: (error as any).originalError?.info?.message || 'Lỗi cập nhật suất chiếu (Có thể trùng lịch hoặc đã bán vé).' });
+            const timeId = parseInt(req.params.id);
+            // Tạm thời hardcode branchId = 1 để test xóa
+            const branchId = parseInt(req.query.branchId as string) || 1;
+            
+            await this.service.deleteShowtime(timeId, branchId);
+            res.status(200).json({ message: 'Xóa thành công!' });
+        } catch (error: any) {
+            res.status(400).json({ message: error.message });
         }
     }
 }

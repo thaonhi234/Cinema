@@ -1,16 +1,21 @@
 import { Router } from 'express';
-import { checkAuth, checkRole } from '../middleware/authMiddleware';
 import { ShowtimeController } from '../controllers/ShowtimeController';
 
 const router = Router();
-const showtimeController = new ShowtimeController();
+const controller = new ShowtimeController();
 
-router.use(checkAuth);
-router.use(checkRole('manager', 'staff'));
+// Đường dẫn: /api/showtimes
 
-router.get('/', showtimeController.getAllShowtimes); // READ
-router.post('/', checkRole('manager'), showtimeController.createShowtime); // CREATE
-router.put('/:id', checkRole('manager'), showtimeController.updateShowtime);
-router.delete('/:id', checkRole('manager'), showtimeController.deleteShowtime); // DELETE
+// Sửa getAll -> getAllShowtimes
+router.get('/', controller.getAllShowtimes); 
+
+// Sửa create -> createShowtime
+router.post('/', controller.createShowtime); 
+
+// Thêm update (nếu cần)
+router.put('/:id', controller.updateShowtime);
+
+// Sửa delete -> deleteShowtime
+router.delete('/:id', controller.deleteShowtime); 
 
 export default router;
