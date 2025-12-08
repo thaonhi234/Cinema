@@ -547,36 +547,36 @@ INSERT INTO Movie.MOVIE (
     MovieID, MName, Descript, RunTime, isDub, isSub,
     releaseDate, closingDate, AgeRating, posterURL
 ) VALUES
-(1, 'Dune: Part Two', 'Epic sci-fi adventure on Arrakis.', 165, 0, 1, '2025-11-15', '2025-12-06', 'T13', NULL),
-(2, 'Oppenheimer', 'Story of J. Robert Oppenheimer.', 180, 0, 1, '2025-11-18', '2025-12-10', 'T16', NULL),
-(3, 'Barbie', 'A journey of self-discovery in the real world.', 114, 1, 1, '2025-11-20', '2025-12-05', 'K', NULL),
-(4, 'Godzilla Minus One', 'Japan faces a new monster threat.', 130, 0, 1, '2025-11-22', '2025-12-12', 'T13', NULL),
-(5, 'Spider-Man: Across the Spider-Verse', 'Miles enters new dimensions.', 142, 1, 1, '2025-12-01', '2025-12-22', 'K', NULL),
-(6, 'Inside Out 2', 'Riley faces new emotions.', 100, 1, 1, '2025-11-25', '2025-12-15', 'K', NULL),
-(7, 'The Batman', 'Batman uncovers Gotham corruption.', 176, 0, 1, '2025-11-28', '2025-12-20', 'T13', NULL),
-(8, 'Avatar: The Way of Water', 'Return to Pandora oceans.', 190, 0, 1, '2025-12-10', '2025-12-31', 'T13', NULL),
-(9, 'Wonka', 'The early life of Willy Wonka.', 115, 1, 1, '2025-12-15', '2026-01-05', 'K', NULL),
-(10, 'Mission: Impossible – Dead Reckoning', 'Ethan Hunt faces a new threat.', 158, 0, 1, '2025-11-18', '2025-12-05', 'T13', NULL),
-(11, 'John Wick: Chapter 4', 'John Wick returns for revenge.', 169, 0, 1, '2025-11-30', '2025-12-20', 'T16', NULL),
-(12, 'The Marvels', 'Captain Marvel joins new heroes.', 105, 1, 1, '2025-11-17', '2025-12-04', 'T13', NULL),
-(13, 'The Creator', 'AI uprising threatens humanity.', 133, 0, 1, '2025-12-18', '2026-01-08', 'T13', NULL),
-(14, 'Napoleon', 'Epic biography of Napoleon Bonaparte.', 158, 0, 1, '2025-11-28', '2025-12-14', 'T13', NULL),
-(15, 'Kung Fu Panda 4', 'Po trains a new warrior.', 100, 1, 1, '2025-12-05', '2025-12-25', 'K', NULL),
-(16, 'Aquaman and the Lost Kingdom', 'Aquaman protects Atlantis.', 124, 1, 1, '2025-12-12', '2026-01-02', 'T13', NULL),
-(17, 'The Hunger Games: The Ballad of Songbirds & Snakes', 'A prequel exploring the early days of the Hunger Games.', 157, 0, 1, '2025-12-09', '2025-12-28', 'T13', NULL),
-(18, 'The Equalizer 3', 'McCall seeks justice in Italy.', 109, 0, 1, '2025-12-18', '2026-01-08', 'T13', NULL),
-(19, 'Indiana Jones and the Dial of Destiny', 'Indiana Jones travels through time.', 142, 0, 1, '2025-11-16', '2025-12-03', 'T13', NULL),
-(20, 'Elemental', 'Fire and water form an unlikely bond.', 102, 1, 1, '2025-12-01', '2025-12-22', 'K', NULL),
-(21, 'The Flash', 'Flash resets the universe.', 144, 0, 1, '2025-11-25', '2025-12-12', 'T13', NULL),
-(22, 'Transformers: Rise of the Beasts', 'Autobots meet the Maximals.', 120, 1, 1, '2025-11-20', '2025-12-08', 'T13', NULL),
-(23, 'Blue Beetle', 'A young hero gains alien armor.', 128, 1, 1, '2025-12-09', '2025-12-30', 'T13', NULL),
-(24, 'The Super Mario Bros. Movie', 'Mario rescues the Mushroom Kingdom.', 92, 1, 1, '2025-12-08', '2025-12-28', 'K', NULL),
-(25, 'The Little Mermaid', 'Live-action remake of classic.', 135, 1, 1, '2025-12-09', '2025-12-31', 'K', NULL),
-(26, 'Guardians of the Galaxy Vol. 3', 'Guardians face their pasts.', 150, 0, 1, '2025-11-15', '2025-12-05', 'T13', NULL),
-(27, 'Creed III', 'Adonis Creed faces a rival.', 116, 0, 1, '2025-12-01', '2025-12-22', 'T13', NULL),
-(28, 'Top Gun: Maverick (Re-release)', 'Maverick trains new pilots.', 131, 0, 1, '2025-11-20', '2025-12-10', 'T13', NULL),
-(29, 'Smile 2', 'Horror sequel with new curse.', 100, 0, 1, '2025-12-15', '2026-01-05', 'T16', NULL),
-(30, 'Deadpool & Wolverine', 'Deadpool teams up with Wolverine.', 130, 0, 1, '2025-12-13', '2026-01-03', 'T16', NULL);
+(1, 'Dune: Part Two', 'Epic sci-fi adventure on Arrakis.', 165, 0, 1, '2025-11-15', '2025-12-06', 'T13', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRgahEVjTExV86KHTl8k8uimH8Gl1RFbsasBg&s'),
+(2, 'Oppenheimer', 'Story of J. Robert Oppenheimer.', 180, 0, 1, '2025-11-18', '2025-12-10', 'T16', 'https://upload.wikimedia.org/wikipedia/vi/2/21/Oppenheimer_%E2%80%93_Vietnam_poster.jpg'),
+(3, 'Barbie', 'A journey of self-discovery in the real world.', 114, 1, 1, '2025-11-20', '2025-12-05', 'K', 'https://upload.wikimedia.org/wikipedia/en/0/0b/Barbie_2023_poster.jpg'),
+(4, 'Godzilla Minus One', 'Japan faces a new monster threat.', 130, 0, 1, '2025-11-22', '2025-12-12', 'T13', 'https://play-lh.googleusercontent.com/IJLerbsoGpcPRFoHyQnHMdchtRxYiR6WylvnTDiFrYx7pDtl5PrZ5H7TSuUZrZzBsDDc=w240-h480-rw'),
+(5, 'Spider-Man: Across the Spider-Verse', 'Miles enters new dimensions.', 142, 1, 1, '2025-12-01', '2025-12-22', 'K', 'https://play-lh.googleusercontent.com/JHpBnavPHamlOEPv8BMCjOPTqipVY9D-TqF7ziuF-tMfINPMSb-vn6OJ-Ae29aGGddYpQ4g7EeVw1C5RTWI'),
+(6, 'Inside Out 2', 'Riley faces new emotions.', 100, 1, 1, '2025-11-25', '2025-12-15', 'K', 'https://www.cgv.vn/media/catalog/product/cache/1/image/c5f0a1eff4c394a251036189ccddaacd/1/0/1080x1350-insideout.jpg'),
+(7, 'The Batman', 'Batman uncovers Gotham corruption.', 176, 0, 1, '2025-11-28', '2025-12-20', 'T13', 'https://www.cgv.vn/media/catalog/product/cache/3/image/c5f0a1eff4c394a251036189ccddaacd/p/o/poster_batman-1.jpg'),
+(8, 'Avatar: The Way of Water', 'Return to Pandora oceans.', 190, 0, 1, '2025-12-10', '2025-12-31', 'T13', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcRvp0KgXubkh5O4dn_SQWCFzkRb6bV7rGo0ug&s'),
+(9, 'Wonka', 'The early life of Willy Wonka.', 115, 1, 1, '2025-12-15', '2026-01-05', 'K', 'https://www.cgv.vn/media/catalog/product/cache/3/image/1800x/71252117777b696995f01934522c402d/7/0/700x1000_22_.jpg'),
+(10, 'Mission: Impossible – Dead Reckoning', 'Ethan Hunt faces a new threat.', 158, 0, 1, '2025-11-18', '2025-12-05', 'T13', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcT5YXaBnZZeLpSpSyhk__ii6zuKMJ2WQ1MHgQ&s'),
+(11, 'John Wick: Chapter 4', 'John Wick returns for revenge.', 169, 0, 1, '2025-11-30', '2025-12-20', 'T16', 'https://play-lh.googleusercontent.com/4z2yXqwOqOnnqv3NZ5Y3wWEDPT1slgqtDOpeopF4FvWqYdVGJhrQtPOivHl8bkLsZXEd'),
+(12, 'The Marvels', 'Captain Marvel joins new heroes.', 105, 1, 1, '2025-11-17', '2025-12-04', 'T13', 'https://www.cgv.vn/media/catalog/product/cache/3/image/c5f0a1eff4c394a251036189ccddaacd/r/s/rsz_56245l07_goat_vietnam_apac_poster_1sht.jpg'),
+(13, 'The Creator', 'AI uprising threatens humanity.', 133, 0, 1, '2025-12-18', '2026-01-08', 'T13', 'https://m.media-amazon.com/images/M/MV5BMDkxMTUxOTQtYzM4Yi00YzA2LTgzOTYtNDg2NTliODE0ZTRjXkEyXkFqcGc@._V1_.jpg'),
+(14, 'Napoleon', 'Epic biography of Napoleon Bonaparte.', 158, 0, 1, '2025-11-28', '2025-12-14', 'T13', 'https://play-lh.googleusercontent.com/SuuRJtwRMVKSja2yfUOkKQ8ggCXt7G3tQY0ARwmxZkpJLinxAg5PnDzG9ehEF8-llonEcEMHhXEumDrBmbE'),
+(15, 'Kung Fu Panda 4', 'Po trains a new warrior.', 100, 1, 1, '2025-12-05', '2025-12-25', 'K', 'https://touchcinema.com/medias/hinh-phim-2021/1200wx1800h-11-1709711550-poster.jpg'),
+(16, 'Aquaman and the Lost Kingdom', 'Aquaman protects Atlantis.', 124, 1, 1, '2025-12-12', '2026-01-02', 'T13', 'https://www.cgv.vn/media/catalog/product/cache/1/image/1800x/71252117777b696995f01934522c402d/p/o/poster_payoff_aquaman_6_1_.jpg'),
+(17, 'The Hunger Games: The Ballad of Songbirds & Snakes', 'A prequel exploring the early days of the Hunger Games.', 157, 0, 1, '2025-12-09', '2025-12-28', 'T13', 'https://m.media-amazon.com/images/M/MV5BMWI1OGM4YjQtNmIxNi00YmE2LWJkNTAtY2Q0YjU4NTI5NWQyXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg'),
+(18, 'The Equalizer 3', 'McCall seeks justice in Italy.', 109, 0, 1, '2025-12-18', '2026-01-08', 'T13', 'https://upload.wikimedia.org/wikipedia/en/thumb/e/e1/The_Equalizer_3_poster.jpg/250px-The_Equalizer_3_poster.jpg'),
+(19, 'Indiana Jones and the Dial of Destiny', 'Indiana Jones travels through time.', 142, 0, 1, '2025-11-16', '2025-12-03', 'T13', 'https://m.media-amazon.com/images/I/81biiIq1mcL._AC_UF1000,1000_QL80_.jpg'),
+(20, 'Elemental', 'Fire and water form an unlikely bond.', 102, 1, 1, '2025-12-01', '2025-12-22', 'K', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-DHQ3bXben1JqR_7ytOdjekgxmh1XY6a6mw&s'),
+(21, 'The Flash', 'Flash resets the universe.', 144, 0, 1, '2025-11-25', '2025-12-12', 'T13', 'https://play-lh.googleusercontent.com/zhK4JWCF9AYv_kzMQMQNZCLtKiQDP4HT78XrMZQI14glTZtd6pmapIRUS2aVqjR_lB0jp2y67bKOx-i-isU'),
+(22, 'Transformers: Rise of the Beasts', 'Autobots meet the Maximals.', 120, 1, 1, '2025-11-20', '2025-12-08', 'T13', 'https://m.media-amazon.com/images/M/MV5BZWI1ZDY1YTQtMjRkNy00ZDZhLWE3OTItMTIwNzliY2Y1MTZhXkEyXkFqcGc@._V1_.jpg'),
+(23, 'Blue Beetle', 'A young hero gains alien armor.', 128, 1, 1, '2025-12-09', '2025-12-30', 'T13', 'https://www.cgv.vn/media/catalog/product/cache/3/image/c5f0a1eff4c394a251036189ccddaacd/p/o/poster_blue_beetle_4_1_.jpg'),
+(24, 'The Super Mario Bros. Movie', 'Mario rescues the Mushroom Kingdom.', 92, 1, 1, '2025-12-08', '2025-12-28', 'K', 'https://play-lh.googleusercontent.com/N5MUJfFcUpp1xeU7yhvrO2LKthFHUfQEN_Yzgsef1YfZrv8168ASmnuo2lMlWO2lzmQuEJ1VldUUqy1MfG0'),
+(25, 'The Little Mermaid', 'Live-action remake of classic.', 135, 1, 1, '2025-12-09', '2025-12-31', 'K', 'https://m.media-amazon.com/images/M/MV5BMTM4MWY0OTEtY2E4ZC00NDdhLThkY2ItYTlmNWQxNTNkZTRmXkEyXkFqcGc@._V1_FMjpg_UX1000_.jpg'),
+(26, 'Guardians of the Galaxy Vol. 3', 'Guardians face their pasts.', 150, 0, 1, '2025-11-15', '2025-12-05', 'T13', 'https://upload.wikimedia.org/wikipedia/en/7/74/Guardians_of_the_Galaxy_Vol._3_poster.jpg'),
+(27, 'Creed III', 'Adonis Creed faces a rival.', 116, 0, 1, '2025-12-01', '2025-12-22', 'T13', 'https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcR-BU0Fo0HSKp_D7fxpeHfL_nkb56ES0cmvjg&s'),
+(28, 'Top Gun: Maverick (Re-release)', 'Maverick trains new pilots.', 131, 0, 1, '2025-11-20', '2025-12-10', 'T13', 'https://m.media-amazon.com/images/M/MV5BMDBkZDNjMWEtOTdmMi00NmExLTg5MmMtNTFlYTJlNWY5YTdmXkEyXkFqcGc@._V1_.jpg'),
+(29, 'Smile 2', 'Horror sequel with new curse.', 100, 0, 1, '2025-12-15', '2026-01-05', 'T16', 'https://play-lh.googleusercontent.com/Vx71NrS5xQdjuxprj3msIr2hynFfqP1nrJx0gLjT5evJutUVhb990-8_XIBMXNUZT7Z_jMSn-KJc4rGq2A=w240-h480-rw'),
+(30, 'Deadpool & Wolverine', 'Deadpool teams up with Wolverine.', 130, 0, 1, '2025-12-13', '2026-01-03', 'T16', 'https://vcdn1-giaitri.vnecdn.net/2024/07/30/DPW-CharacterPoster-2707-7546-1722328420.png?w=0&h=0&q=100&dpr=2&fit=crop&s=iNGSE0evlJuV2WVNzHqjdA');
 
 INSERT INTO Movie.GENRE (Genre) VALUES
 ('Action'), ('Adventure'), ('Sci-Fi'), ('Fantasy'), ('Drama'),
@@ -1055,6 +1055,7 @@ CREATE PROCEDURE Movie.sp_InsertNewMovie
     @release DATE,
     @closing DATE,
     @agerating VARCHAR(30),
+    @posterURL VARCHAR(MAX) = NULL,
     @Genres NVARCHAR(MAX) -- danh sách genres, format: 'Action,Sci-Fi'
 AS
 BEGIN
@@ -1078,8 +1079,8 @@ BEGIN
     -----------------------------------------
     -- Insert vào Movie
     -----------------------------------------
-    INSERT INTO Movie.MOVIE (MovieID, MName, Descript, RunTime, isDub, isSub, releaseDate, closingDate, AgeRating)
-    VALUES (@NewMovieID, @name, @descript, @runtime, @dub, @sub, @release, @closing, @agerating);
+    INSERT INTO Movie.MOVIE (MovieID, MName, Descript, RunTime, isDub, isSub, releaseDate, closingDate, AgeRating, posterURL)
+    VALUES (@NewMovieID, @name, @descript, @runtime, @dub, @sub, @release, @closing, @agerating, @posterURL);
 
     -----------------------------------------
     -- Insert Genres
@@ -1137,6 +1138,7 @@ CREATE PROCEDURE Movie.sp_UpdateMovie
     @release DATE,
     @closing DATE,
     @agerating VARCHAR(30),
+    @posterURL VARCHAR(MAX) = NULL,
     @Genres NVARCHAR(MAX) -- Danh sách genres, phân tách bằng dấu phẩy
 AS
 BEGIN
@@ -1158,7 +1160,8 @@ BEGIN
         isSub = @sub,
         releaseDate = @release,
         closingDate = @closing,
-        AgeRating = @agerating
+        AgeRating = @agerating,
+        posterURL = @posterURL
     WHERE MovieID = @id;
 
     -- Xóa các genres cũ
@@ -1592,6 +1595,7 @@ BEGIN
         M.releaseDate,
         M.closingDate,
         M.AgeRating,
+        M.posterURL,
         -- 1. Tính Rating trung bình
         ISNULL(AVG(CAST(R.Rating AS DECIMAL(3, 1))), 0.0) AS AvgRating,
         -- 2. Gom nhóm thể loại thành một chuỗi (sử dụng STRING_AGG)
@@ -1611,7 +1615,7 @@ BEGIN
     LEFT JOIN 
         Movie.REVIEW R ON M.MovieID = R.MovieID
     GROUP BY 
-        M.MovieID, M.MName, M.Descript, M.RunTime, M.isDub, M.isSub, M.releaseDate, M.closingDate, M.AgeRating
+        M.MovieID, M.MName, M.Descript, M.RunTime, M.isDub, M.isSub, M.releaseDate, M.closingDate, M.AgeRating,M.posterURL
     ORDER BY 
         M.releaseDate DESC;
 END
