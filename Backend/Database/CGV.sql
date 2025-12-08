@@ -1760,11 +1760,6 @@ END
 GO
 -- Procedure 15: Cập nhật thông tin cơ bản của phòng chiếu
 
--- TRONG CGV.sql: Thay thế Procedure 15
-
--- TRONG CGV.sql: Sửa Procedure 15 (Cinema.sp_UpdateRoomAndLayout)
-
--- TRONG CGV.sql: Sửa Procedure 15 (Cinema.sp_UpdateRoomAndLayout)
 
 CREATE OR ALTER PROCEDURE Cinema.sp_UpdateScreenRoom
     @BranchID INT,
