@@ -1898,13 +1898,13 @@ BEGIN
         RETURN;
     END
 
-    -- 3. Thực hiện Update
-    UPDATE Screening.TIME
-    SET
+    -- 4. Thực hiện Update
+    UPDATE Screening.TIME 
+    SET 
         RoomID = @RoomID,
-        [Day] = @Day,
+        Day = @Day,
         StartTime = @StartTime,
-        EndTime = @EndTime,
+        EndTime = @EndTime, -- Lưu giờ kết thúc tự tính
         FName = @FName,
         MovieID = @MovieID
     WHERE TimeID = @TimeID AND BranchID = @BranchID;
