@@ -8,18 +8,20 @@ import {
 import AvailabilityBar from "./AvailabilityBar";
 import EditOutlinedIcon from "@mui/icons-material/EditOutlined";
 import DeleteOutlineOutlinedIcon from "@mui/icons-material/DeleteOutlineOutlined";
-import type { ShowtimeDisplay } from "./_id"; // <-- Sửa import
+// Đảm bảo import đúng từ file types bạn vừa tạo
+import type { ShowtimeDisplay } from "./types/Showtime"; 
+
 /* ============ ShowtimeRow COMPONENT ============ */
 
 type ShowtimeRowProps = {
   showtime: ShowtimeDisplay;
-  onDelete: (id: number) => void; // <-- Thêm hàm delete
+  onDelete: (id: number) => void;
+  // 👇 THÊM DÒNG NÀY: Hàm callback để sửa, nhận vào item cần sửa
+  onEdit: (item: ShowtimeDisplay) => void; 
 };
 
-export default function ShowtimeRow({ showtime, onDelete }: ShowtimeRowProps) {
-  const handleEdit = () => {
-    alert(`Chức năng Sửa suất chiếu ID: ${showtime.id} chưa được triển khai.`);
-  };
+export default function ShowtimeRow({ showtime, onDelete, onEdit }: ShowtimeRowProps) {
+  
   return (
     <TableRow
       hover
@@ -35,7 +37,7 @@ export default function ShowtimeRow({ showtime, onDelete }: ShowtimeRowProps) {
           {showtime.movieTitle}
         </Typography>
         <Typography variant="caption" color="text.secondary">
-          {showtime.runtimeMin} min
+          {/* {showtime.runtimeMin} min */}
         </Typography>
       </TableCell>
 
@@ -70,9 +72,12 @@ export default function ShowtimeRow({ showtime, onDelete }: ShowtimeRowProps) {
       {/* ACTIONS */}
       <TableCell align="center">
         <Stack direction="row" spacing={1} justifyContent="center">
-          <IconButton size="small" onClick={handleEdit}>
+          {/* 👇 NÚT SỬA: Gọi hàm onEdit và truyền object showtime lên cha */}
+          <IconButton size="small" onClick={() => onEdit(showtime)}>
             <EditOutlinedIcon fontSize="small" />
           </IconButton>
+          
+          {/* 👇 NÚT XÓA */}
           <IconButton size="small" sx={{ color: "#DC2626" }} onClick={() => onDelete(showtime.id)}>
             <DeleteOutlineOutlinedIcon fontSize="small" />
           </IconButton>

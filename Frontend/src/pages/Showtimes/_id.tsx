@@ -1,295 +1,243 @@
 import {
-  Box,
-  Paper,
-  Typography,
-  Button,
-  Stack,
-  Table,
-  TableHead,
-  TableRow,
-  TableCell,
-  TableBody,
-  TextField,
-  InputAdornment,
-  CircularProgress,
+  Box, Paper, Typography, Button, Stack, Table, TableHead, TableRow, TableCell, TableBody,
+  TextField, InputAdornment, CircularProgress, Dialog, DialogTitle, DialogContent, DialogActions, MenuItem
 } from "@mui/material";
-
 import MovieFilterOutlinedIcon from "@mui/icons-material/MovieFilterOutlined";
 import TodayOutlinedIcon from "@mui/icons-material/Today";
 import CalendarMonthOutlinedIcon from "@mui/icons-material/CalendarMonthOutlined";
 
 import LeftMenuBar from "../../components/LeftMenuBar";
-
-import ShowtimeRow from "./ShowtimeRow";
 import { useState, useEffect } from "react";
-import showtimeApi from "../../api/showtimeApi"; // API Service
+import showtimeApi from "../../api/showtimeApi";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 
-export type Showtime = {
-  TimeID: number;
-  MovieName: string;
-  RunTime: number;
-  RuntimeMinutes: number;
-  RoomType: string;
-  RoomID: number;
-  BranchID: number;
-  Day: string; // YYYY-MM-DD
-  StartTime: string; // HH:mm:ss
-  EndTime: string;
-  Price: number;
-  TicketsSold: number;
-  TotalSeats: number;
-};
-export type ShowtimeDisplay = {
-    id: number;
-    movieTitle: string;
-    runtimeMin: number;
-    room: string;
-    date: string;
-    time: string; 
-    priceUSD: number;
-    soldSeats: number;
-    totalSeats: number;
-}
+// Import Component và Types
+import ShowtimeRow from "./ShowtimeRow";
+import type { Showtime, ShowtimeDisplay } from "./types/Showtime"; // Đảm bảo đường dẫn import đúng
 
 export default function ShowtimesPage() {
   const navigate = useNavigate();
   const [showtimes, setShowtimes] = useState<Showtime[]>([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  
-  // Lọc theo ngày hiện tại mặc định
   const [selectedDate, setSelectedDate] = useState(format(new Date(), 'yyyy-MM-dd'));
 
-  // 1. FETCH DATA TỪ BACKEND
-  const fetchShowtimes = async () => {
+  // --- STATE MODAL ---
+  const [openModal, setOpenModal] = useState(false);
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [currentEditId, setCurrentEditId] = useState<number | null>(null);
+
+  const [formData, setFormData] = useState({
+    MovieID: "",
+    RoomID: "",
+    StartTime: "",
+    EndTime: "",
+    Format: "2D"
+  });
+
+  // --- 2. CHUẨN BỊ DỮ LIỆU HIỂN THỊ (MAPPING) ---
+  const formattedShowtimes: ShowtimeDisplay[] = showtimes.map(st => ({
+    id: st.TimeID,
+    movieTitle: st.MovieName,
+    // runtimeMin: st.RuntimeMinutes || 0,
+    room: `${st.RoomType} ${st.RoomID}`,
+    date: st.Day,
+    time: st.StartTime ? st.StartTime.substring(0, 5) : "--:--",
+    priceUSD: st.Price,
+    soldSeats: st.TicketsSold,
+    totalSeats: st.TotalSeats,
+    // Các trường ẩn cho Edit
+    movieId: st.MovieID,
+    roomId: st.RoomID,
+    rawStartTime: st.StartTime,
+    rawEndTime: st.EndTime,
+    format: st.FormatName || st.FName || "2D"
+  }));
+
+  // --- HANDLER MODAL ---
+  const handleOpenCreate = () => {
+    setIsEditMode(false);
+    setFormData({ MovieID: "", RoomID: "", StartTime: "", EndTime: "", Format: "2D" });
+    setOpenModal(true);
+  };
+
+  // 3. HÀM MỞ FORM SỬA
+  const handleOpenEdit = (item: ShowtimeDisplay) => {
+    setIsEditMode(true);
+    setCurrentEditId(item.id);
+    
+    setFormData({
+      MovieID: item.movieId ? item.movieId.toString() : "",
+      RoomID: item.roomId ? item.roomId.toString() : "",
+      // Cắt chuỗi giờ để phù hợp với input type="time"
+      StartTime: item.rawStartTime ? item.rawStartTime.substring(0, 5) : "",
+      EndTime: item.rawEndTime ? item.rawEndTime.substring(0, 5) : "",
+      Format: item.format || "2D"
+    });
+    setOpenModal(true);
+  };
+
+  // --- XỬ LÝ LƯU ---
+  const handleSave = async () => {
+    if (!formData.MovieID || !formData.RoomID || !formData.StartTime || !formData.EndTime) {
+      alert("Vui lòng điền đủ thông tin!");
+      return;
+    }
+
     try {
-        setLoading(true);
-        // API gọi GET /api/showtimes?date=YYYY-MM-DD (BranchID được lấy từ Token)
-        const res = await showtimeApi.getAllShowtimes(selectedDate); 
-        
-        setShowtimes(res.data);
-        setError(null);
+      const payload = {
+        BranchID: 1, // Nên lấy từ context user/auth
+        Day: selectedDate,
+        MovieID: parseInt(formData.MovieID),
+        RoomID: parseInt(formData.RoomID),
+        StartTime: formData.StartTime, // Backend cần xử lý thêm :00 nếu cần
+        EndTime: formData.EndTime,     // Backend cần xử lý thêm :00 nếu cần
+        FName: formData.Format,
+        TimeID: 0
+      };
+
+      if (isEditMode && currentEditId) {
+        await showtimeApi.updateShowtime(currentEditId, payload);
+        alert("Cập nhật thành công!");
+      } else {
+        // @ts-ignore
+        await showtimeApi.createShowtime(payload);
+        alert("Thêm mới thành công!");
+      }
+
+      setOpenModal(false);
+      fetchShowtimes();
     } catch (err: any) {
-        console.error("Lỗi khi tải suất chiếu:", err);
-        setError(err.response?.data?.message || "Không thể tải danh sách suất chiếu.");
-    } finally {
-        setLoading(false);
+      console.error(err);
+      alert("Lỗi: " + (err.response?.data?.message || "Thất bại"));
     }
   };
 
-  useEffect(() => {
-    fetchShowtimes();
-  }, [selectedDate]); // Chạy lại khi ngày được chọn thay đổi
-
-  // 2. Format dữ liệu từ BE sang FE Display
-  const formattedShowtimes: ShowtimeDisplay[] = showtimes.map(st => ({
-    
-    id: st.TimeID,
-    movieTitle: st.MovieName,
-    runtimeMin: st.RuntimeMinutes || 0,
-    room: `${st.RoomType} ${st.RoomID}`, // Ví dụ: "IMAX 1"
-    date: st.Day,
-    time: st.StartTime, // Chỉ lấy HH:MM
-    priceUSD: st.Price, 
-    soldSeats: st.TicketsSold,
-    totalSeats: st.TotalSeats,
-  }));
-  
-  // 3. Handle Loading/Error States
-  if (loading) return (
-      <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f6f7fb' }}>
-          <LeftMenuBar />
-          <Box sx={{ flexGrow: 1, display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
-              <CircularProgress />
-              <Typography variant="h6" sx={{ ml: 2 }}>Đang tải lịch chiếu...</Typography>
-          </Box>
-      </Box>
-  );
-  if (error) return (
-      <Box sx={{ display: 'flex', minHeight: '100vh', bgcolor: '#f6f7fb' }}>
-          <LeftMenuBar />
-          <Box sx={{ flexGrow: 1, p: 4 }}>
-              <Typography variant="h5" color="error">Lỗi Tải Dữ Liệu</Typography>
-              <Typography color="error">{error}</Typography>
-          </Box>
-      </Box>
-  );
-  
-  // 4. Handle Actions (Placeholder - Cần tích hợp API Delete)
-  const handleDelete = async (timeId: number) => {
-    if (!window.confirm(`Bạn có chắc chắn muốn xóa suất chiếu ID: ${timeId} không?`)) return;
+  // --- FETCH DATA ---
+  const fetchShowtimes = async () => {
     try {
-        await showtimeApi.deleteShowtime(timeId);
-        alert("Xóa thành công!");
-        fetchShowtimes(); // Tải lại dữ liệu
+      setLoading(true);
+      
+      // 👇 SỬA ĐOẠN NÀY: Nếu selectedDate rỗng, truyền "" để API biết là lấy tất cả
+      const dateParam = selectedDate === "" ? "" : selectedDate;
+      const res = await showtimeApi.getAllShowtimes(dateParam);
+      
+      setShowtimes(res.data);
+      setError(null);
     } catch (err: any) {
-        alert(`Xóa thất bại: ${err.response?.data?.message || 'Lỗi server.'}`);
+      console.error(err); // Log lỗi ra để xem nếu có
+      setError("Không thể tải dữ liệu.");
+    } finally {
+      setLoading(false);
     }
-  }
+  };
+
+  useEffect(() => { fetchShowtimes(); }, [selectedDate]);
+
+  // --- DELETE ---
+  const handleDelete = async (id: number) => {
+    if (!window.confirm("Bạn chắc chắn muốn xóa?")) return;
+    try {
+      await showtimeApi.deleteShowtime(id);
+      alert("Đã xóa!");
+      fetchShowtimes();
+    } catch (err) { alert("Không thể xóa (có thể đã bán vé)."); }
+  };
+
+  // --- RENDER ---
   return (
-    <Box
-      sx={{
-        display: "flex",
-        minHeight: "100vh",
-        bgcolor: "#f6f7fb",
-      }}
-    >
+    <Box sx={{ display: "flex", minHeight: "100vh", bgcolor: "#f6f7fb" }}>
       <LeftMenuBar />
-
-      <Box
-        component="main"
-        sx={{
-          flexGrow: 1,
-          px: 4,
-          py: 4,
-        }}
-      >
+      <Box component="main" sx={{ flexGrow: 1, px: 4, py: 4 }}>
+        
         {/* HEADER */}
-        <Box
-          sx={{
-            display: "flex",
-            justifyContent: "space-between",
-            alignItems: { xs: "flex-start", md: "center" },
-            mb: 3,
-            mt: 1,
-          }}
-        >
-          <Box>
-            <Typography variant="h4" sx={{ fontWeight: 700 }}>
-              Showtime Management
-            </Typography>
-            <Typography variant="body2" color="text.secondary">
-              Schedule and manage movie showtimes
-            </Typography>
-          </Box>
-
-          <Button
-            variant="contained"
-            startIcon={<MovieFilterOutlinedIcon />}
-            sx={{
-              borderRadius: 999,
-              textTransform: "none",
-              px: 3,
-              py: 1,
-              fontWeight: 600,
-              fontSize: 14,
-              background: "linear-gradient(135deg,#A855F7,#F97316)",
-              boxShadow: "0 10px 25px rgba(168,85,247,0.35)",
-            }}
-          >
+        <Box sx={{ display: "flex", justifyContent: "space-between", mb: 3 }}>
+          <Typography variant="h4" fontWeight={700}>Showtime Management</Typography>
+          <Button variant="contained" startIcon={<MovieFilterOutlinedIcon />} onClick={handleOpenCreate}
+            sx={{ borderRadius: 999, background: "linear-gradient(135deg,#A855F7,#F97316)" }}>
             Add Showtime
           </Button>
         </Box>
 
-        {/* FILTER BAR */}
-        <Paper
-          elevation={0}
-          sx={{
-            borderRadius: 999,
-            border: "1px solid #f0f0f0",
-            bgcolor: "#ffffff",
-            px: 2,
-            py: 1.5,
-            mb: 3,
-          }}
-        >
-          <Stack direction="row" spacing={2} alignItems="center" flexWrap="wrap">
-            <Button
-              startIcon={<MovieFilterOutlinedIcon />}
-              variant="contained"
-              size="small"
-              sx={{
-                borderRadius: 999,
-                textTransform: "none",
-                bgcolor: "#111827",
-                "&:hover": { bgcolor: "#0f172a" },
-              }}
-            >
-              All Movies
-            </Button>
-
-            <Button
-              startIcon={<TodayOutlinedIcon />}
-              variant="outlined"
-              size="small"
-              sx={{
-                borderRadius: 999,
-                textTransform: "none",
-                borderColor: "#e5e7eb",
-                bgcolor: "#ffffff",
-              }}
-            >
-              Today
-            </Button>
-
-            <TextField
-              size="small"
-              value={selectedDate} // Gắn giá trị vào state
-              onChange={(e) => setSelectedDate(e.target.value)}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <CalendarMonthOutlinedIcon
-                      sx={{ fontSize: 18, color: "text.disabled" }}
-                    />
-                  </InputAdornment>
-                ),
-              }}
-              sx={{
-                minWidth: 160,
-                "& .MuiOutlinedInput-root": {
-                  borderRadius: 999,
-                  bgcolor: "#ffffff",
-                  height: 36,
-                },
-              }}
-            />
-          </Stack>
+        {/* FILTER */}
+        <Paper elevation={0} sx={{ borderRadius: 999, p: 2, mb: 3, display: 'flex', gap: 2, alignItems: 'center' }}>
+          <Button variant="contained" size="small" sx={{ borderRadius: 999, bgcolor: "#111827" }}>All Movies</Button>
+          <TextField size="small" value={selectedDate} onChange={(e) => setSelectedDate(e.target.value)} type="date"
+            sx={{ "& .MuiOutlinedInput-root": { borderRadius: 999 } }} />
         </Paper>
 
-        {/* TABLE CARD */}
-        <Paper
-          elevation={0}
-          sx={{
-            borderRadius: 4,
-            overflow: "hidden",
-            border: "1px solid #f0f0f0",
-            bgcolor: "#ffffff",
-          }}
-        >
-          <Table>
-            <TableHead>
-              <TableRow
-                sx={{
-                  bgcolor: "#fafafa",
-                  "& th": {
-                    fontWeight: 600,
-                    color: "text.secondary",
-                    borderBottom: "1px solid #eee",
-                  },
-                }}
-              >
-                <TableCell>Movie</TableCell>
-                <TableCell>Room</TableCell>
-                <TableCell>Date</TableCell>
-                <TableCell>Time</TableCell>
-                <TableCell>Price</TableCell>
-                <TableCell>Availability</TableCell>
-                <TableCell align="center">Actions</TableCell>
-              </TableRow>
-            </TableHead>
-
-            <TableBody>
-              {formattedShowtimes.map((st) => (
-                <ShowtimeRow key={st.id} showtime={st} onDelete={handleDelete} />
-              ))}
-            </TableBody>
-          </Table>
+        {/* TABLE */}
+        <Paper elevation={0} sx={{ borderRadius: 4, overflow: "hidden" }}>
+          {loading ? <Box p={4} textAlign="center"><CircularProgress /></Box> : (
+            <Table>
+              <TableHead sx={{ bgcolor: "#fafafa" }}>
+                <TableRow>
+                  <TableCell>Movie</TableCell>
+                  <TableCell>Room</TableCell>
+                  <TableCell>Date</TableCell>
+                  <TableCell>Time</TableCell>
+                  <TableCell>Format</TableCell>
+                  <TableCell>Availability</TableCell>
+                  <TableCell align="center">Actions</TableCell>
+                </TableRow>
+              </TableHead>
+              <TableBody>
+                {formattedShowtimes.length > 0 ? formattedShowtimes.map((st) => (
+                  <ShowtimeRow 
+                    key={st.id} 
+                    showtime={st} 
+                    onDelete={handleDelete} 
+                    onEdit={handleOpenEdit} 
+                  />
+                )) : (
+                  <TableRow><TableCell colSpan={7} align="center">No data</TableCell></TableRow>
+                )}
+              </TableBody>
+            </Table>
+          )}
         </Paper>
       </Box>
+
+      {/* MODAL */}
+      <Dialog open={openModal} onClose={() => setOpenModal(false)} maxWidth="sm" fullWidth>
+        <DialogTitle fontWeight="bold">
+          {isEditMode ? "Cập Nhật Suất Chiếu" : "Thêm Suất Chiếu Mới"}
+        </DialogTitle>
+        <DialogContent>
+          <Stack spacing={3} mt={1}>
+            <TextField label="Movie ID" type="number" fullWidth value={formData.MovieID}
+              onChange={(e) => setFormData({ ...formData, MovieID: e.target.value })} />
+            
+            <TextField label="Room ID" type="number" fullWidth value={formData.RoomID}
+              onChange={(e) => setFormData({ ...formData, RoomID: e.target.value })} />
+            
+            <Stack direction="row" spacing={2}>
+                <TextField label="Giờ Bắt Đầu" type="time" fullWidth InputLabelProps={{ shrink: true }}
+                value={formData.StartTime}
+                onChange={(e) => setFormData({ ...formData, StartTime: e.target.value })} />
+                
+                <TextField label="Giờ Kết Thúc" type="time" fullWidth InputLabelProps={{ shrink: true }}
+                value={formData.EndTime}
+                onChange={(e) => setFormData({ ...formData, EndTime: e.target.value })} />
+            </Stack>
+            
+            <TextField select label="Định dạng" fullWidth value={formData.Format}
+              onChange={(e) => setFormData({ ...formData, Format: e.target.value })}>
+              <MenuItem value="2D">2D</MenuItem>
+              <MenuItem value="3D">3D</MenuItem>
+              <MenuItem value="IMAX">IMAX</MenuItem>
+              <MenuItem value="4DX">4DX</MenuItem>
+            </TextField>
+          </Stack>
+        </DialogContent>
+        <DialogActions sx={{ p: 3 }}>
+          <Button onClick={() => setOpenModal(false)} color="inherit">Hủy</Button>
+          <Button variant="contained" onClick={handleSave} sx={{ bgcolor: "#A855F7" }}>
+            {isEditMode ? "Cập Nhật" : "Lưu Mới"}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
-
