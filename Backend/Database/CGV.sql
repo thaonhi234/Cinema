@@ -1302,7 +1302,7 @@ END;
 GO
 
 EXEC movieList 1, 8;
-
+GO
 -- Procedure 6: Thêm Nhân viên mới (Dùng cho API Create Employee)
 -- (Sử dụng số thứ tự tiếp theo sau Procedure 5: movieList)
 CREATE OR ALTER PROCEDURE Staff.sp_InsertEmployee
