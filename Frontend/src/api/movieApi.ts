@@ -8,6 +8,8 @@ const moviesApi = {
   update: (id: number, movie: any) => axiosClient.put(`/movies/${id}`, movie), // PUT /api/movies/:id
   delete: (id: number) => axiosClient.delete(`/movies/${id}`), // DELETE /api/movies/:id
   getTopMovies: (limit: number = 5) => axiosClient.get(`/movies/top-rated?limit=${limit}`),
+  updatePoster: (movieId: number, posterURL: string) => 
+        axiosClient.patch(`/movies/${movieId}/poster`, { posterURL }),
 };
 
 export default moviesApi;

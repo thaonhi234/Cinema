@@ -103,4 +103,20 @@ getMovieById = async (req: Request, res: Response) => {
             return res.status(500).json({ message: 'Lỗi server khi lấy danh sách phim xếp hạng cao nhất.' });
         }
     }
+    async updatePoster(req: Request, res: Response) {
+    const movieId = parseInt(req.params.id);
+    const { posterURL } = req.body;
+
+    if (isNaN(movieId) || !posterURL) {
+        return res.status(400).json({ message: 'MovieID hoặc PosterURL không hợp lệ.' });
+    }
+
+    try {
+        await dataAccess.updateMoviePoster(movieId, posterURL);
+        return res.status(200).json({ message: 'Cập nhật Poster thành công.' });
+    } catch (error) {
+        console.error('Lỗi khi cập nhật poster:', error);
+        return res.status(500).json({ message: 'Lỗi server khi cập nhật poster.' });
+    }
+}
 }

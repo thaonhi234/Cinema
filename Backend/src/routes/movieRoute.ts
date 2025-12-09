@@ -16,5 +16,5 @@ router.put('/:id', movieController.updateMovie); // UPDATE
 router.delete('/:id', movieController.deleteMovie); // DELETE
 router.get('/top-rated', movieController.getTopMovies);
 router.get('/:id', movieController.getMovieById); // READ theo ID
-
+router.patch('/:id/poster', movieController.updatePoster);
 export default router;

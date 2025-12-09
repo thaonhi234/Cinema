@@ -18,11 +18,33 @@ interface SeatDetail {
     SStatus: boolean; // 0: Hỏng/Khóa, 1: Sẵn sàng
 }
 
+// Interface cho dữ liệu tạo phòng mới
+export interface CreateRoomPayload {
+    BranchID: number;
+    RoomID: number;
+    RType: string;      // Tên/Loại phòng (VD: Premium Hall A)
+    RCapacity: number;  // Tổng số ghế
+    TotalRows: number;
+    SeatsPerRow: number;
+}
+
+// Interface trả về từ API (khớp với Room trong RoomsPage)
+export interface RoomResponse {
+    BranchID: number;
+    RoomID: number;
+    BranchName: string;
+    RType: string;
+    TotalCapacity: number;
+    TotalRows: number;
+    MaxColumns: number;
+}
+
 const roomsApi = {
     // 1. READ: Lấy danh sách tất cả phòng trong chi nhánh của người dùng
     // GET /api/rooms (BranchID được lấy từ Token)
     getAllRooms: () => {
-        return axiosClient.get('/rooms');
+        // return axiosClient.get('/rooms');
+        return axiosClient.get(`/rooms?t=${new Date().getTime()}`);
     },
 
     // 2. READ: Lấy sơ đồ ghế chi tiết của một phòng

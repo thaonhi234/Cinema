@@ -40,7 +40,7 @@ export default function DailyRevenueChart({ data }: DailyRevenueChartProps) {
 
     return (
         <ResponsiveContainer width="100%" height="100%">
-            <LineChart data={data} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+            <LineChart data={data} margin={{ top: 10, right: 10, left: 5, bottom: 0 }}>
                 
                 {/* Lưới trục Y (Màu xám nhạt) */}
                 <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f0f0f0" />

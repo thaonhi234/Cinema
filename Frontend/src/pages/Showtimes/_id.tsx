@@ -12,9 +12,9 @@ import showtimeApi from "../../api/showtimeApi";
 import { useNavigate } from "react-router-dom";
 import { format } from "date-fns";
 
-// 1. Import Component và Types
-import ShowtimeRow from "./ShowtimeRow"; // <-- Sử dụng component này
-import type { Showtime, ShowtimeDisplay } from "./types/Showtime";
+// Import Component và Types
+import ShowtimeRow from "./ShowtimeRow";
+import type { Showtime, ShowtimeDisplay } from "./types/Showtime"; // Đảm bảo đường dẫn import đúng
 
 export default function ShowtimesPage() {
   const navigate = useNavigate();
@@ -25,8 +25,8 @@ export default function ShowtimesPage() {
 
   // --- STATE MODAL ---
   const [openModal, setOpenModal] = useState(false);
-  const [isEditMode, setIsEditMode] = useState(false); 
-  const [currentEditId, setCurrentEditId] = useState<number | null>(null); 
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [currentEditId, setCurrentEditId] = useState<number | null>(null);
 
   const [formData, setFormData] = useState({
     MovieID: "",
@@ -37,20 +37,17 @@ export default function ShowtimesPage() {
   });
 
   // --- 2. CHUẨN BỊ DỮ LIỆU HIỂN THỊ (MAPPING) ---
-  // Bước này cực quan trọng: Chuyển dữ liệu từ API sang dạng mà ShowtimeRow hiểu
-  // Đồng thời "giấu" các dữ liệu cần thiết cho việc sửa (movieId, roomId...) vào đây
   const formattedShowtimes: ShowtimeDisplay[] = showtimes.map(st => ({
     id: st.TimeID,
     movieTitle: st.MovieName,
-    runtimeMin: st.RuntimeMinutes || 0,
+    // runtimeMin: st.RuntimeMinutes || 0,
     room: `${st.RoomType} ${st.RoomID}`,
     date: st.Day,
     time: st.StartTime ? st.StartTime.substring(0, 5) : "--:--",
-    priceUSD: st.Price, 
+    priceUSD: st.Price,
     soldSeats: st.TicketsSold,
     totalSeats: st.TotalSeats,
-    
-    // 👇 GẮN DỮ LIỆU ẨN ĐỂ DÙNG KHI SỬA
+    // Các trường ẩn cho Edit
     movieId: st.MovieID,
     roomId: st.RoomID,
     rawStartTime: st.StartTime,
@@ -65,15 +62,15 @@ export default function ShowtimesPage() {
     setOpenModal(true);
   };
 
-  // 3. HÀM MỞ FORM SỬA (Nhận item từ ShowtimeRow gửi lên)
+  // 3. HÀM MỞ FORM SỬA
   const handleOpenEdit = (item: ShowtimeDisplay) => {
     setIsEditMode(true);
     setCurrentEditId(item.id);
     
-    // Đổ dữ liệu cũ vào form
     setFormData({
       MovieID: item.movieId ? item.movieId.toString() : "",
       RoomID: item.roomId ? item.roomId.toString() : "",
+      // Cắt chuỗi giờ để phù hợp với input type="time"
       StartTime: item.rawStartTime ? item.rawStartTime.substring(0, 5) : "",
       EndTime: item.rawEndTime ? item.rawEndTime.substring(0, 5) : "",
       Format: item.format || "2D"
@@ -90,12 +87,12 @@ export default function ShowtimesPage() {
 
     try {
       const payload = {
-        BranchID: 1, 
+        BranchID: 1, // Nên lấy từ context user/auth
         Day: selectedDate,
         MovieID: parseInt(formData.MovieID),
         RoomID: parseInt(formData.RoomID),
-        StartTime: formData.StartTime, 
-        EndTime: formData.EndTime,     
+        StartTime: formData.StartTime, // Backend cần xử lý thêm :00 nếu cần
+        EndTime: formData.EndTime,     // Backend cần xử lý thêm :00 nếu cần
         FName: formData.Format,
         TimeID: 0
       };
@@ -110,7 +107,7 @@ export default function ShowtimesPage() {
       }
 
       setOpenModal(false);
-      fetchShowtimes(); 
+      fetchShowtimes();
     } catch (err: any) {
       console.error(err);
       alert("Lỗi: " + (err.response?.data?.message || "Thất bại"));
@@ -121,10 +118,15 @@ export default function ShowtimesPage() {
   const fetchShowtimes = async () => {
     try {
       setLoading(true);
-      const res = await showtimeApi.getAllShowtimes(selectedDate);
+      
+      // 👇 SỬA ĐOẠN NÀY: Nếu selectedDate rỗng, truyền "" để API biết là lấy tất cả
+      const dateParam = selectedDate === "" ? "" : selectedDate;
+      const res = await showtimeApi.getAllShowtimes(dateParam);
+      
       setShowtimes(res.data);
       setError(null);
     } catch (err: any) {
+      console.error(err); // Log lỗi ra để xem nếu có
       setError("Không thể tải dữ liệu.");
     } finally {
       setLoading(false);
@@ -175,19 +177,18 @@ export default function ShowtimesPage() {
                   <TableCell>Room</TableCell>
                   <TableCell>Date</TableCell>
                   <TableCell>Time</TableCell>
-                  <TableCell>Price</TableCell>
+                  <TableCell>Format</TableCell>
                   <TableCell>Availability</TableCell>
                   <TableCell align="center">Actions</TableCell>
                 </TableRow>
               </TableHead>
               <TableBody>
-                {/* 4. SỬ DỤNG COMPONENT ShowtimeRow TẠI ĐÂY */}
                 {formattedShowtimes.length > 0 ? formattedShowtimes.map((st) => (
                   <ShowtimeRow 
                     key={st.id} 
                     showtime={st} 
                     onDelete={handleDelete} 
-                    onEdit={handleOpenEdit} // Truyền hàm sửa xuống component con
+                    onEdit={handleOpenEdit} 
                   />
                 )) : (
                   <TableRow><TableCell colSpan={7} align="center">No data</TableCell></TableRow>

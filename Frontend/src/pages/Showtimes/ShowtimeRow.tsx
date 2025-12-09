@@ -37,7 +37,7 @@ export default function ShowtimeRow({ showtime, onDelete, onEdit }: ShowtimeRowP
           {showtime.movieTitle}
         </Typography>
         <Typography variant="caption" color="text.secondary">
-          {showtime.runtimeMin} min
+          {/* {showtime.runtimeMin} min */}
         </Typography>
       </TableCell>
 

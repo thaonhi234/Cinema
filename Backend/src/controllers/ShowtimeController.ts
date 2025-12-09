@@ -7,10 +7,11 @@ export class ShowtimeController {
     // GET /api/showtimes?branchId=1&date=2025-12-08
     getAllShowtimes = async (req: Request, res: Response) => {
         try {
-            // Tạm thời lấy branchId từ query (để test) thay vì từ token user
-            const branchId = parseInt(req.query.branchId as string) || 1; 
-            const date = (req.query.date as string) || new Date().toISOString().split('T')[0];
-
+            const branchId = 1; // Hoặc lấy từ token
+            
+            // 👇 SỬA ĐOẠN NÀY: Lấy query date, nếu không có thì gán rỗng hoặc null
+            const date = req.query.date as string || ''; 
+            
             const list = await this.service.getAllShowtimes(branchId, date);
             res.status(200).json(list);
         } catch (error: any) {

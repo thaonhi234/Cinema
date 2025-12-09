@@ -54,20 +54,29 @@ export class RoomController {
     async updateRoom(req: Request, res: Response) {
         const branchId = parseInt(req.params.branchId);
         const roomId = parseInt(req.params.roomId);
-        const roomData = { ...req.body, BranchID: branchId, RoomID: roomId };
-
-        // Kiểm tra các trường bắt buộc
-        if (!roomData.RType || !roomData.RCapacity) {
-             return res.status(400).json({ message: 'Thiếu thông tin loại phòng hoặc sức chứa.' });
-        }
-        
-        try {
-            await dataAccess.updateRoom(roomData);
-            return res.status(200).json({ message: `Phòng ${branchId}-${roomId} đã được cập nhật.` });
-        } catch (error) {
-            console.error('Lỗi khi cập nhật phòng:', error);
-            return res.status(400).json({ message: (error as any).originalError?.info?.message || 'Lỗi cập nhật phòng.' });
-        }
+        //const { RType, RCapacity, TotalRows, SeatsPerRow } = req.body; 
+        const RType = req.body.RType;
+    const RCapacity = parseInt(req.body.RCapacity);
+    const TotalRows = parseInt(req.body.TotalRows);
+    const SeatsPerRow = parseInt(req.body.SeatsPerRow);
+    // Kiểm tra các trường bắt buộc
+    if (isNaN(branchId) || isNaN(roomId) || !RType || !RCapacity || !TotalRows || !SeatsPerRow) {
+        return res.status(400).json({ message: 'Thiếu tham số bắt buộc để cập nhật phòng và cấu hình ghế.' });
+    }
+    if (RCapacity !== TotalRows * SeatsPerRow) {
+         // Thông báo cho người dùng nếu Capacity không khớp với cấu hình ghế
+         return res.status(400).json({ message: 'Lỗi: RCapacity phải bằng TotalRows nhân SeatsPerRow.' });
+    }
+    const roomData = { BranchID: branchId, RoomID: roomId, RType, RCapacity, TotalRows, SeatsPerRow };
+    
+    try {
+        await dataAccess.updateRoom(roomData);
+        return res.status(200).json({ message: 'Cập nhật phòng thành công.' });
+    } catch (error) {
+        // Bắt lỗi RAISERROR từ SQL SP 
+        const message = (error as any).originalError?.info?.message || 'Lỗi server khi cập nhật phòng.';
+        return res.status(400).json({ message });
+    }
     }
     // Cần thêm getSeatLayout và updateRoom nếu cần
     async getSeatLayout(req: Request, res: Response) {

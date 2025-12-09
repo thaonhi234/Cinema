@@ -15,7 +15,12 @@ interface ShowtimeCreateUpdateData {
 
 const showtimeApi = {
   // 1. Lấy danh sách
-  getAllShowtimes: (date: string) => axiosClient.get(`/showtimes?date=${date}`),
+  getAllShowtimes: (date: string) => {
+    // Nếu date rỗng -> gọi /showtimes (không có query ?date=...)
+    // Nếu có date -> gọi /showtimes?date=2023-12-09
+    const url = date ? `/showtimes?date=${date}` : `/showtimes`; 
+    return axiosClient.get(url);
+  },
   
   // 2. Thêm mới
   createShowtime: (data: any) => axiosClient.post("/showtimes", data),

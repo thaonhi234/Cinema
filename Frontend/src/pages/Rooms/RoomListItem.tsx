@@ -23,17 +23,27 @@ type RoomListItemProps = {
   room: RoomPropType;
   isActive: boolean;
   onClick: () => void;
+  onEdit: (room: RoomPropType) => void;
+  onDelete: (room: RoomPropType) => void;
 };
-export default function RoomListItem({ room, isActive, onClick }: RoomListItemProps) {
+export default function RoomListItem({ 
+  room, 
+  isActive, 
+  onClick,
+  onEdit,
+  onDelete 
+}: RoomListItemProps) {
   const handleEdit = (e: React.MouseEvent) => {
     e.stopPropagation();
     alert(`Sửa phòng: ${room.name} (${room.BranchID}-${room.id})`);
+    onEdit(room);
   };
 
   const handleDelete = (e: React.MouseEvent) => {
     e.stopPropagation();
     if (window.confirm(`Bạn có chắc muốn xóa phòng ${room.name} không?`)) {
         alert(`Xóa phòng: ${room.name} (${room.BranchID}-${room.id})`);
+        onDelete(room);
     }
   };
   return (
