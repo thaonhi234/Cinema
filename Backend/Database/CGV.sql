@@ -1302,7 +1302,7 @@ END;
 GO
 
 EXEC movieList 1, 8;
-
+GO
 -- Procedure 6: Thêm Nhân viên mới (Dùng cho API Create Employee)
 -- (Sử dụng số thứ tự tiếp theo sau Procedure 5: movieList)
 CREATE OR ALTER PROCEDURE Staff.sp_InsertEmployee
@@ -2117,5 +2117,17 @@ PRINT 'User sManager created successfully.';
 
 ALTER ROLE db_owner ADD MEMBER sManager;
 GO
+-- 4. Bổ sung các định dạng phim cần thiết (Cho Frontend)
+IF NOT EXISTS (SELECT 1 FROM Movie.FORMATS WHERE FName = '2D')
+    INSERT INTO Movie.FORMATS (FName) VALUES ('2D');
 
+IF NOT EXISTS (SELECT 1 FROM Movie.FORMATS WHERE FName = '3D')
+    INSERT INTO Movie.FORMATS (FName) VALUES ('3D');
+
+IF NOT EXISTS (SELECT 1 FROM Movie.FORMATS WHERE FName = 'IMAX')
+    INSERT INTO Movie.FORMATS (FName) VALUES ('IMAX');
+
+IF NOT EXISTS (SELECT 1 FROM Movie.FORMATS WHERE FName = '4DX')
+    INSERT INTO Movie.FORMATS (FName) VALUES ('4DX');
+GO
 PRINT '=== DATABASE SETUP COMPLETED SUCCESSFULLY! ===';
