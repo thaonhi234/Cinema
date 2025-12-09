@@ -1111,10 +1111,7 @@ BEGIN
 END;
 GO
 
-
-
-EXEC Movie.sp_InsertNewMovie 
- 
+EXEC Movie.sp_InsertNewMovie  
     @name = 'Doraemon', 
     @descript = 'Animation', 
     @runtime = 100, 
@@ -1122,7 +1119,7 @@ EXEC Movie.sp_InsertNewMovie
     @sub = 0, 
     @release = '2025-12-10', 
     @closing = '2026-01-10', 
-    @agerating = '15+', 
+    @agerating = 'K', 
     @Genres = 'Action, Drama';
 GO
 
@@ -1186,7 +1183,7 @@ END;
 GO
 
 EXEC Movie.sp_UpdateMovie
-    @id = 16,
+    @id = 31,
     @name = 'Doraemon Updated',
     @descript = 'Animation movie updated description',
     @runtime = 105,
@@ -1194,7 +1191,7 @@ EXEC Movie.sp_UpdateMovie
     @sub = 0,
     @release = '2025-12-10',
     @closing = '2026-01-15',
-    @agerating = '15+',
+    @agerating = 'K',
     @Genres = 'Action, Drama';
 GO
 --Procedure 3. DELETE
@@ -1308,7 +1305,6 @@ EXEC movieList 1, 8;
 
 -- Procedure 6: Thêm Nhân viên mới (Dùng cho API Create Employee)
 -- (Sử dụng số thứ tự tiếp theo sau Procedure 5: movieList)
-GO
 CREATE OR ALTER PROCEDURE Staff.sp_InsertEmployee
     @EName AS VARCHAR(30),
     @Sex AS CHAR,
@@ -1765,6 +1761,11 @@ END
 GO
 -- Procedure 15: Cập nhật thông tin cơ bản của phòng chiếu
 
+-- TRONG CGV.sql: Thay thế Procedure 15
+
+-- TRONG CGV.sql: Sửa Procedure 15 (Cinema.sp_UpdateRoomAndLayout)
+
+-- TRONG CGV.sql: Sửa Procedure 15 (Cinema.sp_UpdateRoomAndLayout)
 
 CREATE OR ALTER PROCEDURE Cinema.sp_UpdateScreenRoom
     @BranchID INT,
