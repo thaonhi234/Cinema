@@ -1,7 +1,6 @@
 /* MASTER SCRIPT - CGV DATABASE SYSTEM 
    FIX: ERROR 11719 (Sequence in Function)
    GIẢI PHÁP: Dùng Sequence trực tiếp trong Default Constraint
-   UPDATE: Tự động thêm Movie Formats (2D, 3D...) để khớp với Frontend
 */
 
 USE master;
@@ -44,6 +43,7 @@ GO
 -----------------------------------------------------------
 
 -- 1. Customer
+-- SỬA LỖI: Nhúng trực tiếp logic sinh ID vào DEFAULT
 CREATE TABLE Customer.CUSTOMER (
     CUserID VARCHAR(20) PRIMARY KEY DEFAULT ('CUS' + RIGHT('000' + CAST(NEXT VALUE FOR Seq_CustomerID AS VARCHAR(3)), 3)),
     CName VARCHAR(30) NOT NULL,
@@ -64,6 +64,7 @@ CREATE TABLE Customer.MEMBERSHIP (
 );
 
 -- 3. Employee
+-- SỬA LỖI: Nhúng trực tiếp logic sinh ID vào DEFAULT
 CREATE TABLE Staff.EMPLOYEE (
     EUserID VARCHAR(20) PRIMARY KEY DEFAULT ('EMP' + RIGHT('000' + CAST(NEXT VALUE FOR Seq_EmployeeID AS VARCHAR(3)), 3)),
     EName VARCHAR(30) NOT NULL,
@@ -304,7 +305,7 @@ CREATE TABLE Products.MERCHANDISE (
 
 ALTER TABLE Staff.EMPLOYEE
 ADD CONSTRAINT fk_emp_br_brid FOREIGN KEY (BranchID)
-                REFERENCES Cinema.BRANCH (BranchID);
+               REFERENCES Cinema.BRANCH (BranchID);
 
 GO
 
@@ -705,37 +706,38 @@ INSERT INTO Movie.REVIEW (MovieID, CUserID, Rating, RDate, Comment) VALUES
 (22, 'CUS004', 8, '2025-11-23', N'Solid story'),
 (22, 'CUS005', 9, '2025-11-24', N'Amazing');
 
-INSERT INTO Booking.ORDERS (OrderID, OrderTime, PaymentMethod, Total, CUserID, EUserID) VALUES
-(1, '2025-12-08T05:15:00', 'Cash',       150000, 'CUS001', 'EMP006'),
-(2, '2025-12-08T05:20:00', 'Momo',       220000, 'CUS002', 'EMP007'),
-(3, '2025-12-09T11:05:00', 'ZaloPay',    180000, 'CUS003', 'EMP008'),
-(4, '2025-12-10T12:40:00', 'Visa',       300000, 'CUS004', 'EMP006'),
-(5, '2025-12-11T13:25:00', 'Mastercard', 250000, 'CUS005', 'EMP007'),
-(6, '2025-12-12T14:10:00', 'Cash',       170000, 'CUS006', 'EMP008'),
-(7, '2025-11-30T15:50:00', 'Momo',       260000, 'CUS007', 'EMP012'),
-(8, '2025-12-01T16:30:00', 'ZaloPay',    210000, 'CUS008', 'EMP013'),
-(9, '2025-12-02T17:45:00', 'Visa',       320000, 'CUS009', 'EMP014'),
-(10,'2025-12-03T18:05:00', 'Mastercard', 290000, 'CUS010', 'EMP015'),
-(11,'2025-11-24T11:30:00', 'Cash',       200000, 'CUS011', 'EMP016'),
-(12,'2025-11-25T12:50:00', 'Momo',       240000, 'CUS012', 'EMP017'),
-(13,'2025-11-26T14:15:00', 'ZaloPay',    280000, 'CUS013', 'EMP018'),
-(14,'2025-11-27T15:35:00', 'Visa',       330000, 'CUS014', 'EMP019'),
-(15,'2025-11-28T16:25:00', 'Mastercard', 350000, 'CUS015', 'EMP020'),
-(16,'2025-11-29T17:10:00', 'Cash',       190000, 'CUS016', 'EMP021'),
-(17,'2025-11-30T18:20:00', 'Momo',       260000, 'CUS017', 'EMP022'),
-(18,'2025-12-01T19:30:00', 'ZaloPay',    310000, 'CUS018', 'EMP023'),
-(19,'2025-12-02T20:45:00', 'Visa',       270000, 'CUS019', 'EMP024'),
-(20,'2025-12-03T21:05:00', 'Mastercard', 340000, 'CUS020', 'EMP025'),
-(21,'2025-11-24T09:10:00', 'Cash',       180000, 'CUS021', 'EMP026'),
-(22,'2025-11-25T10:40:00', 'Momo',       220000, 'CUS022', 'EMP027'),
-(23,'2025-11-26T12:00:00', 'ZaloPay',    260000, 'CUS023', 'EMP028'),
-(24,'2025-11-27T13:30:00', 'Visa',       300000, 'CUS024', 'EMP029'),
-(25,'2025-11-28T15:00:00', 'Mastercard', 350000, 'CUS025', 'EMP030'),
-(26,'2025-11-29T16:20:00', 'Cash',       200000, 'CUS026', 'EMP002'),
-(27,'2025-11-30T17:35:00', 'Momo',       240000, 'CUS027', 'EMP003'),
-(28,'2025-12-01T18:55:00', 'ZaloPay',    280000, 'CUS028', 'EMP004'),
-(29,'2025-12-02T20:10:00', 'Visa',       320000, 'CUS029', 'EMP005'),
-(30,'2025-12-03T21:45:00', 'Mastercard', 360000, 'CUS030', 'EMP001');
+INSERT INTO Booking.ORDERS 
+(OrderID, OrderTime, PaymentMethod, Total, CUserID, EUserID) VALUES
+(1, '2025-12-01T08:15:00', 'Cash',        5, 'CUS001', 'EMP006'),
+(2, '2025-12-01T08:20:00', 'Momo',       7, 'CUS002', 'EMP007'),
+(3, '2025-12-02T11:05:00', 'ZaloPay',    6, 'CUS003', 'EMP008'),
+(4, '2025-12-02T12:40:00', 'Visa',       9, 'CUS004', 'EMP009'),
+(5, '2025-12-02T13:25:00', 'Mastercard', 8, 'CUS005', 'EMP010'),
+(6, '2025-12-03T09:10:00', 'Cash',       4, 'CUS006', 'EMP006'),
+(7, '2025-12-03T10:20:00', 'Momo',       9, 'CUS007', 'EMP007'),
+(8, '2025-12-03T10:45:00', 'ZaloPay',    3, 'CUS008', 'EMP008'),
+(9, '2025-12-03T11:10:00', 'Visa',       5, 'CUS009', 'EMP009'),
+(10,'2025-12-03T11:55:00', 'Mastercard', 6, 'CUS010', 'EMP010'),
+(11,'2025-12-04T12:20:00', 'Cash',       4, 'CUS011', 'EMP006'),
+(12,'2025-12-04T12:50:00', 'Momo',       7, 'CUS012', 'EMP007'),
+(13,'2025-12-04T13:30:00', 'ZaloPay',    8, 'CUS013', 'EMP008'),
+(14,'2025-12-04T14:10:00', 'Visa',       5, 'CUS014', 'EMP009'),
+(15,'2025-12-04T15:00:00', 'Mastercard', 6, 'CUS015', 'EMP010'),
+(16,'2025-12-05T09:15:00', 'Cash',       7, 'CUS016', 'EMP006'),
+(17,'2025-12-05T10:45:00', 'Momo',       3, 'CUS017', 'EMP007'),
+(18,'2025-12-05T11:30:00', 'ZaloPay',    6, 'CUS018', 'EMP008'),
+(19,'2025-12-05T12:50:00', 'Visa',       4, 'CUS019', 'EMP009'),
+(20,'2025-12-05T13:25:00', 'Mastercard', 9, 'CUS020', 'EMP010'),
+(21,'2025-12-06T14:40:00', 'Cash',       5, 'CUS021', 'EMP011'),
+(22,'2025-12-06T15:10:00', 'Momo',       6, 'CUS022', 'EMP014'),
+(23,'2025-12-06T16:00:00', 'ZaloPay',    7, 'CUS023', 'EMP018'),
+(24,'2025-12-06T16:55:00', 'Visa',       4, 'CUS024', 'EMP022'),
+(25,'2025-12-06T17:40:00', 'Mastercard', 9, 'CUS025', 'EMP026'),
+(26,'2025-12-07T09:45:00', 'Cash',       5, 'CUS026', 'EMP006'),
+(27,'2025-12-07T10:55:00', 'Momo',       7, 'CUS027', 'EMP007'),
+(28,'2025-12-08T12:15:00', 'ZaloPay',    6, 'CUS028', 'EMP008'),
+(29,'2025-12-08T13:30:00', 'Visa',       8, 'CUS029', 'EMP009'),
+(30,'2025-12-09T14:50:00', 'Mastercard', 9, 'CUS030', 'EMP010');
 
 INSERT INTO Booking.COUPON (CouponID, StartDate, EndDate, SaleOff, ReleaseNum, AvailNum) VALUES
 (1, '2025-01-01', '2025-02-01', 10, 1000, 800),
@@ -797,66 +799,90 @@ INSERT INTO Booking.COUPONUSAGE (CouponID, OrderID, CUserID, UseDate) VALUES
 (5,13, 'CUS014', '2025-12-04');
 
 INSERT INTO Screening.TIME (TimeID, Day, StartTime, EndTime, FName, MovieID, RoomID, BranchID) VALUES
-(1,  '2025-12-08', '10:00', '12:30', 'IMAX',     1, 2, 1),
-(2,  '2025-12-15', '13:00', '15:30', 'IMAX',     2, 2, 1),
-(3,  '2025-12-09', '16:00', '18:30', 'Standard', 3, 1, 1),
-(4,  '2025-12-09', '19:00', '21:30', '4DX',      4, 3, 1),
-(5,  '2025-12-08', '21:30', '00:00', 'IMAX',     5, 2, 1),
-
-(6,  '2025-12-10', '10:00', '12:30', 'Standard', 6, 1, 1),
-(7,  '2025-12-11', '13:00', '15:30', 'IMAX',     7, 2, 1),
-(8,  '2025-12-12', '16:00', '18:30', 'Standard', 8, 1, 1),
-(9,  '2025-12-13', '19:00', '21:30', '4DX',      9, 3, 1),
-(10, '2025-12-14', '21:30', '00:00', 'IMAX',    10, 2, 1),
-
-(11, '2025-12-01', '10:00', '12:30', 'Standard', 11, 2, 3),
-(12, '2025-09-15', '13:00', '15:30', 'Standard', 12, 2, 3),
-(13, '2025-12-22', '16:00', '18:30', 'Standard', 13, 2, 3),
-(14, '2025-12-01', '19:00', '21:30', 'Standard', 14, 2, 3),
-(15, '2025-12-12', '21:30', '00:00', 'Standard', 15, 2, 3),
-
-(16, '2025-12-11', '10:00', '12:30', 'IMAX',     16, 3, 4),
-(17, '2025-12-10', '13:00', '15:30', '4DX',      17, 2, 4),
-(18, '2025-12-20', '16:00', '18:30', 'Standard', 18, 1, 4),
-(19, '2025-09-20', '19:00', '21:30', 'Standard', 19, 1, 4),
-(20, '2025-12-15', '21:30', '00:00', '4DX',      20, 2, 4),
-
-(21, '2025-12-08', '10:00', '12:30', 'Standard', 21, 1, 5),
-(22, '2025-10-20', '13:00', '15:30', 'Standard', 22, 2, 5),
-(23, '2025-12-20', '16:00', '18:30', '4DX',      23, 3, 5),
-(24, '2025-12-15', '19:00', '21:30', 'Standard', 24, 1, 5),
-(25, '2025-12-20', '21:30', '00:00', 'Standard', 25, 2, 5),
-
-(26, '2025-09-20', '10:00', '12:30', 'IMAX',     26, 2, 1),
-(27, '2025-12-04', '13:00', '15:30', 'Standard', 27, 1, 1),
-(28, '2025-09-05', '16:00', '18:30', 'Standard', 28, 1, 1),
-(29, '2025-12-05', '19:00', '21:30', 'Standard', 29, 1, 1),
-(30, '2025-12-20', '21:30', '00:00', 'Standard', 30, 1, 1),
-
--- Bản copy Branch 2–5
-(31, '2025-09-20', '10:00', '12:30', 'IMAX',     26, 2, 2),
-(32, '2025-12-04', '13:00', '15:30', 'Standard', 27, 1, 2),
-(33, '2025-09-05', '16:00', '18:30', 'Standard', 28, 1, 2),
-(34, '2025-12-05', '19:00', '21:30', 'Standard', 29, 1, 2),
-(35, '2025-12-20', '21:30', '00:00', 'Standard', 30, 1, 2),
-
-(36, '2025-11-20', '10:00', '12:30', 'IMAX',      1, 2, 3),
-(37, '2025-02-15', '13:00', '15:30', 'IMAX',      2, 2, 3),
-(38, '2025-11-22', '16:00', '18:30', 'Standard',  3, 2, 3),
-(39, '2025-06-10', '19:00', '21:30', '4DX',       4, 1, 3),
-(40, '2025-12-12', '21:30', '00:00', 'IMAX',      5, 3, 3),
-
-(41, '2025-11-20', '10:00', '12:30', 'Standard',  6, 1, 4),
-(42, '2025-11-27', '13:00', '15:30', 'IMAX',      7, 3, 4),
-(43, '2025-12-09', '16:00', '18:30', 'Standard',  8, 1, 4),
-(44, '2025-12-20', '19:00', '21:30', '4DX',       9, 2, 4),
-(45, '2025-04-18', '21:30', '00:00', 'IMAX',     10, 3, 4),
-
-(46, '2025-12-01', '10:00', '12:30', 'Standard', 11, 1, 5),
-(47, '2025-09-15', '13:00', '15:30', 'Standard', 12, 2, 5),
-(48, '2025-12-22', '16:00', '18:30', 'Standard', 13, 1, 5),
-(49, '2025-12-01', '19:00', '21:30', 'Standard', 14, 1, 5),
-(50, '2025-12-12', '21:30', '00:00', 'Standard', 15, 2, 5);
+(1, '2025-12-07', '07:00', '09:30', 'Standard', 28, 1, 1),
+(2, '2025-12-07', '09:30', '12:00', 'IMAX', 1, 2, 1),
+(3, '2025-12-07', '12:00', '14:30', '4DX', 9, 3, 1),
+(4, '2025-12-07', '14:30', '17:00', 'Standard', 29, 1, 1),
+(5, '2025-12-07', '17:00', '19:30', 'IMAX', 10, 2, 1),
+(6, '2025-12-07', '19:30', '22:00', '4DX', 4, 3, 1),
+(7, '2025-12-07', '22:00', '00:30', 'Standard', 27, 1, 1),
+(8, '2025-12-07', '07:00', '09:30', 'Standard', 30, 1, 2),
+(9, '2025-12-07', '09:30', '12:00', 'IMAX', 26, 2, 2),
+(10, '2025-12-07', '12:00', '14:30', 'Standard', 13, 3, 2),
+(11, '2025-12-07', '14:30', '17:00', 'Standard', 25, 1, 2),
+(12, '2025-12-07', '17:00', '19:30', 'IMAX', 2, 2, 2),
+(13, '2025-12-07', '19:30', '22:00', 'Standard', 21, 3, 2),
+(14, '2025-12-07', '22:00', '00:30', 'Standard', 14, 1, 2),
+(15, '2025-12-07', '07:00', '09:30', '4DX', 17, 1, 3),
+(16, '2025-12-07', '09:30', '12:00', 'Standard', 19, 2, 3),
+(17, '2025-12-07', '12:00', '14:30', 'IMAX', 3, 3, 3),
+(18, '2025-12-07', '14:30', '17:00', 'Standard', 6, 1, 3),
+(19, '2025-12-07', '17:00', '19:30', 'Standard', 11, 2, 3),
+(20, '2025-12-07', '19:30', '22:00', 'IMAX', 16, 3, 3),
+(21, '2025-12-07', '22:00', '00:30', 'Standard', 24, 1, 3),
+(22, '2025-12-07', '07:00', '09:30', 'Standard', 8, 1, 4),
+(23, '2025-12-07', '09:30', '12:00', '4DX', 23, 2, 4),
+(24, '2025-12-07', '12:00', '14:30', 'IMAX', 7, 3, 4),
+(25, '2025-12-07', '14:30', '17:00', 'Standard', 15, 1, 4),
+(26, '2025-12-07', '17:00', '19:30', '4DX', 20, 2, 4),
+(27, '2025-12-07', '19:30', '22:00', 'IMAX', 26, 3, 4),
+(28, '2025-12-07', '22:00', '00:30', 'Standard', 18, 1, 4),
+(29, '2025-12-07', '07:00', '09:30', 'Standard', 29, 1, 5),
+(30, '2025-12-07', '09:30', '12:00', 'Standard', 12, 2, 5),
+(31, '2025-12-07', '12:00', '14:30', '4DX', 9, 3, 5),
+(32, '2025-12-07', '14:30', '17:00', 'Standard', 19, 1, 5),
+(33, '2025-12-07', '17:00', '19:30', 'Standard', 21, 2, 5),
+(34, '2025-12-07', '19:30', '22:00', '4DX', 23, 3, 5),
+(35, '2025-12-07', '22:00', '00:30', 'Standard', 13, 1, 5),
+(36, '2025-12-08', '07:00', '09:30', 'Standard', 28, 1, 1),
+(37, '2025-12-08', '09:30', '12:00', 'IMAX', 1, 2, 1),
+(38, '2025-12-08', '12:00', '14:30', '4DX', 9, 3, 1),
+(39, '2025-12-08', '14:30', '17:00', 'Standard', 29, 1, 1),
+(40, '2025-12-08', '17:00', '19:30', 'IMAX', 10, 2, 1),
+(41, '2025-12-08', '19:30', '22:00', '4DX', 4, 3, 1),
+(42, '2025-12-08', '22:00', '00:30', 'Standard', 27, 1, 1),
+(43, '2025-12-08', '07:00', '09:30', 'Standard', 30, 1, 2),
+(44, '2025-12-08', '09:30', '12:00', 'IMAX', 26, 2, 2),
+(45, '2025-12-08', '12:00', '14:30', 'Standard', 13, 3, 2),
+(46, '2025-12-08', '14:30', '17:00', 'Standard', 25, 1, 2),
+(47, '2025-12-08', '17:00', '19:30', 'IMAX', 2, 2, 2),
+(48, '2025-12-08', '19:30', '22:00', 'Standard', 21, 3, 2),
+(49, '2025-12-08', '22:00', '00:30', 'Standard', 14, 1, 2),
+(50, '2025-12-08', '07:00', '09:30', '4DX', 17, 1, 3),
+(51, '2025-12-08', '09:30', '12:00', 'Standard', 19, 2, 3),
+(52, '2025-12-08', '12:00', '14:30', 'IMAX', 3, 3, 3),
+(53, '2025-12-08', '14:30', '17:00', 'Standard', 6, 1, 3),
+(54, '2025-12-08', '17:00', '19:30', 'Standard', 11, 2, 3),
+(55, '2025-12-08', '19:00', '22:00', 'IMAX', 16, 3, 3),
+(56, '2025-12-08', '22:00', '00:30', 'Standard', 24, 1, 3),
+(57, '2025-12-08', '07:00', '09:30', 'Standard', 8, 1, 4),
+(58, '2025-12-08', '09:30', '12:00', '4DX', 23, 2, 4),
+(59, '2025-12-08', '12:00', '14:30', 'IMAX', 7, 3, 4),
+(60, '2025-12-08', '14:30', '17:00', 'Standard', 15, 1, 4),
+(61, '2025-12-08', '17:00', '19:30', '4DX', 20, 2, 4),
+(62, '2025-12-08', '19:30', '22:00', 'IMAX', 26, 3, 4),
+(63, '2025-12-08', '22:00', '00:30', 'Standard', 18, 1, 4),
+(64, '2025-12-08', '07:00', '09:30', 'Standard', 29, 1, 5),
+(65, '2025-12-08', '09:30', '12:00', 'Standard', 12, 2, 5),
+(66, '2025-12-08', '12:00', '14:30', '4DX', 9, 3, 5),
+(67, '2025-12-08', '14:30', '17:00', 'Standard', 19, 1, 5),
+(68, '2025-12-08', '17:00', '19:30', 'Standard', 21, 2, 5),
+(69, '2025-12-08', '19:30', '22:00', '4DX', 23, 3, 5),
+(70, '2025-12-08', '22:00', '00:30', 'Standard', 13, 1, 5),
+(71, '2025-12-09', '07:00', '09:30', 'Standard', 28, 1, 1),
+(72, '2025-12-09', '09:30', '12:00', 'IMAX', 1, 2, 1),
+(73, '2025-12-09', '12:00', '14:30', '4DX', 9, 3, 1),
+(74, '2025-12-09', '14:30', '17:00', 'Standard', 29, 1, 1),
+(75, '2025-12-09', '17:00', '19:30', 'IMAX', 10, 2, 1),
+(76, '2025-12-09', '19:30', '22:00', '4DX', 4, 3, 1),
+(77, '2025-12-09', '22:00', '00:30', 'Standard', 27, 1, 1),
+(78, '2025-12-09', '07:00', '09:30', 'Standard', 30, 1, 2),
+(79, '2025-12-09', '09:30', '12:00', 'IMAX', 26, 2, 2),
+(80, '2025-12-09', '12:00', '14:30', 'Standard', 13, 3, 2),
+(81, '2025-12-09', '14:30', '17:00', 'Standard', 25, 1, 2),
+(82, '2025-12-09', '17:00', '19:30', 'IMAX', 2, 2, 2),
+(83, '2025-12-09', '19:30', '22:00', 'Standard', 21, 3, 2),
+(84, '2025-12-09', '22:00', '00:30', 'Standard', 14, 1, 2);
 
 -- script sinh vé
 BEGIN
@@ -1123,7 +1149,7 @@ BEGIN
     -- Kiểm tra tồn tại movie
     IF NOT EXISTS (SELECT 1 FROM Movie.MOVIE WHERE MovieID = @id)
     BEGIN
-        ;THROW 50001, 'Movie does not exist.', 1;
+        THROW 50001, 'Movie does not exist.', 1;
     END
 
     -- Update thông tin cơ bản
@@ -1276,7 +1302,7 @@ END;
 GO
 
 EXEC movieList 1, 8;
-GO
+
 -- Procedure 6: Thêm Nhân viên mới (Dùng cho API Create Employee)
 -- (Sử dụng số thứ tự tiếp theo sau Procedure 5: movieList)
 CREATE OR ALTER PROCEDURE Staff.sp_InsertEmployee
@@ -1299,7 +1325,7 @@ BEGIN
         RAISERROR('Branch does not exist.', 16, 1);
         RETURN;
     END
-     
+    
     -- Kiểm tra Email duy nhất (Nếu email đã tồn tại)
     IF EXISTS (SELECT 1 FROM Staff.EMPLOYEE WHERE Email = @Email)
     BEGIN
@@ -1310,7 +1336,7 @@ BEGIN
     -- Sử dụng DEFAULT để tự sinh EUserID
     INSERT INTO Staff.EMPLOYEE (EName, Sex, PhoneNumber, Email, EPassword, Salary, UserType, ManageID, BranchID)
     VALUES (@EName, @Sex, @PhoneNumber, @Email, @EPassword, @Salary, @UserType, @ManageID, @BranchID);
-     
+    
     -- Trả về ID đã tự sinh (Tùy chọn)
     SELECT EUserID FROM Staff.EMPLOYEE WHERE Email = @Email;
 
@@ -1367,10 +1393,10 @@ BEGIN
         RAISERROR('Cannot delete employee who currently manages other employees.', 16, 1);
         RETURN;
     END
-     
+    
     -- Xóa các bản ghi liên quan (WorkShift)
     DELETE FROM Staff.WORK WHERE EUserID = @EUserID;
-     
+    
     -- Cập nhật ORDERS sang NULL (Nếu cần, tùy thuộc vào khóa ngoại)
     UPDATE Booking.ORDERS SET EUserID = NULL WHERE EUserID = @EUserID;
 
@@ -1389,14 +1415,14 @@ BEGIN
     -- Định nghĩa ngày bắt đầu và kết thúc của TUẦN HIỆN TẠI (T2 -> CN)
     DECLARE @StartOfWeek DATE = DATEADD(wk, DATEDIFF(wk, 0, GETDATE()), 0); 
     DECLARE @EndOfWeek DATE = DATEADD(wk, DATEDIFF(wk, 0, GETDATE()), 6);
-     
+    
     -- Định nghĩa ngày bắt đầu và kết thúc của TUẦN TRƯỚC
     DECLARE @PrevStartOfWeek DATE = DATEADD(wk, -1, @StartOfWeek);
     DECLARE @PrevEndOfWeek DATE = DATEADD(wk, -1, @EndOfWeek);
 
     -- Bảng tạm chứa doanh thu tuần hiện tại
     DECLARE @CurrentWeekRevenue DECIMAL(18, 2);
-     
+    
     -- SỬA LỖI: Dùng DaySold từ TICKETS để lọc ngày, sau đó SUM Total từ ORDERS
     SELECT @CurrentWeekRevenue = ISNULL(SUM(O.Total), 0)
     FROM Booking.ORDERS O
@@ -1405,7 +1431,7 @@ BEGIN
 
     -- Bảng tạm chứa doanh thu tuần trước
     DECLARE @PreviousWeekRevenue DECIMAL(18, 2);
-     
+    
     -- SỬA LỖI: Tương tự cho tuần trước
     SELECT @PreviousWeekRevenue = ISNULL(SUM(O.Total), 0)
     FROM Booking.ORDERS O
@@ -1419,12 +1445,12 @@ BEGIN
         CASE
             WHEN @PreviousWeekRevenue = 0 THEN 0 -- Tránh chia cho 0
             ELSE CAST(
-                      ((@CurrentWeekRevenue - @PreviousWeekRevenue) * 100) / 
-                      CAST(@PreviousWeekRevenue AS DECIMAL(18, 2)) -- Ép kiểu mẫu số sang 18,2 để đảm bảo độ chính xác và tránh overflow
-                  AS DECIMAL(10, 2))
+                     ((@CurrentWeekRevenue - @PreviousWeekRevenue) * 100) / 
+                     CAST(@PreviousWeekRevenue AS DECIMAL(18, 2)) -- Ép kiểu mẫu số sang 18,2 để đảm bảo độ chính xác và tránh overflow
+                 AS DECIMAL(10, 2))
         END AS GrowthRate; -- Thêm dấu chấm phẩy
 
-     
+    
     -- 2. Trả về Doanh thu chi tiết theo ngày (cho biểu đồ: Mon, Tue,...)
     SELECT
         DATENAME(dw, T.DaySold) AS DayName,
@@ -1476,15 +1502,15 @@ CREATE OR ALTER PROCEDURE dbo.sp_GetDashboardStatsWithComparison
 AS
 BEGIN
     SET NOCOUNT ON;
-     
+    
     -- Khai báo biến ngày
     DECLARE @Today DATE = CAST(GETDATE() AS DATE);
     DECLARE @Yesterday DATE = DATEADD(day, -1, @Today);
-     
+    
     -- Tính toán tuần hiện tại
     DECLARE @StartOfWeek DATE = DATEADD(wk, DATEDIFF(wk, 0, GETDATE()), 0); 
     DECLARE @EndOfWeek DATE = DATEADD(wk, DATEDIFF(wk, 0, GETDATE()), 6);
-     
+    
     -- Tính toán tuần trước
     DECLARE @PrevStartOfWeek DATE = DATEADD(wk, -1, @StartOfWeek);
     DECLARE @PrevEndOfWeek DATE = DATEADD(wk, -1, @EndOfWeek);
@@ -1493,7 +1519,7 @@ BEGIN
     -- 1. FILMS RUNNING (PHIM CÓ LỊCH CHIẾU RƠI VÀO TUẦN)
     -- So sánh Phim có closingDate >= StartOfWeek VÀ releaseDate <= EndOfWeek
     -- ==========================================================
-     
+    
     -- Tuần Hiện Tại
     DECLARE @CurrentRunningFilms INT = (
         SELECT COUNT(MovieID) 
@@ -1501,7 +1527,7 @@ BEGIN
         WHERE M.releaseDate <= @EndOfWeek 
           AND M.closingDate >= @StartOfWeek
     );
-     
+    
     -- Tuần Trước
     DECLARE @PrevRunningFilms INT = (
         SELECT COUNT(MovieID) 
@@ -1509,7 +1535,7 @@ BEGIN
         WHERE M.releaseDate <= @PrevEndOfWeek 
           AND M.closingDate >= @PrevStartOfWeek
     );
-     
+    
     -- ==========================================================
     -- 2. ACTIVE ROOMS (Tạm thời sử dụng tổng số phòng, giả định so sánh -1)
     -- LƯU Ý: Nếu muốn so sánh chính xác, cần bảng lịch sử phòng
@@ -1715,7 +1741,7 @@ BEGIN
         RAISERROR('Room does not exist.', 16, 1);
         RETURN;
     END
-     
+    
     -- Kiểm tra suất chiếu hiện tại/tương lai
     IF EXISTS (
         SELECT 1 
@@ -1786,9 +1812,31 @@ BEGIN
         RCapacity = @RCapacity
     WHERE BranchID = @BranchID AND RoomID = @RoomID;
 
-    -- LƯU Ý: SP này không cập nhật cấu hình ghế (SEAT). 
-    -- Việc thay đổi số hàng/số cột cần được xử lý riêng hoặc qua một SP khác phức tạp hơn.
-    
+    -----------------------------------------------------
+    -- 4. Tạo lại danh sách ghế
+    -----------------------------------------------------
+    DELETE FROM Cinema.SEAT
+    WHERE BranchID = @BranchID AND RoomID = @RoomID;
+
+    DECLARE @Row INT = 1;
+    DECLARE @Col INT;
+    DECLARE @Count INT = 0;
+
+    WHILE @Row <= @TotalRows AND @Count < @RCapacity
+    BEGIN
+        SET @Col = 1;
+
+        WHILE @Col <= @SeatsPerRow AND @Count < @RCapacity
+        BEGIN
+            INSERT INTO Cinema.SEAT (BranchID, RoomID, SRow, SColumn, SType, SStatus)
+            VALUES (@BranchID, @RoomID, @Row, @Col, 0, 1);
+
+            SET @Count += 1;
+            SET @Col += 1;
+        END
+
+        SET @Row += 1;
+    END
 END
 GO
 
@@ -1829,7 +1877,7 @@ BEGIN
     SET @NewPoints = CAST(@TotalMoney / 10 AS INT);
 
     UPDATE Customer.MEMBERSHIP SET Point = Point + @NewPoints WHERE CUserID = @CUserID;
-     
+    
     -- Cập nhật hạng
     UPDATE Customer.MEMBERSHIP SET MemberRank = CASE 
         WHEN Point >= 1000 THEN 4 
@@ -1840,12 +1888,9 @@ BEGIN
 END
 GO
 -- Procedure 18: Lấy danh sách suất chiếu theo ngày và chi nhánh
-USE CGV;
-GO
-
 CREATE OR ALTER PROCEDURE Screening.sp_GetAllShowtimes
     @BranchID AS INT,
-    @Date AS DATE = NULL -- 1. Cho phép NULL (Mặc định là NULL nếu không truyền)
+    @Date AS DATE
 AS
 BEGIN
     SET NOCOUNT ON;
@@ -1859,12 +1904,14 @@ BEGIN
         T.FName AS FormatName,
         M.MName AS MovieName,
         
-        -- Tính toán thời lượng
+        -- FIX MỚI: Tính toán thời lượng:
+        -- Nếu RunTime > 0, dùng RunTime. 
+        -- Nếu RunTime là NULL/0, tính chênh lệch giữa EndTime và StartTime.
         ISNULL(M.RunTime, 
                DATEDIFF(MINUTE, 
                         CAST(T.StartTime AS DATETIME), 
                         CAST(T.EndTime AS DATETIME))
-              ) AS RunTimeMin,
+              ) AS RunTimeMin, -- Đổi tên thành RunTime
         
         SR.RoomID,
         SR.RType AS RoomType,
@@ -1872,7 +1919,7 @@ BEGIN
         
         -- Tính số vé đã bán
         ISNULL(SUM(CASE WHEN TKT.TicketID IS NOT NULL THEN 1 ELSE 0 END), 0) AS TicketsSold
-        , 12 AS Price 
+        , 12 AS Price -- Giá hardcode
     FROM
         Screening.TIME T
     JOIN
@@ -1883,12 +1930,10 @@ BEGIN
         Screening.TICKETS TKT ON T.TimeID = TKT.TimeID
     WHERE
         T.BranchID = @BranchID
-        -- 2. LOGIC MỚI: Nếu @Date là NULL -> Lấy hết. Nếu có @Date -> Lọc theo ngày
-        AND (@Date IS NULL OR T.[Day] = @Date) 
+        AND T.[Day] = @Date 
     GROUP BY
         T.TimeID, T.[Day], T.StartTime, T.EndTime, T.FName, M.MName, M.RunTime, SR.RoomID, SR.RType, SR.RCapacity
     ORDER BY
-        T.[Day] DESC, -- 3. Sắp xếp ngày mới nhất lên đầu
         T.StartTime ASC;
 END
 GO
@@ -1905,7 +1950,7 @@ CREATE OR ALTER PROCEDURE Screening.sp_InsertShowtime
 AS
 BEGIN
     SET NOCOUNT ON;
-     
+    
     -- 1. Kiểm tra trùng lịch (Phòng này đã có suất chiếu vào khoảng thời gian này chưa)
     IF EXISTS (
         SELECT 1 FROM Screening.TIME
@@ -1939,7 +1984,7 @@ BEGIN
         RAISERROR('Cannot delete showtime; tickets have already been sold.', 16, 1);
         RETURN;
     END
-     
+    
     -- Xóa suất chiếu
     DELETE FROM Screening.TIME WHERE TimeID = @TimeID AND BranchID = @BranchID;
 
@@ -1972,7 +2017,7 @@ BEGIN
         RAISERROR('Update failed: Room is already booked for this time slot on this day.', 16, 1);
         RETURN;
     END
-     
+    
     -- 2. Kiểm tra đã bán vé chưa (Không cho phép thay đổi Movie/Room/Time nếu đã bán vé)
     IF EXISTS (SELECT 1 FROM Screening.TICKETS WHERE TimeID = @TimeID AND BranchID = @BranchID)
     BEGIN
@@ -1980,13 +2025,13 @@ BEGIN
         RETURN;
     END
 
-    -- 4. Thực hiện Update
-    UPDATE Screening.TIME 
-    SET 
+    -- 3. Thực hiện Update
+    UPDATE Screening.TIME
+    SET
         RoomID = @RoomID,
-        Day = @Day,
+        [Day] = @Day,
         StartTime = @StartTime,
-        EndTime = @EndTime, -- Lưu giờ kết thúc tự tính
+        EndTime = @EndTime,
         FName = @FName,
         MovieID = @MovieID
     WHERE TimeID = @TimeID AND BranchID = @BranchID;
@@ -2002,7 +2047,7 @@ AS
 BEGIN
     IF NOT EXISTS (SELECT 1 FROM Movie.MOVIE WHERE MovieID = @MovieID)
     BEGIN
-        ;THROW 50001, 'Movie does not exist.', 1;
+        THROW 50001, 'Movie does not exist.', 1;
     END
 
     UPDATE Movie.MOVIE
@@ -2071,20 +2116,6 @@ CREATE USER sManager FOR LOGIN sManager;
 PRINT 'User sManager created successfully.';
 
 ALTER ROLE db_owner ADD MEMBER sManager;
-GO
-
--- 4. Bổ sung các định dạng phim cần thiết (Cho Frontend)
-IF NOT EXISTS (SELECT 1 FROM Movie.FORMATS WHERE FName = '2D')
-    INSERT INTO Movie.FORMATS (FName) VALUES ('2D');
-
-IF NOT EXISTS (SELECT 1 FROM Movie.FORMATS WHERE FName = '3D')
-    INSERT INTO Movie.FORMATS (FName) VALUES ('3D');
-
-IF NOT EXISTS (SELECT 1 FROM Movie.FORMATS WHERE FName = 'IMAX')
-    INSERT INTO Movie.FORMATS (FName) VALUES ('IMAX');
-
-IF NOT EXISTS (SELECT 1 FROM Movie.FORMATS WHERE FName = '4DX')
-    INSERT INTO Movie.FORMATS (FName) VALUES ('4DX');
 GO
 
 PRINT '=== DATABASE SETUP COMPLETED SUCCESSFULLY! ===';
